@@ -76,12 +76,59 @@ Preferred:
 - Recharts
 - Lucide Icons
 
-## Backend
+# Backend Architecture
+
+CareSync uses a hybrid backend architecture to support both hospital operations and AI-powered healthcare features.
+
+---
+
+## Primary Backend API
 
 Preferred:
 
 - Node.js
 - Express.js
+
+Responsibilities:
+
+- User authentication and authorization
+- Patient management
+- Doctor management
+- Appointment scheduling
+- Hospital workflow APIs
+- Notifications
+- Role-based access control
+- Communication between frontend and services
+
+Node.js handles the main application logic and real-time hospital interactions.
+
+---
+
+## AI Services Backend
+
+Preferred:
+
+- Python
+- FastAPI
+
+Responsibilities:
+
+- Gemini API integration
+- Medical report summarization
+- Patient history summarization
+- Clinical note assistance
+- Document processing
+- Machine Learning model serving
+- Healthcare prediction services
+
+Python is used because of its strong ecosystem for:
+
+- Machine Learning
+- Natural Language Processing
+- Data Analysis
+- AI Model Deployment
+
+---
 
 ## Database
 
@@ -89,15 +136,106 @@ Preferred:
 
 - PostgreSQL
 
-## AI Services
+Responsibilities:
+
+- Patient records
+- Doctor profiles
+- Appointment data
+- Medical reports metadata
+- Hospital workflows
+- Workload analytics data
+
+PostgreSQL is preferred because healthcare data is highly structured and requires reliable relational storage.
+
+---
+
+## Cache Layer
 
 Preferred:
 
-- Python FastAPI
-- Gemini API
-- Machine Learning services
+- Redis
+
+Responsibilities:
+
+- Real-time patient queues
+- Waiting time updates
+- Notifications
+- Frequently accessed data
+- Temporary AI responses
 
 ---
+
+## File Storage
+
+Preferred:
+
+- AWS S3
+- Google Cloud Storage
+- Azure Blob Storage
+
+Used for:
+
+- Medical reports
+- Prescriptions
+- Documents
+- Images
+- Healthcare files
+
+Large files should not be stored directly inside the database.
+
+---
+
+## AI Platform
+
+Preferred:
+
+- Gemini API
+- Machine Learning Services
+
+AI capabilities:
+
+- Medical document understanding
+- Patient-friendly explanations
+- Clinical assistance
+- Report summarization
+- Workflow automation
+- Healthcare analytics
+
+Important:
+
+AI provides assistance and decision support only.
+
+AI must never replace professional medical judgment.
+
+---
+
+## Final Architecture
+
+Frontend:
+- React.js
+- TypeScript
+- Tailwind CSS
+
+Backend:
+- Node.js
+- Express.js
+
+AI Backend:
+- Python
+- FastAPI
+
+Database:
+- PostgreSQL
+
+Cache:
+- Redis
+
+Storage:
+- Cloud Object Storage
+
+AI:
+- Gemini API
+- Machine Learning Models
 
 # Project Architecture
 
