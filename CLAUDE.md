@@ -397,3 +397,36 @@ Write code that is:
 - Easy to understand
 
 CareSync should feel like a real healthcare product, not a demo application.
+
+---
+
+# Security Requirements (Prototype)
+
+CareSync handles healthcare-related information, so basic security practices must be followed.
+
+Implement:
+
+- Secure authentication
+- Role-Based Access Control (RBAC)
+- Backend API validation
+- Protected routes
+- Environment variables for secrets
+- Input validation
+- Secure file handling
+
+User data must follow role permissions:
+
+- Doctors → Only assigned patient information
+- Patients → Only their own records
+- Owners/Admins → Hospital-level analytics only
+
+Never:
+
+- Store passwords in plain text
+- Expose API keys
+- Allow unauthorized data access
+- Send unnecessary sensitive data to AI services
+
+Prototype goal:
+
+Demonstrate secure architecture and privacy-aware design without overengineering.
