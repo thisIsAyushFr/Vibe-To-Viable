@@ -9,10 +9,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#E7EEF4;
-    --surface:#EDF3F8;
-    --shadow-light:#FFFFFF;
-    --shadow-dark:#C6D3E1;
+    /* Flat 2D Color Palette */
+    --bg:#F4F7FB;
+    --surface:#FFFFFF;
+    --border:#E2E8F0;
+    --inset-bg:#F8FAFC;
+    
     --teal:#2E9E90;
     --teal-dark:#20756A;
     --teal-soft:#DCF1EC;
@@ -44,23 +46,23 @@
   h1,h2,h3,.display{font-family:'Manrope',sans-serif;}
   .mono{font-family:'IBM Plex Mono',monospace;}
 
-  /* ---------- neumorphic primitives ---------- */
+  /* ---------- Flat 2D primitives ---------- */
   .raised{
     background:var(--surface);
     border-radius:var(--radius-lg);
-    box-shadow:9px 9px 18px var(--shadow-dark), -9px -9px 18px var(--shadow-light);
+    border: 1px solid var(--border);
   }
   .raised-sm{
     background:var(--surface);
     border-radius:var(--radius-md);
-    box-shadow:6px 6px 14px var(--shadow-dark), -6px -6px 14px var(--shadow-light);
+    border: 1px solid var(--border);
   }
   .inset{
-    background:var(--bg);
+    background:var(--inset-bg);
     border-radius:var(--radius-sm);
-    box-shadow:inset 4px 4px 9px var(--shadow-dark), inset -4px -4px 9px var(--shadow-light);
+    border: 1px solid var(--border);
   }
-  .pressable{transition:box-shadow .15s ease, transform .15s ease;}
+  .pressable{transition:transform .15s ease;}
   .pressable:hover{transform:translateY(-2px);}
 
   /* ---------- shell ---------- */
@@ -77,7 +79,7 @@
   .wordmark small{
     font-size:12.5px;color:var(--navy-soft);font-weight:500;
     margin-left:6px;padding-left:12px;
-    border-left:1px solid rgba(94,113,134,.28);
+    border-left:1px solid var(--border);
     letter-spacing:.01em;
   }
 
@@ -90,13 +92,28 @@
     display:flex;align-items:center;gap:8px;
     padding:10px 18px;border-radius:14px;
     font-size:13.5px;font-weight:600;color:var(--navy-soft);
-    cursor:default;
+    cursor:pointer;
+    transition: all 0.2s ease;
   }
+  .nav-item:hover { background: var(--inset-bg); }
   .nav-item svg{width:16px;height:16px;}
   .nav-item.active{
-    background:var(--bg);
+    background:var(--surface);
     color:var(--teal-dark);
-    box-shadow:inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+    border: 1px solid var(--border);
+  }
+
+  /* ---------- tab panels ---------- */
+  .tab-panel {
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  .tab-panel.active {
+    display: block;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .dash-heading{margin-bottom:20px;}
@@ -122,7 +139,7 @@
   .avatar{
     width:76px;height:76px;border-radius:50%;
     background:linear-gradient(150deg,var(--teal-soft),var(--surface));
-    box-shadow:5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+    border: 1px solid var(--border);
     display:flex;align-items:center;justify-content:center;
     font-family:'Manrope',sans-serif;font-weight:700;font-size:24px;color:var(--teal-dark);
     flex-shrink:0;
@@ -197,7 +214,6 @@
     width:38px;height:38px;border-radius:12px;flex-shrink:0;
     background:linear-gradient(150deg,var(--teal),var(--teal-dark));
     display:flex;align-items:center;justify-content:center;
-    box-shadow:4px 4px 10px var(--shadow-dark);
   }
   .ai-snapshot-icon svg{width:19px;height:19px;stroke:#fff;}
   .ai-snapshot-title{font-size:15px;font-weight:700;}
@@ -262,7 +278,7 @@
   .stage-track{display:flex;gap:6px;}
   .stage-seg{flex:1;height:7px;border-radius:6px;}
   .stage-seg.filled{background:linear-gradient(90deg,var(--teal),var(--cyan));}
-  .stage-seg.empty{background:var(--bg);box-shadow:inset 2px 2px 4px var(--shadow-dark), inset -2px -2px 4px var(--shadow-light);}
+  .stage-seg.empty{background:var(--border);}
 
   /* ---------- schedule ---------- */
   .schedule-item{display:flex;align-items:center;gap:14px;padding:14px 16px;margin-bottom:12px;}
@@ -288,26 +304,32 @@
   .med-check{
     width:22px;height:22px;border-radius:7px;flex-shrink:0;
     display:flex;align-items:center;justify-content:center;
-    box-shadow:inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
-    background:var(--bg);cursor:pointer;
+    background:var(--surface);
+    border:1px solid var(--border);
+    cursor:pointer;
   }
   .med-check svg{width:13px;height:13px;stroke:var(--teal-dark);opacity:0;stroke-width:3;}
-  .med-check.checked{background:var(--teal-soft);box-shadow:none;}
+  .med-check.checked{background:var(--teal-soft);border-color:var(--teal-soft);}
   .med-check.checked svg{opacity:1;}
 
   /* ---------- history timeline ---------- */
   .timeline{position:relative;padding-left:26px;}
-  .timeline::before{content:'';position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--bg);box-shadow:inset 1px 1px 2px var(--shadow-dark);}
+  .timeline::before{content:'';position:absolute;left:8px;top:6px;bottom:6px;width:2px;background:var(--border);}
   .tl-item{position:relative;padding-bottom:22px;}
   .tl-item:last-child{padding-bottom:0;}
-  .tl-dot{position:absolute;left:-26px;top:2px;width:16px;height:16px;border-radius:50%;background:var(--surface);box-shadow:3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);display:flex;align-items:center;justify-content:center;}
+  .tl-dot{
+    position:absolute;left:-26px;top:2px;width:16px;height:16px;border-radius:50%;
+    background:var(--surface);
+    border: 1px solid var(--border);
+    display:flex;align-items:center;justify-content:center;
+  }
   .tl-dot::after{content:'';width:6px;height:6px;border-radius:50%;background:var(--teal);}
   .tl-date{font-size:11px;color:var(--navy-faint);font-weight:600;margin-bottom:3px;}
   .tl-title{font-size:13.5px;font-weight:600;margin-bottom:2px;}
   .tl-desc{font-size:12px;color:var(--navy-soft);line-height:1.5;}
 
   /* ---------- hospital ---------- */
-  .hosp-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid rgba(150,170,190,.18);}
+  .hosp-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);}
   .hosp-row:last-of-type{border-bottom:none;}
   .hosp-label{font-size:12.5px;color:var(--navy-soft);font-weight:500;}
   .hosp-value{font-size:13px;font-weight:700;}
@@ -328,44 +350,12 @@
   .report-status{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:3px 9px;border-radius:20px;display:inline-block;margin-bottom:12px;}
   .report-status.ready{background:var(--green-soft);color:var(--green);}
   .report-status.pending{background:var(--yellow-soft);color:var(--yellow);}
-  .view-btn{width:100%;padding:8px;border:none;border-radius:10px;background:var(--bg);box-shadow:3px 3px 6px var(--shadow-dark), -3px -3px 6px var(--shadow-light);font-size:11.5px;font-weight:600;color:var(--teal-dark);cursor:pointer;font-family:'Inter',sans-serif;}
-
-  /* ---------- ai assistant floating ---------- */
-  .ai-fab{
-    position:fixed;bottom:28px;right:32px;
-    width:64px;height:64px;border-radius:50%;
-    background:linear-gradient(150deg,var(--teal),var(--teal-dark));
-    box-shadow:8px 8px 16px rgba(20,60,55,.35), -4px -4px 10px rgba(255,255,255,.4);
-    display:flex;align-items:center;justify-content:center;cursor:pointer;
-    z-index:50;border:none;
+  .view-btn{
+    width:100%;padding:8px;border:1px solid var(--border);border-radius:10px;
+    background:var(--surface);font-size:11.5px;font-weight:600;color:var(--teal-dark);
+    cursor:pointer;font-family:'Inter',sans-serif;
   }
-  .ai-fab svg{width:26px;height:26px;stroke:#fff;}
-  .ai-panel{
-    position:fixed;bottom:104px;right:32px;
-    z-index:50;
-  }
-  .ai-panel-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
-  .ai-panel-head .dot{width:8px;height:8px;border-radius:50%;background:var(--green);}
-  .ai-panel-title{font-size:13.5px;font-weight:700;}
-  .ai-panel-sub{font-size:11.5px;color:var(--navy-soft);margin-bottom:14px;line-height:1.5;}
-  .ai-suggest{padding:10px 12px;font-size:12px;color:var(--navy);margin-bottom:8px;cursor:pointer;}
-  .ai-suggest:last-child{margin-bottom:0;}
-
-  @media (max-width:1100px){
-    .span-3,.span-4,.span-5,.span-6,.span-7,.span-8{grid-column:span 12;}
-    .vitals-grid{grid-template-columns:repeat(2,1fr) !important;}
-    .reports-grid{grid-template-columns:repeat(2,1fr);}
-    .precaution-grid{grid-template-columns:1fr;}
-    .ai-snapshot-list{grid-template-columns:1fr;}
-    .navbar{flex-wrap:wrap;width:100%;}
-    body{padding:24px 18px 100px;}
-    .header-card{flex-direction:column;align-items:flex-start;}
-    .trends-grid{grid-template-columns:repeat(2,1fr) !important;}
-    .team-grid{grid-template-columns:1fr !important;}
-    .journey-track{flex-direction:column;align-items:flex-start !important;}
-    .journey-track::before{display:none;}
-    .goals-grid{grid-template-columns:1fr !important;}
-  }
+  .view-btn:hover{background:var(--bg);}
 
   /* ---------- smart alerts ---------- */
   .alert-item{display:flex;align-items:flex-start;gap:13px;padding:13px 15px;margin-bottom:10px;}
@@ -415,7 +405,7 @@
   .team-avatar{
     width:56px;height:56px;border-radius:50%;
     background:linear-gradient(150deg,var(--teal-soft),var(--surface));
-    box-shadow:4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+    border: 1px solid var(--border);
     display:flex;align-items:center;justify-content:center;margin-bottom:10px;
   }
   .team-avatar svg{width:24px;height:24px;stroke:var(--teal-dark);}
@@ -425,17 +415,17 @@
 
   /* ---------- hospital journey ---------- */
   .journey-track{display:flex;align-items:center;justify-content:space-between;position:relative;padding:6px 4px;}
-  .journey-track::before{content:'';position:absolute;left:24px;right:24px;top:22px;height:2px;background:var(--bg);box-shadow:inset 1px 1px 2px var(--shadow-dark);z-index:0;}
+  .journey-track::before{content:'';position:absolute;left:24px;right:24px;top:22px;height:2px;background:var(--border);z-index:0;}
   .journey-stage{display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;z-index:1;flex:1;}
   .journey-dot{
     width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-    background:var(--surface);box-shadow:4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+    background:var(--surface);border:1px solid var(--border);
   }
   .journey-dot svg{width:19px;height:19px;stroke:var(--navy-faint);}
-  .journey-stage.done .journey-dot{background:linear-gradient(150deg,var(--teal),var(--teal-dark));box-shadow:none;}
+  .journey-stage.done .journey-dot{background:linear-gradient(150deg,var(--teal),var(--teal-dark));border:none;}
   .journey-stage.done .journey-dot svg{stroke:#fff;}
   .journey-stage.current .journey-dot{
-    background:var(--teal-soft);box-shadow:0 0 0 5px rgba(46,158,144,.18);
+    background:var(--teal-soft);border: 2px solid var(--teal-dark);
   }
   .journey-stage.current .journey-dot svg{stroke:var(--teal-dark);}
   .journey-name{font-size:11.5px;font-weight:600;color:var(--navy-soft);}
@@ -449,7 +439,7 @@
   .goal-icon{width:28px;height:28px;border-radius:9px;background:var(--teal-soft);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
   .goal-icon svg{width:14px;height:14px;stroke:var(--teal-dark);}
   .goal-value{font-size:12px;font-weight:700;color:var(--navy-soft);}
-  .goal-bar{height:9px;border-radius:20px;background:var(--bg);box-shadow:inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);overflow:hidden;}
+  .goal-bar{height:9px;border-radius:20px;background:var(--border);overflow:hidden;}
   .goal-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--teal),var(--cyan));}
 
   /* ---------- AI report summary ---------- */
@@ -468,15 +458,16 @@
   .note-card{padding:20px 22px;}
   .note-quote{font-size:13.5px;color:var(--navy);line-height:1.65;font-style:italic;margin-bottom:16px;padding-left:14px;border-left:3px solid var(--teal);}
   .note-btn{
-    padding:10px 18px;border:none;border-radius:12px;
-    background:var(--bg);box-shadow:4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
-    font-size:12.5px;font-weight:600;color:var(--teal-dark);cursor:pointer;font-family:'Inter',sans-serif;
+    padding:10px 18px;border:1px solid var(--border);border-radius:12px;
+    background:var(--surface);font-size:12.5px;font-weight:600;color:var(--teal-dark);
+    cursor:pointer;font-family:'Inter',sans-serif;
   }
+  .note-btn:hover{background:var(--bg);}
 
   /* ---------- occupancy ---------- */
   .occupancy-wrap{margin-top:16px;}
   .occupancy-head{display:flex;justify-content:space-between;font-size:11.5px;color:var(--navy-soft);font-weight:600;margin-bottom:8px;}
-  .occupancy-bar{height:10px;border-radius:20px;background:var(--bg);box-shadow:inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);overflow:hidden;}
+  .occupancy-bar{height:10px;border-radius:20px;background:var(--border);overflow:hidden;}
   .occupancy-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--teal),var(--yellow));}
 
   /* ---------- upgraded AI chat panel ---------- */
@@ -484,7 +475,7 @@
   .ai-panel-inner{padding:18px 18px 14px;}
   .ai-chat-log{max-height:130px;overflow-y:auto;margin-bottom:12px;}
   .ai-chat-msg{
-    background:var(--bg);box-shadow:inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+    background:var(--bg);border:1px solid var(--border);
     border-radius:14px;padding:10px 13px;font-size:12px;color:var(--navy);line-height:1.5;margin-bottom:8px;
   }
   .ai-prompt-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
@@ -492,9 +483,9 @@
     font-size:11px;font-weight:600;color:var(--teal-dark);background:var(--teal-soft);
     padding:6px 11px;border-radius:20px;cursor:pointer;
   }
-  .ai-chat-input-row{display:flex;align-items:center;gap:8px;padding:12px 14px;background:var(--surface);border-top:1px solid rgba(150,170,190,.18);}
+  .ai-chat-input-row{display:flex;align-items:center;gap:8px;padding:12px 14px;background:var(--surface);border-top:1px solid var(--border);}
   .ai-chat-input{
-    flex:1;border:none;background:var(--bg);box-shadow:inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light);
+    flex:1;background:var(--bg);border:1px solid var(--border);
     border-radius:12px;padding:10px 13px;font-size:12.5px;font-family:'Inter',sans-serif;color:var(--navy);outline:none;
   }
   .ai-chat-send{
@@ -503,6 +494,47 @@
     display:flex;align-items:center;justify-content:center;cursor:pointer;
   }
   .ai-chat-send svg{width:16px;height:16px;stroke:#fff;}
+
+  /* ---------- ai assistant floating ---------- */
+  .ai-fab{
+    position:fixed;bottom:28px;right:32px;
+    width:64px;height:64px;border-radius:50%;
+    background:linear-gradient(150deg,var(--teal),var(--teal-dark));
+    box-shadow:0 6px 16px rgba(0,0,0,0.15);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    z-index:50;border:none;
+  }
+  .ai-fab svg{width:26px;height:26px;stroke:#fff;}
+  .ai-panel{
+    position:fixed;bottom:104px;right:32px;
+    z-index:50;
+  }
+
+  /* ---------- MOBILE MEDIA QUERY ---------- */
+  @media (max-width:1100px){
+    .span-3,.span-4,.span-5,.span-6,.span-7,.span-8{grid-column:span 12;}
+    .vitals-grid{grid-template-columns:repeat(2,1fr) !important;}
+    .reports-grid{grid-template-columns:repeat(2,1fr);}
+    .precaution-grid{grid-template-columns:1fr;}
+    .ai-snapshot-list{grid-template-columns:1fr;}
+    .navbar{flex-wrap:wrap;width:100%;}
+    body{padding:24px 18px 100px;}
+    .header-card{flex-direction:column;align-items:flex-start;}
+    .trends-grid{grid-template-columns:repeat(2,1fr) !important;}
+    .team-grid{grid-template-columns:1fr !important;}
+    .goals-grid{grid-template-columns:1fr !important;}
+    
+    /* Fixed Mobile layout for Journey Track */
+    .journey-track{flex-direction:column;align-items:flex-start; gap: 20px;}
+    .journey-track::before{display:none;}
+    .journey-stage{
+        flex-direction: row; 
+        align-items: center; 
+        justify-content: flex-start;
+        width: 100%;
+        gap: 16px;
+    }
+  }
 </style>
 </head>
 <body>
@@ -517,644 +549,994 @@
   </div>
 
   <div class="raised-sm navbar">
-    <div class="nav-item active">
+    <div class="nav-item active" onclick="switchTab(event, 'panel-home')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
       Home
     </div>
-    <div class="nav-item">
+    <div class="nav-item" onclick="switchTab(event, 'panel-history')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v6l4 2"/><circle cx="12" cy="12" r="9"/></svg>
       Medical history
     </div>
-    <div class="nav-item">
+    <div class="nav-item" onclick="switchTab(event, 'panel-billing')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
       Bill payment
     </div>
-    <div class="nav-item">
+    <div class="nav-item" onclick="switchTab(event, 'panel-room')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-6h6v6"/></svg>
       Room
     </div>
   </div>
 
-  <div class="dash-heading">
-    <h1>Patient dashboard</h1>
-    <p>A complete overview of Ravi's condition, care plan, and recovery.</p>
-  </div>
 
-  <!-- HEADER -->
-  <div class="raised header-card">
-    <div class="patient-block">
-      <div class="avatar">RM</div>
-      <div>
-        <div class="patient-name">Ravi Mehta</div>
-        <div class="username-row">
-          <div class="pulse-line">
-            <svg viewBox="0 0 450 36" preserveAspectRatio="none">
-              <polyline points="0,18 20,18 26,18 32,4 38,32 44,18 100,18 150,18 156,18 162,4 168,32 174,18 225,18 245,18 251,18 257,4 263,32 269,18 325,18 375,18 381,18 387,4 393,32 399,18 450,18 470,18 476,18 482,4 488,32 494,18 550,18 600,18 606,18 612,4 618,32 624,18 675,18 695,18 701,18 707,4 713,32 719,18 775,18 825,18 831,18 837,4 843,32 849,18 900,18" fill="none" stroke="#2E9E90" stroke-width="2"/>
-            </svg>
+  <!-- ==================== HOME PANEL (ACTIVE) ==================== -->
+  <div id="panel-home" class="tab-panel active">
+      <div class="dash-heading">
+        <h1>Patient dashboard</h1>
+        <p>A complete overview of Ravi's condition, care plan, and recovery.</p>
+      </div>
+
+      <!-- HEADER -->
+      <div class="raised header-card">
+        <div class="patient-block">
+          <div class="avatar">RM</div>
+          <div>
+            <div class="patient-name">Ravi Mehta</div>
+            <div class="username-row">
+              <div class="pulse-line">
+                <svg viewBox="0 0 450 36" preserveAspectRatio="none">
+                  <polyline points="0,18 20,18 26,18 32,4 38,32 44,18 100,18 150,18 156,18 162,4 168,32 174,18 225,18 245,18 251,18 257,4 263,32 269,18 325,18 375,18 381,18 387,4 393,32 399,18 450,18 470,18 476,18 482,4 488,32 494,18 550,18 600,18 606,18 612,4 618,32 624,18 675,18 695,18 701,18 707,4 713,32 719,18 775,18 825,18 831,18 837,4 843,32 849,18 900,18" fill="none" stroke="#2E9E90" stroke-width="2"/>
+                </svg>
+              </div>
+            </div>
+            <div class="patient-meta">
+              <span><b>58</b> yrs</span><span class="dot">·</span>
+              <span>Blood group <b>O+</b></span><span class="dot">·</span>
+              <span>Patient ID <b class="mono">CS-20481</b></span>
+            </div>
           </div>
         </div>
-        <div class="patient-meta">
-          <span><b>58</b> yrs</span><span class="dot">·</span>
-          <span>Blood group <b>O+</b></span><span class="dot">·</span>
-          <span>Patient ID <b class="mono">CS-20481</b></span>
+        <div class="raised-sm status-badge">
+          <span class="status-dot"></span>
+          <div class="status-text">
+            <div class="label">Health status</div>
+            <div class="value">Stable</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SMART ALERTS + WELLNESS SCORE -->
+      <div class="bento" style="margin-bottom:20px;">
+        <div class="raised card span-7">
+          <div class="card-head"><div class="card-title">Smart alerts</div></div>
+
+          <div class="inset alert-item">
+            <div class="alert-icon warning"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div>
+            <div class="alert-body">
+              <div class="alert-text">Blood sugar slightly elevated today</div>
+              <div class="alert-time">Today, 8:15 AM</div>
+            </div>
+            <span class="alert-priority medium">Medium</span>
+          </div>
+
+          <div class="inset alert-item">
+            <div class="alert-icon critical"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M12 12 6.5 17.5" stroke-width="2"/></svg></div>
+            <div class="alert-body">
+              <div class="alert-text">Evening medication due in 45 minutes</div>
+              <div class="alert-time">Today, 7:15 PM</div>
+            </div>
+            <span class="alert-priority high">High</span>
+          </div>
+
+          <div class="inset alert-item">
+            <div class="alert-icon info"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></div>
+            <div class="alert-body">
+              <div class="alert-text">Cardiology appointment tomorrow</div>
+              <div class="alert-time">Tomorrow, 10:30 AM</div>
+            </div>
+            <span class="alert-priority medium">Medium</span>
+          </div>
+
+          <div class="inset alert-item">
+            <div class="alert-icon info"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+            <div class="alert-body">
+              <div class="alert-text">Blood report uploaded today</div>
+              <div class="alert-time">Today, 6:40 AM</div>
+            </div>
+            <span class="alert-priority low">Low</span>
+          </div>
+
+          <div class="inset alert-item">
+            <div class="alert-icon info"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
+            <div class="alert-body">
+              <div class="alert-text">Doctor added a new note</div>
+              <div class="alert-time">Yesterday, 5:52 PM</div>
+            </div>
+            <span class="alert-priority low">Low</span>
+          </div>
+        </div>
+
+        <div class="raised card span-5 wellness-card">
+          <div class="card-title" style="align-self:flex-start;margin-bottom:14px;">CareSync wellness score</div>
+          <div class="wellness-ring">
+            <svg width="118" height="118" viewBox="0 0 118 118">
+              <circle cx="59" cy="59" r="50" fill="none" stroke="#DDE7F0" stroke-width="11"/>
+              <circle cx="59" cy="59" r="50" fill="none" stroke="url(#wellGrad)" stroke-width="11" stroke-linecap="round" stroke-dasharray="314.2" stroke-dashoffset="34.5"/>
+              <defs><linearGradient id="wellGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#2E9E90"/><stop offset="100%" stop-color="#7FDBD3"/></linearGradient></defs>
+            </svg>
+            <div class="wellness-ring-center"><div class="num">89</div><div class="of">/ 100</div></div>
+          </div>
+          <div class="wellness-trend">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15 12 9l-6 6"/></svg>
+            Improved by 6% since last visit
+          </div>
+          <div class="wellness-note">Based on vitals, recovery pace, medication adherence, and recent lab results.</div>
+          <svg class="wellness-spark" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,24 15,22 30,20 45,18 60,14 75,10 100,6" fill="none" stroke="#2E9E90" stroke-width="2"/></svg>
+        </div>
+      </div>
+
+      <!-- AI PATIENT SNAPSHOT -->
+      <div class="raised ai-snapshot">
+        <div class="ai-snapshot-head">
+          <div class="ai-snapshot-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v3a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v4M8 22h8"/></svg>
+          </div>
+          <div class="ai-snapshot-title">AI Patient Snapshot</div>
+          <div class="ai-snapshot-tag">Generated by CareSync AI</div>
+        </div>
+        <div class="ai-snapshot-list">
+          <div class="ai-snapshot-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Overall condition: Stable</div>
+          <div class="ai-snapshot-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Diabetes under control</div>
+          <div class="ai-snapshot-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Blood pressure within normal range</div>
+          <div class="ai-snapshot-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>No medication conflicts detected</div>
+          <div class="ai-snapshot-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Recovery progressing well</div>
+          <div class="ai-snapshot-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Next follow-up in 5 days</div>
+        </div>
+      </div>
+
+      <!-- SECTION 1: VITALS -->
+      <div class="raised card" style="margin-bottom:20px;">
+        <div class="card-head">
+          <div class="card-title">Health vitals overview</div>
+        </div>
+        <div class="vitals-grid">
+
+          <div class="inset vital-card">
+            <div class="vital-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg></div>
+            <div class="vital-label">Blood pressure</div>
+            <div class="vital-value">120<span class="vital-unit">/80 mmHg</span></div>
+            <div class="vital-range">● Normal range</div>
+          </div>
+
+          <div class="inset vital-card">
+            <div class="vital-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c3 4 6 7.5 6 12a6 6 0 0 1-12 0c0-4.5 3-8 6-12z"/></svg></div>
+            <div class="vital-label">Oxygen level</div>
+            <div class="vital-value">98<span class="vital-unit">%</span></div>
+            <div class="vital-range">● Normal range</div>
+          </div>
+
+          <div class="inset vital-card">
+            <div class="vital-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4v10.5a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0z"/></svg></div>
+            <div class="vital-label">Temperature</div>
+            <div class="vital-value">98.6<span class="vital-unit">°F</span></div>
+            <div class="vital-range">● Normal range</div>
+          </div>
+
+          <div class="inset vital-card">
+            <div class="vital-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></div>
+            <div class="vital-label">Blood sugar</div>
+            <div class="vital-value">105<span class="vital-unit">mg/dL</span></div>
+            <div class="vital-range" style="color:var(--yellow);">● Slightly elevated</div>
+          </div>
+
+        </div>
+
+        <div class="inset disease-block">
+          <div class="disease-head">
+            <div class="disease-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v3a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v4M8 22h8"/></svg></div>
+            <div>
+              <div class="disease-label">Diagnosed condition</div>
+              <div class="disease-name">Type 2 diabetes mellitus</div>
+            </div>
+          </div>
+          <div class="precaution-title">Precautions</div>
+          <div class="precaution-grid">
+            <div class="precaution-item">Monitor blood sugar levels daily</div>
+            <div class="precaution-item">Avoid sugary and processed foods</div>
+            <div class="precaution-item">Take Metformin as prescribed, after meals</div>
+            <div class="precaution-item">Maintain 30 minutes of light activity daily</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: DIAGNOSES + ALLERGIES + LABS -->
+      <div class="bento row-gap">
+
+        <div class="raised card span-5">
+          <div class="card-head"><div class="card-title">Active diagnoses</div></div>
+
+          <div class="inset diag-item">
+            <div class="diag-name">Type 2 Diabetes</div>
+            <div class="diag-badge controlled"><span class="dot"></span>Controlled</div>
+          </div>
+          <div class="inset diag-item">
+            <div class="diag-name">Hypertension</div>
+            <div class="diag-badge monitoring"><span class="dot"></span>Monitoring</div>
+          </div>
+          <div class="inset diag-item">
+            <div class="diag-name">High Cholesterol</div>
+            <div class="diag-badge monitoring"><span class="dot"></span>Monitoring</div>
+          </div>
+        </div>
+
+        <div class="raised card span-3">
+          <div class="card-head"><div class="card-title">Allergies</div></div>
+          <div class="allergy-list">
+            <div class="inset allergy-chip"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Penicillin</span></div>
+            <div class="inset allergy-chip"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Peanuts</span></div>
+            <div class="inset allergy-chip"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Dust</span></div>
+            <div class="inset allergy-chip"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Latex</span></div>
+          </div>
+        </div>
+
+        <div class="raised card span-4">
+          <div class="card-head"><div class="card-title">Latest lab results</div></div>
+
+          <div class="inset lab-item">
+            <div>
+              <div class="lab-name">HbA1c</div>
+              <div class="lab-range">Range: 4.0 – 5.6%</div>
+            </div>
+            <div class="lab-right">
+              <div class="lab-value">6.4<span class="unit">%</span></div>
+              <div class="lab-flag watch">Watch</div>
+            </div>
+          </div>
+
+          <div class="inset lab-item">
+            <div>
+              <div class="lab-name">Blood sugar (fasting)</div>
+              <div class="lab-range">Range: 70 – 100 mg/dL</div>
+            </div>
+            <div class="lab-right">
+              <div class="lab-value">105<span class="unit">mg/dL</span></div>
+              <div class="lab-flag watch">Watch</div>
+            </div>
+          </div>
+
+          <div class="inset lab-item">
+            <div>
+              <div class="lab-name">Creatinine</div>
+              <div class="lab-range">Range: 0.6 – 1.3 mg/dL</div>
+            </div>
+            <div class="lab-right">
+              <div class="lab-value">0.9<span class="unit">mg/dL</span></div>
+              <div class="lab-flag normal">Normal</div>
+            </div>
+          </div>
+
+          <div class="inset lab-item">
+            <div>
+              <div class="lab-name">Hemoglobin</div>
+              <div class="lab-range">Range: 13.0 – 17.0 g/dL</div>
+            </div>
+            <div class="lab-right">
+              <div class="lab-value">14.2<span class="unit">g/dL</span></div>
+              <div class="lab-flag normal">Normal</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SECTION: HEALTH TRENDS -->
+      <div class="raised card row-gap">
+        <div class="card-head">
+          <div class="card-title">Health trends</div>
+          <div style="font-size:11.5px;color:var(--navy-soft);font-weight:500;">Last 30 days</div>
+        </div>
+        <div class="trends-grid">
+
+          <div class="inset trend-card">
+            <div class="trend-head"><span class="trend-label">Blood pressure</span></div>
+            <div class="trend-value">120/80</div>
+            <svg class="trend-chart" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,16 15,18 30,14 45,17 60,12 75,15 100,10" fill="none" stroke="#2E9E90" stroke-width="2"/></svg>
+            <div class="trend-sub">Stable range</div>
+          </div>
+
+          <div class="inset trend-card">
+            <div class="trend-head"><span class="trend-label">Blood sugar</span></div>
+            <div class="trend-value">105 mg/dL</div>
+            <svg class="trend-chart" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,10 15,14 30,12 45,20 60,18 75,22 100,17" fill="none" stroke="#E3A72E" stroke-width="2"/></svg>
+            <div class="trend-sub">Slightly elevated</div>
+          </div>
+
+          <div class="inset trend-card">
+            <div class="trend-head"><span class="trend-label">Heart rate</span></div>
+            <div class="trend-value">72 BPM</div>
+            <svg class="trend-chart" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,18 15,16 30,19 45,15 60,17 75,13 100,16" fill="none" stroke="#2E9E90" stroke-width="2"/></svg>
+            <div class="trend-sub">Within normal range</div>
+          </div>
+
+          <div class="inset trend-card">
+            <div class="trend-head"><span class="trend-label">Weight</span></div>
+            <div class="trend-value">78.4 kg</div>
+            <svg class="trend-chart" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,10 15,11 30,13 45,14 60,16 75,17 100,19" fill="none" stroke="#2E9E90" stroke-width="2"/></svg>
+            <div class="trend-sub">Gradual improvement</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SECTION 2 + 3: RECOVERY + DOCTOR -->
+      <div class="bento">
+        <div class="raised card span-7 recovery-card">
+          <div class="ring-wrap">
+            <svg width="132" height="132" viewBox="0 0 132 132">
+              <circle cx="66" cy="66" r="56" fill="none" stroke="#DDE7F0" stroke-width="12"/>
+              <circle cx="66" cy="66" r="56" fill="none" stroke="url(#ringGrad)" stroke-width="12" stroke-linecap="round" stroke-dasharray="351.8" stroke-dashoffset="88"/>
+              <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#2E9E90"/><stop offset="100%" stop-color="#7FDBD3"/></linearGradient></defs>
+            </svg>
+            <div class="ring-center"><div class="num">75%</div><div class="lbl">Recovery</div></div>
+          </div>
+          <div class="recovery-details">
+            <div class="card-title" style="margin-bottom:10px;">Recovery progress</div>
+            <div class="stage">Stage 3 · Active rehabilitation</div>
+            <div class="eta">Estimated recovery — 12 days remaining</div>
+            <div class="stage-track">
+              <div class="stage-seg filled"></div>
+              <div class="stage-seg filled"></div>
+              <div class="stage-seg filled"></div>
+              <div class="stage-seg empty"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="raised card span-5">
+          <div class="card-head"><div class="card-title">Care team</div></div>
+          <div class="team-grid">
+
+            <div class="inset team-card">
+              <div class="team-avatar"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></div>
+              <div class="team-name">Dr. Sarah Williams</div>
+              <div class="team-role">Primary doctor</div>
+              <div class="team-avail">Mon–Fri, 9–4 PM</div>
+            </div>
+
+            <div class="inset team-card">
+              <div class="team-avatar"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></div>
+              <div class="team-name">Nurse Priya Nair</div>
+              <div class="team-role">Assigned nurse</div>
+              <div class="team-avail">On duty today</div>
+            </div>
+
+            <div class="inset team-card">
+              <div class="team-avatar"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></div>
+              <div class="team-name">Dr. Amit Rao</div>
+              <div class="team-role">Dietitian</div>
+              <div class="team-avail">Tue, Thu · 2–5 PM</div>
+            </div>
+
+            <div class="inset team-card">
+              <div class="team-avatar"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></div>
+              <div class="team-name">Meera Iyer</div>
+              <div class="team-role">Physiotherapist</div>
+              <div class="team-avail">Mon, Wed, Fri</div>
+            </div>
+
+            <div class="inset team-card">
+              <div class="team-avatar"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></div>
+              <div class="team-name">Karan Shah</div>
+              <div class="team-role">Pharmacist</div>
+              <div class="team-avail">Available 24/7</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: HOSPITAL JOURNEY -->
+      <div class="raised card row-gap">
+        <div class="card-head"><div class="card-title">Hospital journey</div></div>
+        <div class="journey-track">
+          <div class="journey-stage done">
+            <div class="journey-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+            <div class="journey-name">Registration</div>
+          </div>
+          <div class="journey-stage done">
+            <div class="journey-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+            <div class="journey-name">Vitals</div>
+          </div>
+          <div class="journey-stage current">
+            <div class="journey-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></div>
+            <div class="journey-name">Consultation</div>
+          </div>
+          <div class="journey-stage">
+            <div class="journey-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l1 4H8l1-4z"/><path d="M6 7h12l-1 13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7z"/></svg></div>
+            <div class="journey-name">Laboratory</div>
+          </div>
+          <div class="journey-stage">
+            <div class="journey-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M12 12 6.5 17.5" stroke-width="2"/></svg></div>
+            <div class="journey-name">Pharmacy</div>
+          </div>
+          <div class="journey-stage">
+            <div class="journey-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-6h6v6"/></svg></div>
+            <div class="journey-name">Discharge</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 4 + 5: SCHEDULE + MEDICINES -->
+      <div class="bento row-gap">
+        <div class="raised card span-4">
+          <div class="card-head"><div class="card-title">Upcoming schedule</div></div>
+
+          <div class="inset schedule-item">
+            <div class="sched-icon" style="background:var(--teal-soft);"><svg viewBox="0 0 24 24" fill="none" stroke="#20756A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></div>
+            <div>
+              <div class="sched-title">Consultation — Dr. Sarah Williams</div>
+              <div class="sched-sub">Cardiology follow-up</div>
+            </div>
+            <div class="sched-time">Tomorrow<br>10:30 AM</div>
+          </div>
+
+          <div class="inset schedule-item">
+            <div class="sched-icon" style="background:var(--yellow-soft);"><svg viewBox="0 0 24 24" fill="none" stroke="#E3A72E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l1 4H8l1-4z"/><path d="M6 7h12l-1 13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7z"/></svg></div>
+            <div>
+              <div class="sched-title">Blood test — Lipid panel</div>
+              <div class="sched-sub">Lab, ground floor</div>
+            </div>
+            <div class="sched-time">Fri, Jul 31<br>8:00 AM</div>
+          </div>
+
+          <div class="inset schedule-item">
+            <div class="sched-icon" style="background:var(--teal-soft);"><svg viewBox="0 0 24 24" fill="none" stroke="#20756A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></div>
+            <div>
+              <div class="sched-title">Recovery review</div>
+              <div class="sched-sub">Follow-up check-in</div>
+            </div>
+            <div class="sched-time">Aug 9<br>11:00 AM</div>
+          </div>
+        </div>
+
+        <div class="raised card span-4">
+          <div class="card-head"><div class="card-title">Medicines assigned</div></div>
+
+          <div class="inset med-item">
+            <div class="med-check checked" onclick="this.classList.toggle('checked')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+            <div class="med-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M12 12 6.5 17.5" stroke-width="2"/></svg></div>
+            <div>
+              <div class="med-name">Metformin — 500mg</div>
+              <div class="med-sub">After breakfast, daily</div>
+            </div>
+            <div class="med-right">
+              <div class="med-days">18 days left</div>
+              <span class="med-status taken">Taken</span>
+            </div>
+          </div>
+
+          <div class="inset med-item">
+            <div class="med-check" onclick="this.classList.toggle('checked')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+            <div class="med-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M12 12 6.5 17.5" stroke-width="2"/></svg></div>
+            <div>
+              <div class="med-name">Atorvastatin — 10mg</div>
+              <div class="med-sub">After dinner, daily</div>
+            </div>
+            <div class="med-right">
+              <div class="med-days">9 days left</div>
+              <span class="med-status pending">Pending</span>
+            </div>
+          </div>
+
+          <div class="inset med-item">
+            <div class="med-check checked" onclick="this.classList.toggle('checked')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+            <div class="med-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M12 12 6.5 17.5" stroke-width="2"/></svg></div>
+            <div>
+              <div class="med-name">Aspirin — 75mg</div>
+              <div class="med-sub">Morning, daily</div>
+            </div>
+            <div class="med-right">
+              <div class="med-days">30 days left</div>
+              <span class="med-status taken">Taken</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="raised card span-4">
+          <div class="card-head"><div class="card-title">Daily health goals</div></div>
+
+          <div class="goal-item">
+            <div class="goal-head">
+              <div class="goal-label"><div class="goal-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c3 4 6 7.5 6 12a6 6 0 0 1-12 0c0-4.5 3-8 6-12z"/></svg></div>Water intake</div>
+              <div class="goal-value">6 / 8 glasses</div>
+            </div>
+            <div class="goal-bar"><div class="goal-fill" style="width:75%;"></div></div>
+          </div>
+
+          <div class="goal-item">
+            <div class="goal-head">
+              <div class="goal-label"><div class="goal-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></div>Sleep</div>
+              <div class="goal-value">7 / 8 hours</div>
+            </div>
+            <div class="goal-bar"><div class="goal-fill" style="width:87%;"></div></div>
+          </div>
+
+          <div class="goal-item">
+            <div class="goal-head">
+              <div class="goal-label"><div class="goal-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="2"/><path d="M8 22l2-9-3-2 1-5 4 1 2 3h3M6 13l-2 3M14 13l3 2 2 6"/></svg></div>Walking</div>
+              <div class="goal-value">5,200 / 8,000 steps</div>
+            </div>
+            <div class="goal-bar"><div class="goal-fill" style="width:65%;"></div></div>
+          </div>
+
+          <div class="goal-item">
+            <div class="goal-head">
+              <div class="goal-label"><div class="goal-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M12 12 6.5 17.5" stroke-width="2"/></svg></div>Medicine</div>
+              <div class="goal-value">3 / 4 completed</div>
+            </div>
+            <div class="goal-bar"><div class="goal-fill" style="width:75%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 6 + 7: HISTORY + HOSPITAL -->
+      <div class="bento row-gap">
+        <div class="raised card span-7">
+          <div class="card-head"><div class="card-title">Medical history</div></div>
+          <div class="timeline">
+            <div class="tl-item">
+              <div class="tl-dot"></div>
+              <div class="tl-date">Mar 2026</div>
+              <div class="tl-title">Diagnosed — Type 2 diabetes</div>
+              <div class="tl-desc">Started on Metformin, dietary plan advised by endocrinology.</div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot"></div>
+              <div class="tl-date">Nov 2024</div>
+              <div class="tl-title">Coronary angioplasty</div>
+              <div class="tl-desc">Stent placement following mild myocardial event. Full recovery.</div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot"></div>
+              <div class="tl-date">Ongoing</div>
+              <div class="tl-title">Allergy on record</div>
+              <div class="tl-desc">Penicillin — noted in chart, alternate antibiotics prescribed.</div>
+            </div>
+            <div class="tl-item">
+              <div class="tl-dot"></div>
+              <div class="tl-date">Jul 2026</div>
+              <div class="tl-title">Hospital visit — routine check-up</div>
+              <div class="tl-desc">Vitals stable, recovery on track per cardiology review.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="raised card span-5">
+          <div class="card-head"><div class="card-title">Hospital information</div></div>
+          <div class="hosp-row"><span class="hosp-label">Assigned hospital</span><span class="hosp-value">Lotus Life Hospital</span></div>
+          <div class="hosp-row"><span class="hosp-label">Department</span><span class="hosp-value">Cardiology</span></div>
+          <div class="hosp-row"><span class="hosp-label">Room</span><span class="hosp-value">Ward B · 214</span></div>
+          <div class="bed-stats">
+            <div class="inset bed-stat"><div class="bed-num">12</div><div class="bed-lbl">General beds</div></div>
+            <div class="inset bed-stat"><div class="bed-num">3</div><div class="bed-lbl">ICU beds</div></div>
+            <div class="inset bed-stat"><div class="bed-num">5</div><div class="bed-lbl">Emergency beds</div></div>
+          </div>
+          <div class="occupancy-wrap">
+            <div class="occupancy-head"><span>Current hospital occupancy</span><span>72%</span></div>
+            <div class="occupancy-bar"><div class="occupancy-fill" style="width:72%;"></div></div>
+          </div>
+          <div class="inset emergency-tag"><span class="dot"></span>Emergency care available 24/7</div>
+        </div>
+      </div>
+
+      <!-- SECTION 8: REPORTS -->
+      <div class="raised card row-gap">
+        <div class="card-head"><div class="card-title">Recent reports</div></div>
+        <div class="reports-grid">
+
+          <div class="inset report-card">
+            <div class="report-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+            <div class="report-name">Blood test panel</div>
+            <div class="report-date">Jul 22, 2026</div>
+            <span class="report-status ready">Ready</span>
+            <button class="view-btn">View report</button>
+          </div>
+
+          <div class="inset report-card">
+            <div class="report-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 21V9M16 21V9M3 13h18"/></svg></div>
+            <div class="report-name">Chest X-ray</div>
+            <div class="report-date">Jul 18, 2026</div>
+            <span class="report-status ready">Ready</span>
+            <button class="view-btn">View report</button>
+          </div>
+
+          <div class="inset report-card">
+            <div class="report-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M12 12 6.5 17.5" stroke-width="2"/></svg></div>
+            <div class="report-name">Prescription update</div>
+            <div class="report-date">Jul 15, 2026</div>
+            <span class="report-status ready">Ready</span>
+            <button class="view-btn">View report</button>
+          </div>
+
+          <div class="inset report-card">
+            <div class="report-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
+            <div class="report-name">Doctor's notes</div>
+            <div class="report-date">Jul 27, 2026</div>
+            <span class="report-status pending">Pending</span>
+            <button class="view-btn">View report</button>
+          </div>
+
+        </div>
+
+        <div class="inset ai-report-summary">
+          <div class="ai-report-head">
+            <div class="ai-report-title">AI summary</div>
+            <span class="badge">Generated by CareSync AI</span>
+          </div>
+          <div class="ai-report-list">
+            <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Kidney function is normal</div>
+            <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Blood sugar has improved compared to last visit</div>
+            <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Cholesterol remains stable</div>
+            <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Continue current medication</div>
+            <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Next blood test recommended in 30 days</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DOCTOR NOTES PREVIEW -->
+      <div class="raised card note-card row-gap">
+        <div class="card-head"><div class="card-title">Latest doctor note</div></div>
+        <div class="note-quote">"Patient recovering well. Continue medication. Blood pressure stable. Follow-up after five days."</div>
+        <button class="note-btn">View full note</button>
+      </div>
+  </div>
+
+
+  <!-- ==================== HISTORY PANEL ==================== -->
+  <div id="panel-history" class="tab-panel">
+    <div class="dash-heading">
+      <h1>Medical history</h1>
+      <p>Ravi Mehta · 58 years · Type 2 diabetes, Hypertension, post-angioplasty recovery.</p>
+    </div>
+
+    <!-- TIMELINE + FAMILY HISTORY -->
+    <div class="bento row-gap">
+      <div class="raised card span-8">
+        <div class="card-head"><div class="card-title">Comprehensive medical timeline</div></div>
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-date">2018</div>
+            <div class="tl-title">Diagnosed — Hypertension</div>
+            <div class="tl-desc">Stage 1 hypertension identified during routine screening. Started on low-dose ACE inhibitor.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-date">2021</div>
+            <div class="tl-title">Cardiac risk assessment</div>
+            <div class="tl-desc">Elevated LDL cholesterol flagged. Statin therapy initiated alongside lifestyle guidance.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-date">Nov 2024</div>
+            <div class="tl-title">Coronary angioplasty</div>
+            <div class="tl-desc">Stent placement following mild myocardial event at Lotus Life Hospital. Full recovery achieved.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-date">2025</div>
+            <div class="tl-title">Post-angioplasty review</div>
+            <div class="tl-desc">Six-month cardiology follow-up. Stent patent, no restenosis, medication regimen continued.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-date">Mar 2026</div>
+            <div class="tl-title">Diagnosed — Type 2 diabetes</div>
+            <div class="tl-desc">Started on Metformin, dietary plan advised by endocrinology.</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot"></div>
+            <div class="tl-date">Jul 2026</div>
+            <div class="tl-title">Hospital visit — routine check-up</div>
+            <div class="tl-desc">Vitals stable, recovery on track per cardiology review.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="raised card span-4">
+        <div class="card-head"><div class="card-title">Family history</div></div>
+        <div class="inset" style="padding:16px;">
+          <div class="allergy-list">
+            <div class="allergy-chip"><svg viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span>Paternal — Coronary heart disease</span></div>
+            <div class="allergy-chip"><svg viewBox="0 0 24 24" fill="none" stroke="var(--yellow)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 2"/></svg><span>Maternal — Type 2 diabetes</span></div>
+            <div class="allergy-chip"><svg viewBox="0 0 24 24" fill="none" stroke="var(--navy-soft)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><span>Paternal — Hypertension</span></div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="raised-sm status-badge">
-      <span class="status-dot"></span>
-      <div class="status-text">
-        <div class="label">Health status</div>
-        <div class="value">Stable</div>
+
+    <!-- IMMUNIZATION + SURGERIES -->
+    <div class="bento row-gap">
+      <div class="raised card span-6">
+        <div class="card-head"><div class="card-title">Immunization &amp; vaccine record</div></div>
+        <div class="diag-item inset">
+          <div class="diag-name">Influenza (Flu) shot</div>
+          <div style="font-size:11px;color:var(--navy-soft);margin-left:12px;">Oct 2025</div>
+          <div class="diag-badge controlled"><span class="dot"></span>Up to date</div>
+        </div>
+        <div class="diag-item inset">
+          <div class="diag-name">COVID-19 booster</div>
+          <div style="font-size:11px;color:var(--navy-soft);margin-left:12px;">Jan 2026</div>
+          <div class="diag-badge controlled"><span class="dot"></span>Up to date</div>
+        </div>
+        <div class="diag-item inset">
+          <div class="diag-name">Tetanus (Td)</div>
+          <div style="font-size:11px;color:var(--navy-soft);margin-left:12px;">Jun 2019</div>
+          <div class="diag-badge monitoring"><span class="dot"></span>Due soon</div>
+        </div>
+        <div class="diag-item inset">
+          <div class="diag-name">Pneumococcal (PPSV23)</div>
+          <div style="font-size:11px;color:var(--navy-soft);margin-left:12px;">Dec 2024</div>
+          <div class="diag-badge controlled"><span class="dot"></span>Up to date</div>
+        </div>
+      </div>
+
+      <div class="raised card span-6">
+        <div class="card-head"><div class="card-title">Past surgeries &amp; procedures</div></div>
+        <div class="lab-item inset">
+          <div>
+            <div class="lab-name">Coronary angioplasty (PTCA)</div>
+            <div class="lab-range">Nov 2024 · Lotus Life Hospital</div>
+          </div>
+          <div class="lab-right">
+            <div class="lab-flag normal">Successful</div>
+          </div>
+        </div>
+        <div class="lab-item inset">
+          <div>
+            <div class="lab-name">Diagnostic coronary angiography</div>
+            <div class="lab-range">Oct 2024 · Lotus Life Hospital</div>
+          </div>
+          <div class="lab-right">
+            <div class="lab-flag normal">Fully recovered</div>
+          </div>
+        </div>
+        <div class="lab-item inset">
+          <div>
+            <div class="lab-name">Appendectomy</div>
+            <div class="lab-range">2009 · City General Hospital</div>
+          </div>
+          <div class="lab-right">
+            <div class="lab-flag normal">Fully recovered</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORICAL DOCUMENT ARCHIVE -->
+    <div class="raised card row-gap">
+      <div class="card-head"><div class="card-title">Historical document archive</div></div>
+      <div class="reports-grid">
+        <div class="inset report-card">
+          <div class="report-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+          <div class="report-name">Discharge summary</div>
+          <div class="report-date">Nov 2024</div>
+          <span class="report-status ready">Available</span>
+          <button class="view-btn">Download</button>
+        </div>
+
+        <div class="inset report-card">
+          <div class="report-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 21V9M16 21V9M3 13h18"/></svg></div>
+          <div class="report-name">Cardiac MRI scan</div>
+          <div class="report-date">2022</div>
+          <span class="report-status ready">Available</span>
+          <button class="view-btn">Download</button>
+        </div>
+
+        <div class="inset report-card">
+          <div class="report-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+          <div class="report-name">Angioplasty operative report</div>
+          <div class="report-date">Nov 2024</div>
+          <span class="report-status ready">Available</span>
+          <button class="view-btn">Download</button>
+        </div>
+
+        <div class="inset report-card">
+          <div class="report-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+          <div class="report-name">Lipid profile — 2021</div>
+          <div class="report-date">2021</div>
+          <span class="report-status ready">Available</span>
+          <button class="view-btn">Download</button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- SMART ALERTS + WELLNESS SCORE -->
-  <div class="bento" style="margin-bottom:20px;">
-    <div class="raised card span-7">
-      <div class="card-head"><div class="card-title">Smart alerts</div></div>
 
-      <div class="inset alert-item">
-        <div class="alert-icon warning"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div>
-        <div class="alert-body">
-          <div class="alert-text">Blood sugar slightly elevated today</div>
-          <div class="alert-time">Today, 8:15 AM</div>
-        </div>
-        <span class="alert-priority medium">Medium</span>
+  <!-- ==================== BILLING PANEL ==================== -->
+  <div id="panel-billing" class="tab-panel">
+    <div class="dash-heading">
+      <h1>Bill payment</h1>
+      <p>Manage your outstanding invoices and payment history.</p>
+    </div>
+
+    <div class="bento row-gap">
+      <div class="raised card span-8">
+        <div class="card-head"><div class="card-title">Outstanding balance</div></div>
+        <div class="bed-num" style="font-size:38px;">₹18,450</div>
+        <div class="hosp-row" style="border-bottom:none;padding-top:6px;"><span class="hosp-label">Due date</span><span class="hosp-value">Aug 3, 2026</span></div>
+        <p style="font-size:12px;color:var(--navy-soft);margin-top:6px;">Covers room charges, consultations, lab tests — Jul 2026.</p>
       </div>
 
-      <div class="inset alert-item">
-        <div class="alert-icon critical"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M12 12 6.5 17.5" stroke-width="2"/></svg></div>
-        <div class="alert-body">
-          <div class="alert-text">Evening medication due in 45 minutes</div>
-          <div class="alert-time">Today, 7:15 PM</div>
-        </div>
-        <span class="alert-priority high">High</span>
-      </div>
-
-      <div class="inset alert-item">
-        <div class="alert-icon info"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></div>
-        <div class="alert-body">
-          <div class="alert-text">Cardiology appointment tomorrow</div>
-          <div class="alert-time">Tomorrow, 10:30 AM</div>
-        </div>
-        <span class="alert-priority medium">Medium</span>
-      </div>
-
-      <div class="inset alert-item">
-        <div class="alert-icon info"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
-        <div class="alert-body">
-          <div class="alert-text">Blood report uploaded today</div>
-          <div class="alert-time">Today, 6:40 AM</div>
-        </div>
-        <span class="alert-priority low">Low</span>
-      </div>
-
-      <div class="inset alert-item">
-        <div class="alert-icon info"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
-        <div class="alert-body">
-          <div class="alert-text">Doctor added a new note</div>
-          <div class="alert-time">Yesterday, 5:52 PM</div>
-        </div>
-        <span class="alert-priority low">Low</span>
+      <div class="raised card span-4">
+        <div class="card-head"><div class="card-title">Payment status</div></div>
+        <div class="diag-badge critical" style="display:inline-flex;"><span class="dot"></span>Unpaid</div>
+        <div class="hosp-row" style="border-bottom:none;margin-top:10px;"><span class="hosp-label">Last payment</span><span class="hosp-value">Jul 10, 2026</span></div>
       </div>
     </div>
 
-    <div class="raised card span-5 wellness-card">
-      <div class="card-title" style="align-self:flex-start;margin-bottom:14px;">CareSync wellness score</div>
-      <div class="wellness-ring">
-        <svg width="118" height="118" viewBox="0 0 118 118">
-          <circle cx="59" cy="59" r="50" fill="none" stroke="#DDE7F0" stroke-width="11"/>
-          <circle cx="59" cy="59" r="50" fill="none" stroke="url(#wellGrad)" stroke-width="11" stroke-linecap="round" stroke-dasharray="314.2" stroke-dashoffset="34.5"/>
-          <defs><linearGradient id="wellGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#2E9E90"/><stop offset="100%" stop-color="#7FDBD3"/></linearGradient></defs>
-        </svg>
-        <div class="wellness-ring-center"><div class="num">89</div><div class="of">/ 100</div></div>
-      </div>
-      <div class="wellness-trend">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15 12 9l-6 6"/></svg>
-        Improved by 6% since last visit
-      </div>
-      <div class="wellness-note">Based on vitals, recovery pace, medication adherence, and recent lab results.</div>
-      <svg class="wellness-spark" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,24 15,22 30,20 45,18 60,14 75,10 100,6" fill="none" stroke="#2E9E90" stroke-width="2"/></svg>
-    </div>
-  </div>
-
-  <!-- AI PATIENT SNAPSHOT -->
-  <div class="raised ai-snapshot">
-    <div class="ai-snapshot-head">
-      <div class="ai-snapshot-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v3a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v4M8 22h8"/></svg>
-      </div>
-      <div class="ai-snapshot-title">AI Patient Snapshot</div>
-      <div class="ai-snapshot-tag">Generated by CareSync AI</div>
-    </div>
-    <div class="ai-snapshot-list">
-      <div class="ai-snapshot-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Overall condition: Stable</div>
-      <div class="ai-snapshot-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Diabetes under control</div>
-      <div class="ai-snapshot-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Blood pressure within normal range</div>
-      <div class="ai-snapshot-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>No medication conflicts detected</div>
-      <div class="ai-snapshot-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Recovery progressing well</div>
-      <div class="ai-snapshot-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Next follow-up in 5 days</div>
-    </div>
-  </div>
-
-  <!-- SECTION 1: VITALS -->
-  <div class="raised card" style="margin-bottom:20px;">
-    <div class="card-head">
-      <div class="card-title">Health vitals overview</div>
-    </div>
-    <div class="vitals-grid">
-
-      <div class="inset vital-card">
-        <div class="vital-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0 1 12 6a5.5 5.5 0 0 1 9.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg></div>
-        <div class="vital-label">Blood pressure</div>
-        <div class="vital-value">120<span class="vital-unit">/80 mmHg</span></div>
-        <div class="vital-range">● Normal range</div>
-      </div>
-
-      <div class="inset vital-card">
-        <div class="vital-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c3 4 6 7.5 6 12a6 6 0 0 1-12 0c0-4.5 3-8 6-12z"/></svg></div>
-        <div class="vital-label">Oxygen level</div>
-        <div class="vital-value">98<span class="vital-unit">%</span></div>
-        <div class="vital-range">● Normal range</div>
-      </div>
-
-      <div class="inset vital-card">
-        <div class="vital-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4v10.5a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0z"/></svg></div>
-        <div class="vital-label">Temperature</div>
-        <div class="vital-value">98.6<span class="vital-unit">°F</span></div>
-        <div class="vital-range">● Normal range</div>
-      </div>
-
-      <div class="inset vital-card">
-        <div class="vital-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></div>
-        <div class="vital-label">Blood sugar</div>
-        <div class="vital-value">105<span class="vital-unit">mg/dL</span></div>
-        <div class="vital-range" style="color:var(--yellow);">● Slightly elevated</div>
-      </div>
-
+    <div class="raised card row-gap">
+      <div class="card-head"><div class="card-title">Bill breakdown</div></div>
+      <div class="lab-item inset"><div><div class="lab-name">Room charges</div><div class="lab-range">10 nights · Private room</div></div><div class="lab-right"><div class="lab-value">₹9,500</div></div></div>
+      <div class="lab-item inset"><div><div class="lab-name">Doctor consultations</div><div class="lab-range">Cardiology · 4 visits</div></div><div class="lab-right"><div class="lab-value">₹4,200</div></div></div>
+      <div class="lab-item inset"><div><div class="lab-name">Lab tests</div><div class="lab-range">Blood panel, ECG, X-ray</div></div><div class="lab-right"><div class="lab-value">₹2,750</div></div></div>
+      <div class="lab-item inset"><div><div class="lab-name">Pharmacy</div><div class="lab-range">Metformin, Atorvastatin, Aspirin</div></div><div class="lab-right"><div class="lab-value">₹1,300</div></div></div>
+      <div class="lab-item inset"><div><div class="lab-name">Other hospital services</div><div class="lab-range">Housekeeping, meals</div></div><div class="lab-right"><div class="lab-value">₹700</div></div></div>
+      <div class="hosp-row" style="border-top:1px solid var(--border);border-bottom:none;margin-top:6px;padding-top:14px;"><span class="hosp-label" style="font-weight:700;">Total due</span><span class="hosp-value" style="font-size:16px;">₹18,450</span></div>
     </div>
 
-    <div class="inset disease-block">
-      <div class="disease-head">
-        <div class="disease-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 1 3 3v3a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 11a7 7 0 0 1-14 0M12 18v4M8 22h8"/></svg></div>
-        <div>
-          <div class="disease-label">Diagnosed condition</div>
-          <div class="disease-name">Type 2 diabetes mellitus</div>
+    <div class="bento row-gap">
+      <div class="raised card span-7">
+        <div class="card-head"><div class="card-title">Payment methods</div></div>
+        <div class="allergy-list" style="flex-direction:row;flex-wrap:wrap;">
+          <div class="allergy-chip nav-item active" onclick="document.querySelectorAll('#panel-billing .allergy-chip').forEach(c=>c.classList.remove('active'));this.classList.add('active');"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-dark)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg><span>Credit/Debit card</span></div>
+          <div class="allergy-chip nav-item" onclick="document.querySelectorAll('#panel-billing .allergy-chip').forEach(c=>c.classList.remove('active'));this.classList.add('active');"><svg viewBox="0 0 24 24" fill="none" stroke="var(--navy-soft)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h7l-1 8 11-14h-7l1-6z"/></svg><span>UPI</span></div>
+          <div class="allergy-chip nav-item" onclick="document.querySelectorAll('#panel-billing .allergy-chip').forEach(c=>c.classList.remove('active'));this.classList.add('active');"><svg viewBox="0 0 24 24" fill="none" stroke="var(--navy-soft)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21V9l9-6 9 6v12H3z"/><path d="M9 21v-6h6v6"/></svg><span>Net banking</span></div>
+          <div class="allergy-chip nav-item" onclick="document.querySelectorAll('#panel-billing .allergy-chip').forEach(c=>c.classList.remove('active'));this.classList.add('active');"><svg viewBox="0 0 24 24" fill="none" stroke="var(--navy-soft)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4.5 8-11V5l-8-3-8 3v6c0 6.5 8 11 8 11z"/></svg><span>Insurance claim</span></div>
         </div>
+        <button style="width:100%;margin-top:16px;padding:13px;border:none;border-radius:12px;background:linear-gradient(150deg,var(--teal),var(--teal-dark));color:#fff;font-size:13.5px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;">Pay ₹18,450</button>
       </div>
-      <div class="precaution-title">Precautions</div>
-      <div class="precaution-grid">
-        <div class="precaution-item">Monitor blood sugar levels daily</div>
-        <div class="precaution-item">Avoid sugary and processed foods</div>
-        <div class="precaution-item">Take Metformin as prescribed, after meals</div>
-        <div class="precaution-item">Maintain 30 minutes of light activity daily</div>
+
+      <div class="raised card span-5">
+        <div class="card-head"><div class="card-title">Insurance information</div></div>
+        <div class="hosp-row"><span class="hosp-label">Provider</span><span class="hosp-value">Star Health</span></div>
+        <div class="hosp-row"><span class="hosp-label">Policy number</span><span class="hosp-value">SH-448291</span></div>
+        <div class="hosp-row" style="border-bottom:none;"><span class="hosp-label">Coverage status</span><span class="diag-badge controlled"><span class="dot"></span>Active</span></div>
+        <p style="font-size:12px;color:var(--navy-soft);margin-top:8px;">Room charges &amp; consultations covered up to 80%. Pharmacy and other services are patient-payable.</p>
+      </div>
+    </div>
+
+    <div class="raised card row-gap">
+      <div class="card-head"><div class="card-title">Payment history</div></div>
+      <div class="lab-item inset">
+        <div><div class="lab-name">Jul 10, 2026 · Credit card</div><div class="lab-range">Partial payment — admission deposit</div></div>
+        <div class="lab-right"><div class="lab-value">₹6,000</div><div class="lab-flag normal">Paid</div></div>
+        <button class="view-btn" style="margin-left:16px;">Download receipt</button>
+      </div>
+      <div class="lab-item inset">
+        <div><div class="lab-name">Jun 2, 2026 · UPI</div><div class="lab-range">OPD consultation</div></div>
+        <div class="lab-right"><div class="lab-value">₹1,200</div><div class="lab-flag normal">Paid</div></div>
+        <button class="view-btn" style="margin-left:16px;">Download receipt</button>
+      </div>
+      <div class="lab-item inset">
+        <div><div class="lab-name">Nov 15, 2024 · Insurance claim</div><div class="lab-range">Angioplasty procedure</div></div>
+        <div class="lab-right"><div class="lab-value">₹1,85,000</div><div class="lab-flag normal">Paid</div></div>
+        <button class="view-btn" style="margin-left:16px;">Download receipt</button>
       </div>
     </div>
   </div>
 
-  <!-- SECTION: DIAGNOSES + ALLERGIES + LABS -->
-  <div class="bento row-gap">
 
-    <div class="raised card span-5">
-      <div class="card-head"><div class="card-title">Active diagnoses</div></div>
+  <!-- ==================== ROOM PANEL ==================== -->
+  <div id="panel-room" class="tab-panel">
+    <div class="dash-heading">
+      <h1>Room details</h1>
+      <p>Information about your assigned ward, amenities, and policies.</p>
+    </div>
 
-      <div class="inset diag-item">
-        <div class="diag-name">Type 2 Diabetes</div>
-        <div class="diag-badge controlled"><span class="dot"></span>Controlled</div>
+    <div class="bento row-gap">
+      <div class="raised card span-8">
+        <div class="card-head"><div class="card-title">Room overview</div></div>
+        <div class="hosp-row"><span class="hosp-label">Ward / department</span><span class="hosp-value">Ward B · Cardiology</span></div>
+        <div class="hosp-row"><span class="hosp-label">Room / bed number</span><span class="hosp-value">214 · Bed 2</span></div>
+        <div class="hosp-row"><span class="hosp-label">Room type</span><span class="hosp-value">Private</span></div>
+        <div class="hosp-row"><span class="hosp-label">Floor</span><span class="hosp-value">2nd floor</span></div>
+        <div class="hosp-row"><span class="hosp-label">Admission date</span><span class="hosp-value">Jul 20, 2026</span></div>
+        <div class="hosp-row"><span class="hosp-label">Expected discharge</span><span class="hosp-value">Aug 2, 2026</span></div>
       </div>
-      <div class="inset diag-item">
-        <div class="diag-name">Hypertension</div>
-        <div class="diag-badge monitoring"><span class="dot"></span>Monitoring</div>
-      </div>
-      <div class="inset diag-item">
-        <div class="diag-name">High Cholesterol</div>
-        <div class="diag-badge monitoring"><span class="dot"></span>Monitoring</div>
+
+      <div class="raised card span-4">
+        <div class="card-head"><div class="card-title">Nurse call / direct line</div></div>
+        <div class="inset bed-stat">
+          <div class="bed-num">214-2</div>
+          <div class="bed-lbl">Room extension</div>
+        </div>
+        <button class="note-btn" style="width:100%;margin-top:14px;">Call nurse station</button>
+        <div class="emergency-tag inset" style="margin-top:14px;"><span class="dot"></span>Nurse on duty: Priya Nair</div>
       </div>
     </div>
 
-    <div class="raised card span-3">
-      <div class="card-head"><div class="card-title">Allergies</div></div>
-      <div class="allergy-list">
-        <div class="inset allergy-chip"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Penicillin</span></div>
-        <div class="inset allergy-chip"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Peanuts</span></div>
-        <div class="inset allergy-chip"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Dust</span></div>
-        <div class="inset allergy-chip"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg><span>Latex</span></div>
+    <div class="bento row-gap">
+      <div class="raised card span-6">
+        <div class="card-head"><div class="card-title">Room amenities</div></div>
+        <div class="diag-item inset"><div class="diag-name">Wi-Fi</div><div class="diag-badge controlled"><span class="dot"></span>Available</div></div>
+        <div class="diag-item inset"><div class="diag-name">Air conditioning</div><div class="diag-badge controlled"><span class="dot"></span>Available</div></div>
+        <div class="diag-item inset"><div class="diag-name">Television</div><div class="diag-badge controlled"><span class="dot"></span>Available</div></div>
+        <div class="diag-item inset"><div class="diag-name">Attached bathroom</div><div class="diag-badge controlled"><span class="dot"></span>Available</div></div>
+        <div class="diag-item inset"><div class="diag-name">Refrigerator</div><div class="diag-badge monitoring"><span class="dot"></span>Not available</div></div>
+        <div class="diag-item inset"><div class="diag-name">Nurse call button</div><div class="diag-badge controlled"><span class="dot"></span>Available</div></div>
+      </div>
+
+      <div class="raised card span-6">
+        <div class="card-head"><div class="card-title">Visiting hours</div></div>
+        <div class="inset schedule-item">
+          <div class="sched-icon" style="background:var(--teal-soft);"><svg viewBox="0 0 24 24" fill="none" stroke="#20756A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></div>
+          <div><div class="sched-title">Weekdays</div><div class="sched-sub">Max 2 visitors at a time</div></div>
+          <div class="sched-time">4:00 PM<br>6:00 PM</div>
+        </div>
+        <div class="inset schedule-item">
+          <div class="sched-icon" style="background:var(--yellow-soft);"><svg viewBox="0 0 24 24" fill="none" stroke="#E3A72E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></div>
+          <div><div class="sched-title">Weekends</div><div class="sched-sub">Max 3 visitors at a time</div></div>
+          <div class="sched-time">11:00 AM<br>6:00 PM</div>
+        </div>
+        <p style="font-size:12px;color:var(--navy-soft);margin-top:4px;">No visitors permitted during doctor rounds (8–10 AM). Valid photo ID required at the front desk.</p>
       </div>
     </div>
 
-    <div class="raised card span-4">
-      <div class="card-head"><div class="card-title">Latest lab results</div></div>
-
-      <div class="inset lab-item">
-        <div>
-          <div class="lab-name">HbA1c</div>
-          <div class="lab-range">Range: 4.0 – 5.6%</div>
+    <div class="bento row-gap">
+      <div class="raised card span-7">
+        <div class="card-head"><div class="card-title">Room service &amp; requests</div></div>
+        <div class="inset med-item">
+          <div class="med-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#20756A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16M4 15h16v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4z"/></svg></div>
+          <div><div class="med-name">Extra pillow</div><div class="med-sub">Requested Jul 27</div></div>
+          <span class="med-status taken" style="margin-left:auto;">Completed</span>
         </div>
-        <div class="lab-right">
-          <div class="lab-value">6.4<span class="unit">%</span></div>
-          <div class="lab-flag watch">Watch</div>
+        <div class="inset med-item">
+          <div class="med-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#20756A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M9 9a3 3 0 0 0 4.24 4.24"/></svg></div>
+          <div><div class="med-name">Housekeeping</div><div class="med-sub">Requested Jul 28</div></div>
+          <span class="med-status pending" style="margin-left:auto;">Pending</span>
         </div>
-      </div>
-
-      <div class="inset lab-item">
-        <div>
-          <div class="lab-name">Blood sugar (fasting)</div>
-          <div class="lab-range">Range: 70 – 100 mg/dL</div>
+        <div class="inset med-item">
+          <div class="med-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#20756A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/></svg></div>
+          <div><div class="med-name">Extra blanket</div><div class="med-sub">Requested Jul 26</div></div>
+          <span class="med-status taken" style="margin-left:auto;">Completed</span>
         </div>
-        <div class="lab-right">
-          <div class="lab-value">105<span class="unit">mg/dL</span></div>
-          <div class="lab-flag watch">Watch</div>
-        </div>
-      </div>
-
-      <div class="inset lab-item">
-        <div>
-          <div class="lab-name">Creatinine</div>
-          <div class="lab-range">Range: 0.6 – 1.3 mg/dL</div>
-        </div>
-        <div class="lab-right">
-          <div class="lab-value">0.9<span class="unit">mg/dL</span></div>
-          <div class="lab-flag normal">Normal</div>
+        <div style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;">
+          <button class="view-btn">Request housekeeping</button>
+          <button class="view-btn">Request extra bedding</button>
+          <button class="view-btn">Report an issue</button>
         </div>
       </div>
 
-      <div class="inset lab-item">
-        <div>
-          <div class="lab-name">Hemoglobin</div>
-          <div class="lab-range">Range: 13.0 – 17.0 g/dL</div>
+      <div class="raised card span-5">
+        <div class="card-head"><div class="card-title">Meal schedule</div></div>
+        <div class="lab-item inset">
+          <div><div class="lab-name">Breakfast</div><div class="lab-range">Diabetic-friendly · oats, boiled egg</div></div>
+          <div class="lab-right"><div class="lab-value">7:30 AM</div></div>
         </div>
-        <div class="lab-right">
-          <div class="lab-value">14.2<span class="unit">g/dL</span></div>
-          <div class="lab-flag normal">Normal</div>
+        <div class="lab-item inset">
+          <div><div class="lab-name">Lunch</div><div class="lab-range">Low-GI · dal, roti, steamed veg</div></div>
+          <div class="lab-right"><div class="lab-value">1:00 PM</div></div>
         </div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- SECTION: HEALTH TRENDS -->
-  <div class="raised card row-gap">
-    <div class="card-head">
-      <div class="card-title">Health trends</div>
-      <div style="font-size:11.5px;color:var(--navy-soft);font-weight:500;">Last 30 days</div>
-    </div>
-    <div class="trends-grid">
-
-      <div class="inset trend-card">
-        <div class="trend-head"><span class="trend-label">Blood pressure</span></div>
-        <div class="trend-value">120/80</div>
-        <svg class="trend-chart" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,16 15,18 30,14 45,17 60,12 75,15 100,10" fill="none" stroke="#2E9E90" stroke-width="2"/></svg>
-        <div class="trend-sub">Stable range</div>
-      </div>
-
-      <div class="inset trend-card">
-        <div class="trend-head"><span class="trend-label">Blood sugar</span></div>
-        <div class="trend-value">105 mg/dL</div>
-        <svg class="trend-chart" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,10 15,14 30,12 45,20 60,18 75,22 100,17" fill="none" stroke="#E3A72E" stroke-width="2"/></svg>
-        <div class="trend-sub">Slightly elevated</div>
-      </div>
-
-      <div class="inset trend-card">
-        <div class="trend-head"><span class="trend-label">Heart rate</span></div>
-        <div class="trend-value">72 BPM</div>
-        <svg class="trend-chart" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,18 15,16 30,19 45,15 60,17 75,13 100,16" fill="none" stroke="#2E9E90" stroke-width="2"/></svg>
-        <div class="trend-sub">Within normal range</div>
-      </div>
-
-      <div class="inset trend-card">
-        <div class="trend-head"><span class="trend-label">Weight</span></div>
-        <div class="trend-value">78.4 kg</div>
-        <svg class="trend-chart" viewBox="0 0 100 30" preserveAspectRatio="none"><polyline points="0,10 15,11 30,13 45,14 60,16 75,17 100,19" fill="none" stroke="#2E9E90" stroke-width="2"/></svg>
-        <div class="trend-sub">Gradual improvement</div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- SECTION 2 + 3: RECOVERY + DOCTOR -->
-  <div class="bento">
-    <div class="raised card span-7 recovery-card">
-      <div class="ring-wrap">
-        <svg width="132" height="132" viewBox="0 0 132 132">
-          <circle cx="66" cy="66" r="56" fill="none" stroke="#DDE7F0" stroke-width="12"/>
-          <circle cx="66" cy="66" r="56" fill="none" stroke="url(#ringGrad)" stroke-width="12" stroke-linecap="round" stroke-dasharray="351.8" stroke-dashoffset="88"/>
-          <defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#2E9E90"/><stop offset="100%" stop-color="#7FDBD3"/></linearGradient></defs>
-        </svg>
-        <div class="ring-center"><div class="num">75%</div><div class="lbl">Recovery</div></div>
-      </div>
-      <div class="recovery-details">
-        <div class="card-title" style="margin-bottom:10px;">Recovery progress</div>
-        <div class="stage">Stage 3 · Active rehabilitation</div>
-        <div class="eta">Estimated recovery — 12 days remaining</div>
-        <div class="stage-track">
-          <div class="stage-seg filled"></div>
-          <div class="stage-seg filled"></div>
-          <div class="stage-seg filled"></div>
-          <div class="stage-seg empty"></div>
+        <div class="lab-item inset">
+          <div><div class="lab-name">Dinner</div><div class="lab-range">Low-sodium · grilled fish, salad</div></div>
+          <div class="lab-right"><div class="lab-value">7:30 PM</div></div>
         </div>
       </div>
     </div>
 
-    <div class="raised card span-5">
-      <div class="card-head"><div class="card-title">Care team</div></div>
-      <div class="team-grid">
-
-        <div class="inset team-card">
-          <div class="team-avatar"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></div>
-          <div class="team-name">Dr. Sarah Williams</div>
-          <div class="team-role">Primary doctor</div>
-          <div class="team-avail">Mon–Fri, 9–4 PM</div>
-        </div>
-
-        <div class="inset team-card">
-          <div class="team-avatar"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></div>
-          <div class="team-name">Nurse Priya Nair</div>
-          <div class="team-role">Assigned nurse</div>
-          <div class="team-avail">On duty today</div>
-        </div>
-
-        <div class="inset team-card">
-          <div class="team-avatar"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></div>
-          <div class="team-name">Dr. Amit Rao</div>
-          <div class="team-role">Dietitian</div>
-          <div class="team-avail">Tue, Thu · 2–5 PM</div>
-        </div>
-
-        <div class="inset team-card">
-          <div class="team-avatar"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></div>
-          <div class="team-name">Meera Iyer</div>
-          <div class="team-role">Physiotherapist</div>
-          <div class="team-avail">Mon, Wed, Fri</div>
-        </div>
-
-        <div class="inset team-card">
-          <div class="team-avatar"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></div>
-          <div class="team-name">Karan Shah</div>
-          <div class="team-role">Pharmacist</div>
-          <div class="team-avail">Available 24/7</div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- SECTION: HOSPITAL JOURNEY -->
-  <div class="raised card row-gap">
-    <div class="card-head"><div class="card-title">Hospital journey</div></div>
-    <div class="journey-track">
-      <div class="journey-stage done">
-        <div class="journey-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
-        <div class="journey-name">Registration</div>
-      </div>
-      <div class="journey-stage done">
-        <div class="journey-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
-        <div class="journey-name">Vitals</div>
-      </div>
-      <div class="journey-stage current">
-        <div class="journey-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></div>
-        <div class="journey-name">Consultation</div>
-      </div>
-      <div class="journey-stage">
-        <div class="journey-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l1 4H8l1-4z"/><path d="M6 7h12l-1 13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7z"/></svg></div>
-        <div class="journey-name">Laboratory</div>
-      </div>
-      <div class="journey-stage">
-        <div class="journey-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M12 12 6.5 17.5" stroke-width="2"/></svg></div>
-        <div class="journey-name">Pharmacy</div>
-      </div>
-      <div class="journey-stage">
-        <div class="journey-dot"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-6h6v6"/></svg></div>
-        <div class="journey-name">Discharge</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SECTION 4 + 5: SCHEDULE + MEDICINES -->
-  <div class="bento row-gap">
-    <div class="raised card span-4">
-      <div class="card-head"><div class="card-title">Upcoming schedule</div></div>
-
-      <div class="inset schedule-item">
-        <div class="sched-icon" style="background:var(--teal-soft);"><svg viewBox="0 0 24 24" fill="none" stroke="#20756A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg></div>
-        <div>
-          <div class="sched-title">Consultation — Dr. Sarah Williams</div>
-          <div class="sched-sub">Cardiology follow-up</div>
-        </div>
-        <div class="sched-time">Tomorrow<br>10:30 AM</div>
-      </div>
-
-      <div class="inset schedule-item">
-        <div class="sched-icon" style="background:var(--yellow-soft);"><svg viewBox="0 0 24 24" fill="none" stroke="#E3A72E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l1 4H8l1-4z"/><path d="M6 7h12l-1 13a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L6 7z"/></svg></div>
-        <div>
-          <div class="sched-title">Blood test — Lipid panel</div>
-          <div class="sched-sub">Lab, ground floor</div>
-        </div>
-        <div class="sched-time">Fri, Jul 31<br>8:00 AM</div>
-      </div>
-
-      <div class="inset schedule-item">
-        <div class="sched-icon" style="background:var(--teal-soft);"><svg viewBox="0 0 24 24" fill="none" stroke="#20756A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></div>
-        <div>
-          <div class="sched-title">Recovery review</div>
-          <div class="sched-sub">Follow-up check-in</div>
-        </div>
-        <div class="sched-time">Aug 9<br>11:00 AM</div>
-      </div>
-    </div>
-
-    <div class="raised card span-4">
-      <div class="card-head"><div class="card-title">Medicines assigned</div></div>
-
-      <div class="inset med-item">
-        <div class="med-check checked" onclick="this.classList.toggle('checked')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
-        <div class="med-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M12 12 6.5 17.5" stroke-width="2"/></svg></div>
-        <div>
-          <div class="med-name">Metformin — 500mg</div>
-          <div class="med-sub">After breakfast, daily</div>
-        </div>
-        <div class="med-right">
-          <div class="med-days">18 days left</div>
-          <span class="med-status taken">Taken</span>
-        </div>
-      </div>
-
-      <div class="inset med-item">
-        <div class="med-check" onclick="this.classList.toggle('checked')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
-        <div class="med-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M12 12 6.5 17.5" stroke-width="2"/></svg></div>
-        <div>
-          <div class="med-name">Atorvastatin — 10mg</div>
-          <div class="med-sub">After dinner, daily</div>
-        </div>
-        <div class="med-right">
-          <div class="med-days">9 days left</div>
-          <span class="med-status pending">Pending</span>
-        </div>
-      </div>
-
-      <div class="inset med-item">
-        <div class="med-check checked" onclick="this.classList.toggle('checked')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
-        <div class="med-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M12 12 6.5 17.5" stroke-width="2"/></svg></div>
-        <div>
-          <div class="med-name">Aspirin — 75mg</div>
-          <div class="med-sub">Morning, daily</div>
-        </div>
-        <div class="med-right">
-          <div class="med-days">30 days left</div>
-          <span class="med-status taken">Taken</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="raised card span-4">
-      <div class="card-head"><div class="card-title">Daily health goals</div></div>
-
-      <div class="goal-item">
-        <div class="goal-head">
-          <div class="goal-label"><div class="goal-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2c3 4 6 7.5 6 12a6 6 0 0 1-12 0c0-4.5 3-8 6-12z"/></svg></div>Water intake</div>
-          <div class="goal-value">6 / 8 glasses</div>
-        </div>
-        <div class="goal-bar"><div class="goal-fill" style="width:75%;"></div></div>
-      </div>
-
-      <div class="goal-item">
-        <div class="goal-head">
-          <div class="goal-label"><div class="goal-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></div>Sleep</div>
-          <div class="goal-value">7 / 8 hours</div>
-        </div>
-        <div class="goal-bar"><div class="goal-fill" style="width:87%;"></div></div>
-      </div>
-
-      <div class="goal-item">
-        <div class="goal-head">
-          <div class="goal-label"><div class="goal-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4" r="2"/><path d="M8 22l2-9-3-2 1-5 4 1 2 3h3M6 13l-2 3M14 13l3 2 2 6"/></svg></div>Walking</div>
-          <div class="goal-value">5,200 / 8,000 steps</div>
-        </div>
-        <div class="goal-bar"><div class="goal-fill" style="width:65%;"></div></div>
-      </div>
-
-      <div class="goal-item">
-        <div class="goal-head">
-          <div class="goal-label"><div class="goal-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M12 12 6.5 17.5" stroke-width="2"/></svg></div>Medicine</div>
-          <div class="goal-value">3 / 4 completed</div>
-        </div>
-        <div class="goal-bar"><div class="goal-fill" style="width:75%;"></div></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SECTION 6 + 7: HISTORY + HOSPITAL -->
-  <div class="bento row-gap">
-    <div class="raised card span-7">
-      <div class="card-head"><div class="card-title">Medical history</div></div>
-      <div class="timeline">
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-date">Mar 2026</div>
-          <div class="tl-title">Diagnosed — Type 2 diabetes</div>
-          <div class="tl-desc">Started on Metformin, dietary plan advised by endocrinology.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-date">Nov 2024</div>
-          <div class="tl-title">Coronary angioplasty</div>
-          <div class="tl-desc">Stent placement following mild myocardial event. Full recovery.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-date">Ongoing</div>
-          <div class="tl-title">Allergy on record</div>
-          <div class="tl-desc">Penicillin — noted in chart, alternate antibiotics prescribed.</div>
-        </div>
-        <div class="tl-item">
-          <div class="tl-dot"></div>
-          <div class="tl-date">Jul 2026</div>
-          <div class="tl-title">Hospital visit — routine check-up</div>
-          <div class="tl-desc">Vitals stable, recovery on track per cardiology review.</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="raised card span-5">
-      <div class="card-head"><div class="card-title">Hospital information</div></div>
-      <div class="hosp-row"><span class="hosp-label">Assigned hospital</span><span class="hosp-value">Lotus Life Hospital</span></div>
-      <div class="hosp-row"><span class="hosp-label">Department</span><span class="hosp-value">Cardiology</span></div>
-      <div class="hosp-row"><span class="hosp-label">Room</span><span class="hosp-value">Ward B · 214</span></div>
-      <div class="bed-stats">
-        <div class="inset bed-stat"><div class="bed-num">12</div><div class="bed-lbl">General beds</div></div>
-        <div class="inset bed-stat"><div class="bed-num">3</div><div class="bed-lbl">ICU beds</div></div>
-        <div class="inset bed-stat"><div class="bed-num">5</div><div class="bed-lbl">Emergency beds</div></div>
-      </div>
-      <div class="occupancy-wrap">
-        <div class="occupancy-head"><span>Current hospital occupancy</span><span>72%</span></div>
-        <div class="occupancy-bar"><div class="occupancy-fill" style="width:72%;"></div></div>
-      </div>
-      <div class="inset emergency-tag"><span class="dot"></span>Emergency care available 24/7</div>
-    </div>
-  </div>
-
-  <!-- SECTION 8: REPORTS -->
-  <div class="raised card row-gap">
-    <div class="card-head"><div class="card-title">Recent reports</div></div>
-    <div class="reports-grid">
-
-      <div class="inset report-card">
-        <div class="report-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
-        <div class="report-name">Blood test panel</div>
-        <div class="report-date">Jul 22, 2026</div>
-        <span class="report-status ready">Ready</span>
-        <button class="view-btn">View report</button>
-      </div>
-
-      <div class="inset report-card">
-        <div class="report-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M8 21V9M16 21V9M3 13h18"/></svg></div>
-        <div class="report-name">Chest X-ray</div>
-        <div class="report-date">Jul 18, 2026</div>
-        <span class="report-status ready">Ready</span>
-        <button class="view-btn">View report</button>
-      </div>
-
-      <div class="inset report-card">
-        <div class="report-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="6" rx="3" transform="rotate(-45 12 12)"/><path d="M12 12 6.5 17.5" stroke-width="2"/></svg></div>
-        <div class="report-name">Prescription update</div>
-        <div class="report-date">Jul 15, 2026</div>
-        <span class="report-status ready">Ready</span>
-        <button class="view-btn">View report</button>
-      </div>
-
-      <div class="inset report-card">
-        <div class="report-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div>
-        <div class="report-name">Doctor's notes</div>
-        <div class="report-date">Jul 27, 2026</div>
-        <span class="report-status pending">Pending</span>
-        <button class="view-btn">View report</button>
-      </div>
-
-    </div>
-
-    <div class="inset ai-report-summary">
-      <div class="ai-report-head">
-        <div class="ai-report-title">AI summary</div>
-        <span class="badge">Generated by CareSync AI</span>
-      </div>
+    <div class="raised card row-gap">
+      <div class="card-head"><div class="card-title">Discharge readiness</div></div>
       <div class="ai-report-list">
-        <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Kidney function is normal</div>
-        <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Blood sugar has improved compared to last visit</div>
-        <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Cholesterol remains stable</div>
-        <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Continue current medication</div>
-        <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Next blood test recommended in 30 days</div>
+        <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Final cardiology review completed</div>
+        <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Medication reconciliation done</div>
+        <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="var(--navy-faint)" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>Discharge summary pending</div>
+        <div class="item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Follow-up appointment scheduled</div>
       </div>
     </div>
-  </div>
-
-  <!-- DOCTOR NOTES PREVIEW -->
-  <div class="raised card note-card row-gap">
-    <div class="card-head"><div class="card-title">Latest doctor note</div></div>
-    <div class="note-quote">"Patient recovering well. Continue medication. Blood pressure stable. Follow-up after five days."</div>
-    <button class="note-btn">View full note</button>
   </div>
 
 </div>
+
 
 <!-- SECTION 9: AI ASSISTANT -->
 <button class="ai-fab" aria-label="Open CareSync AI Assistant">
@@ -1185,11 +1567,29 @@
 </div>
 
 <script>
+  // AI Assistant Toggle
   const fab = document.querySelector('.ai-fab');
   const panel = document.getElementById('aiPanel');
   fab.addEventListener('click', () => {
     panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
   });
+
+  // Tab Switching Logic
+  function switchTab(event, panelId) {
+    // Remove active state from all nav items
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => item.classList.remove('active'));
+    
+    // Add active state to the clicked item
+    event.currentTarget.classList.add('active');
+
+    // Hide all tab panels
+    const panels = document.querySelectorAll('.tab-panel');
+    panels.forEach(panel => panel.classList.remove('active'));
+
+    // Show the target panel
+    document.getElementById(panelId).classList.add('active');
+  }
 </script>
 
 </body>
