@@ -32,10 +32,10 @@ const ROLES = [
   },
   {
     id: 'nurse',
-    title: 'Nurse Station',
+    title: 'Nurses / Staff',
     icon: UserCheck,
     badgeColor: 'bg-indigo-100 text-indigo-800 border-indigo-200',
-    description: 'Care coordination & medication administration tasks.',
+    description: 'Care coordination & medication administration tasks for nursing & hospital staff.',
     features: [
       'Assigned ward & bed patient lists',
       'Automated medication tasks & alerts',
@@ -54,18 +54,6 @@ const ROLES = [
       'Department workload & waiting time monitoring',
       'Staff & resource allocation tracking',
       'Operational workflow dashboards'
-    ]
-  },
-  {
-    id: 'owner',
-    title: 'Executive / Owner',
-    icon: ShieldAlert,
-    badgeColor: 'bg-purple-100 text-purple-800 border-purple-200',
-    description: 'High-level hospital intelligence and financial performance insights.',
-    features: [
-      'Hospital intelligence & growth analytics',
-      'Executive performance & revenue insights',
-      'Multi-department operational health'
     ]
   }
 ];
@@ -220,7 +208,7 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, onOpenDoct
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
               Select Role to Login
             </label>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {ROLES.map((role) => {
                 const Icon = role.icon;
                 const isActive = selectedRole === role.id;
@@ -229,14 +217,14 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, onOpenDoct
                     key={role.id}
                     type="button"
                     onClick={() => handleRoleSelect(role.id)}
-                    className={`flex flex-col items-center justify-center p-3 rounded-2xl border text-center transition-all ${
+                    className={`flex flex-col items-center justify-center p-2.5 rounded-2xl border text-center transition-all ${
                       isActive 
                         ? 'bg-teal-600 text-white border-teal-600 shadow-md shadow-teal-600/25 scale-[1.02]' 
                         : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
                     }`}
                   >
-                    <Icon className={`w-5 h-5 mb-1.5 ${isActive ? 'text-white' : 'text-teal-600'}`} />
-                    <span className="text-xs font-semibold leading-tight">{role.title.split(' ')[0]}</span>
+                    <Icon className={`w-5 h-5 mb-1 ${isActive ? 'text-white' : 'text-teal-600'}`} />
+                    <span className="text-[11px] font-bold leading-tight">{role.title.replace(' Portal', '').replace(' Station', '')}</span>
                   </button>
                 );
               })}
