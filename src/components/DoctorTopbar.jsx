@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { Menu, Search, Bell, Calendar, Sparkles, X, CheckCircle2, HeartPulse, ArrowLeft } from 'lucide-react';
+import { Menu, Search, Bell, Calendar, Sparkles, X, CheckCircle2, HeartPulse, ArrowLeft, MessageSquare } from 'lucide-react';
 import { DOCTOR, NOTIFICATIONS } from '../data/doctorDemoData';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFilter, onBackToLanding }) {
+export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFilter, onBackToLanding, setActiveNav }) {
   const [notifOpen, setNotifOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [unreadList, setUnreadList] = useState(NOTIFICATIONS);
@@ -86,6 +86,18 @@ export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFil
               </button>
             )}
           </div>
+
+          {/* Chat Button */}
+          {setActiveNav && (
+            <button
+              onClick={() => setActiveNav('chat')}
+              className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center hover:bg-slate-50 shadow-xs transition-all active:scale-95"
+              title="Messages"
+              aria-label="Open Messages"
+            >
+              <MessageSquare size={16} className="text-[#0F172A]" />
+            </button>
+          )}
 
           {/* Notification Button & Popup */}
           <div className="relative">

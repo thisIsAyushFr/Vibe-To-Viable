@@ -139,6 +139,7 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
             searchFilter={searchFilter}
             setSearchFilter={setSearchFilter}
             onBackToLanding={onBackToLanding}
+            setActiveNav={setActiveNav}
           />
 
           <div className="px-3 sm:px-8 py-4 sm:py-6 w-full max-w-full min-w-0 overflow-x-hidden">
