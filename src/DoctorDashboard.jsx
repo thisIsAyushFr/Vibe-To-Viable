@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Users, CheckSquare, Clock3, ClipboardList, LayoutGrid, ArrowLeft
+  Users, CheckSquare, Clock3, ClipboardList, LayoutGrid, ArrowLeft, Send,
+  Activity, Bed, Calendar, Bot, BrainCircuit, Clock, Settings, MessageSquare, LogOut, X
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Imports from modular data & components
 import { DOCTOR, PATIENTS, INITIAL_QUEUE, INITIAL_TASKS } from './data/doctorDemoData';
-import DoctorSidebar, { NAV_ITEMS } from './components/DoctorSidebar';
 import DoctorTopbar from './components/DoctorTopbar';
 import StatCard from './components/StatCard';
 import NextPatientCard from './components/NextPatientCard';
@@ -26,6 +26,20 @@ import OperationTheaterView from './components/OperationTheaterView';
 import AdmittedPatientsView from './components/AdmittedPatientsView';
 import DoctorSettings from './components/DoctorSettings';
 
+export const NAV_ITEMS = [
+  { id: 'overview', label: 'Overview', icon: LayoutGrid },
+  { id: 'ot-schedules', label: 'Operation Theater', icon: Activity },
+  { id: 'admitted-patients', label: 'Admitted Patients & Beds', icon: Bed },
+  { id: 'appointments', label: 'Appointments', icon: Calendar },
+  { id: 'outpatient-queue', label: 'Outpatient Queue', icon: Users },
+  { id: 'ai-assistant', label: 'AI Clinical Assistant', icon: Bot, badge: 'AI' },
+  { id: 'tasks', label: 'Tasks', icon: CheckSquare },
+  { id: 'workload', label: 'Workload Intelligence', icon: BrainCircuit },
+  { id: 'opd-schedule', label: 'OPD Schedule', icon: Clock },
+  { id: 'chat', label: 'Messages', icon: MessageSquare }, // <-- Included here natively!
+  { id: 'settings', label: 'Settings', icon: Settings },
+];
+
 export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
   const [activeNav, setActiveNav] = useState('overview');
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -37,7 +51,6 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
     Object.fromEntries(INITIAL_QUEUE.map((q) => [q.id, q.status]))
   );
 
-  // Dynamic Next Patient Promotion Logic
   const activeQueueItem = INITIAL_QUEUE.find(
     (q) => (queueStatuses[q.id] || q.status) !== 'completed'
   );
@@ -49,7 +62,6 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
 
   const selectedPatient = PATIENTS[selectedPatientId] || PATIENTS.rahul;
 
-  // Dynamic Metrics
   const completedQueueCount = Object.values(queueStatuses).filter((s) => s === 'completed').length;
   const pendingCount = tasks.filter((t) => !t.done).length;
   const waitingCount = Object.values(queueStatuses).filter((s) => s === 'waiting').length;
@@ -105,21 +117,15 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
 
   return (
     <div className="min-h-screen w-full max-w-full bg-[#F0FDFA] relative selection:bg-[#14B8A6] selection:text-white overflow-x-hidden">
-      {/* 🌟 VIBRANT AURORA GLASSMORPHISM BACKDROP MESH 🌟 */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        {/* Floating Teal Aurora Orb */}
-        <div className="absolute -top-40 -left-40 w-[650px] h-[650px] rounded-full bg-gradient-to-br from-[#0F766E]/25 via-[#14B8A6]/20 to-transparent blur-[120px] aurora-orb-1" />
-        
-        {/* Floating Sky Blue & Cyan Aurora Orb */}
-        <div className="absolute top-1/4 -right-40 w-[600px] h-[600px] rounded-full bg-gradient-to-bl from-[#38BDF8]/30 via-[#14B8A6]/20 to-transparent blur-[130px] aurora-orb-2" />
-        
-        {/* Bottom Emerald Aurora Glow */}
+        <div className="absolute -top-40 -left-40 w-[650px] h-[650px] rounded-full bg-gradient-to-br from-[#0F766E]/25 via-[#14B8A6]/20 to-transparent blur-[120px]" />
+        <div className="absolute top-1/4 -right-40 w-[600px] h-[600px] rounded-full bg-gradient-to-bl from-[#38BDF8]/30 via-[#14B8A6]/20 to-transparent blur-[130px]" />
         <div className="absolute -bottom-40 left-1/3 w-[700px] h-[700px] rounded-full bg-gradient-to-t from-[#14B8A6]/20 via-[#0F766E]/15 to-transparent blur-[140px]" />
       </div>
 
       <div className="relative z-10 flex w-full max-w-full overflow-x-hidden">
-        {/* SIDEBAR */}
-        <DoctorSidebar
+        {/* NATIVE INTEGRATED SIDEBAR */}
+        <InlineDoctorSidebar
           activeNav={activeNav}
           setActiveNav={setActiveNav}
           drawerOpen={drawerOpen}
@@ -127,9 +133,7 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
           onBackToLanding={onBackToLanding}
         />
 
-        {/* MAIN DASHBOARD CONTENT AREA */}
         <main className="flex-1 lg:ml-64 min-h-screen pb-12 w-full max-w-full min-w-0 overflow-x-hidden">
-          {/* TOPBAR */}
           <DoctorTopbar
             setDrawerOpen={setDrawerOpen}
             searchFilter={searchFilter}
@@ -137,7 +141,6 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
             onBackToLanding={onBackToLanding}
           />
 
-          {/* PAGE CONTENT */}
           <div className="px-3 sm:px-8 py-4 sm:py-6 w-full max-w-full min-w-0 overflow-x-hidden">
             {activeNav === 'ot-schedules' ? (
               <OperationTheaterView />
@@ -145,6 +148,8 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
               <AdmittedPatientsView />
             ) : activeNav === 'settings' ? (
               <DoctorSettings onLogout={onLogout} />
+            ) : activeNav === 'chat' ? (
+              <DedicatedChatView selectedPatient={selectedPatient} />
             ) : activeNav !== 'overview' ? (
               <PlaceholderView
                 navId={activeNav}
@@ -152,24 +157,13 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
               />
             ) : (
               <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-full min-w-0">
-                {/* 1. TOP SUMMARY CARDS */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
                   {stats.map((s, idx) => (
-                    <StatCard
-                      key={s.label}
-                      label={s.label}
-                      value={s.value}
-                      icon={s.icon}
-                      color={s.color}
-                      trend={s.trend}
-                      delay={idx * 0.05}
-                    />
+                    <StatCard key={s.label} {...s} delay={idx * 0.05} />
                   ))}
                 </div>
 
-                {/* 2. BENTO GRID LAYOUT */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 w-full min-w-0">
-                  {/* NEXT PATIENT CARD (Priority 1) */}
                   <div id="next-patient" className="lg:col-span-6 scroll-mt-24 min-w-0">
                     <NextPatientCard
                       nextPatient={nextPatient}
@@ -186,12 +180,10 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
                     />
                   </div>
 
-                  {/* AI PATIENT BRIEF CARD (Priority 2) */}
                   <div id="ai-brief" className="lg:col-span-6 scroll-mt-24 min-w-0">
                     <AIPatientBrief />
                   </div>
 
-                  {/* OPERATION THEATER QUICK ACCESS (Bento Widget) */}
                   <div className="lg:col-span-6 min-w-0">
                     <div 
                       onClick={() => setActiveNav('ot-schedules')}
@@ -212,7 +204,6 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
                     </div>
                   </div>
 
-                  {/* ADMITTED PATIENTS QUICK ACCESS (Bento Widget) */}
                   <div className="lg:col-span-6 min-w-0">
                     <div 
                       onClick={() => setActiveNav('admitted-patients')}
@@ -233,35 +224,26 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
                     </div>
                   </div>
 
-                  {/* TODAY'S PATIENT QUEUE (Priority 3) */}
                   <div id="queue" className="lg:col-span-7 scroll-mt-24 min-w-0">
                     <PatientQueue
                       queue={INITIAL_QUEUE}
                       queueStatuses={queueStatuses}
                       selectedPatientId={selectedPatientId}
-                      onSelectPatient={(id) => {
-                        setSelectedPatientId(id);
-                      }}
+                      onSelectPatient={setSelectedPatientId}
                       queueFilter={queueFilter}
                       setQueueFilter={setQueueFilter}
                       onMarkDone={markQueueDone}
                     />
                   </div>
 
-                  {/* PENDING TASKS (Priority 4) */}
                   <div id="tasks" className="lg:col-span-5 scroll-mt-24 min-w-0">
-                    <PendingTasks
-                      tasks={tasks}
-                      onToggleTask={toggleTask}
-                    />
+                    <PendingTasks tasks={tasks} onToggleTask={toggleTask} />
                   </div>
 
-                  {/* PATIENT SNAPSHOT (Priority 5a) */}
                   <div id="snapshot" className="lg:col-span-6 scroll-mt-24 min-w-0">
                     <PatientSnapshot patient={selectedPatient} />
                   </div>
 
-                  {/* MEDICAL TIMELINE (Priority 5b) */}
                   <div id="timeline" className="lg:col-span-6 scroll-mt-24 min-w-0">
                     <MedicalTimeline
                       timeline={selectedPatient.timeline}
@@ -269,34 +251,28 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
                     />
                   </div>
 
-                  {/* DOCUMENTATION ASSISTANT (Priority 6) */}
                   <div id="doc-assistant" className="lg:col-span-6 scroll-mt-24 min-w-0">
                     <DocumentationAssistant />
                   </div>
 
-                  {/* PATIENT CHAT (Priority 6b) */}
                   <div id="patient-chat" className="lg:col-span-6 scroll-mt-24 min-w-0">
                     <PatientChat selectedPatient={selectedPatient} />
                   </div>
 
-                  {/* WORKLOAD INTELLIGENCE (Priority 7a) */}
                   <div id="workload" className="lg:col-span-6 scroll-mt-24 min-w-0">
                     <WorkloadCard pendingCount={pendingCount} />
                   </div>
 
-                  {/* BURNOUT RISK INDICATOR (Priority 7b) */}
                   <div id="burnout" className="lg:col-span-6 scroll-mt-24 min-w-0">
                     <WorkloadIndicator />
                   </div>
 
-                  {/* TODAY'S SCHEDULE (Priority 8a) */}
                   <div id="schedule" className="lg:col-span-6 scroll-mt-24 min-w-0">
                     <DoctorSchedule />
                   </div>
 
-                  {/* QUICK ACTIONS (Priority 8b) */}
                   <div id="quick-actions" className="lg:col-span-12 scroll-mt-24 min-w-0">
-                    <QuickActions onActionClick={(id) => scrollToId(id)} />
+                    <QuickActions onActionClick={scrollToId} />
                   </div>
                 </div>
               </div>
@@ -308,7 +284,187 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
   );
 }
 
-/* DEMO PLACEHOLDER VIEW FOR OTHER SIDEBAR NAV ITEMS */
+/* =========================================================================
+   INLINE SIDEBAR COMPONENT (Guarantees the Chat button always renders)
+   ========================================================================= */
+function InlineDoctorSidebar({ activeNav, setActiveNav, drawerOpen, setDrawerOpen, onBackToLanding }) {
+  return (
+    <>
+      <AnimatePresence>
+        {drawerOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setDrawerOpen(false)}
+            className="fixed inset-0 bg-slate-900/50 z-40 lg:hidden backdrop-blur-sm"
+          />
+        )}
+      </AnimatePresence>
+
+      <motion.aside
+        className={`fixed top-0 left-0 h-full w-64 bg-white border-r border-teal-100 shadow-xl z-50 flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          drawerOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="p-5 flex items-center justify-between border-b border-slate-100">
+          <div className="flex items-center gap-3 text-teal-900 font-black text-xl tracking-tight">
+            <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center shadow-md">
+              <Activity size={18} strokeWidth={3} />
+            </div>
+            CareSync
+          </div>
+          <button 
+            onClick={() => setDrawerOpen(false)} 
+            className="lg:hidden text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 p-1.5 rounded-lg transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto py-5 px-3 space-y-1">
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeNav === item.id;
+            
+            return (
+              <button
+                key={item.id}
+                onClick={() => { 
+                  setActiveNav(item.id); 
+                  setDrawerOpen(false); 
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-200 group ${
+                  isActive 
+                    ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/25' 
+                    : 'text-slate-500 hover:bg-teal-50 hover:text-teal-800'
+                }`}
+              >
+                <Icon 
+                  size={20} 
+                  className={`${isActive ? 'text-white' : 'text-slate-400 group-hover:text-teal-600'} transition-colors`} 
+                />
+                {item.label}
+                {item.badge && (
+                  <span className={`ml-auto text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-black ${
+                    isActive 
+                      ? 'bg-white/20 text-white border border-white/30' 
+                      : 'bg-blue-100 text-blue-700 border border-blue-200'
+                  }`}>
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="p-4 border-t border-slate-100 bg-slate-50">
+          <button 
+            onClick={onBackToLanding}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 shadow-sm hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all active:scale-95"
+          >
+            <LogOut size={16} />
+            Exit Portal
+          </button>
+        </div>
+      </motion.aside>
+    </>
+  );
+}
+
+/* =========================================================================
+   DEDICATED CHAT VIEW WITH LOCALSTORAGE SYNC
+   ========================================================================= */
+function DedicatedChatView({ selectedPatient }) {
+  const CHAT_KEY = 'caresync_shared_chat';
+  
+  const [messages, setMessages] = useState(() => {
+    const saved = localStorage.getItem(CHAT_KEY);
+    return saved ? JSON.parse(saved) : [
+      { id: 1, sender: 'patient', text: 'Hello Doctor, I wanted to ask about my prescription.', time: '10:05 AM' },
+      { id: 2, sender: 'doctor', text: 'Hi Ravi, sure. What seems to be the issue?', time: '10:12 AM' }
+    ];
+  });
+  
+  const [input, setInput] = useState('');
+
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === CHAT_KEY && e.newValue) {
+        setMessages(JSON.parse(e.newValue));
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  const handleSend = () => {
+    if (!input.trim()) return;
+    
+    const newMsg = {
+      id: Date.now(),
+      sender: 'doctor',
+      text: input,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+    
+    const updated = [...messages, newMsg];
+    setMessages(updated);
+    localStorage.setItem(CHAT_KEY, JSON.stringify(updated));
+    setInput('');
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-3xl shadow-lg border border-teal-100 flex flex-col h-[75vh] w-full max-w-4xl mx-auto overflow-hidden"
+    >
+      <div className="bg-gradient-to-r from-teal-800 to-teal-900 p-5 text-white flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold">Secure Messages</h2>
+          <p className="text-xs text-teal-200 mt-1">Currently chatting with: {selectedPatient?.name || 'Ravi Mehta'}</p>
+        </div>
+      </div>
+
+      <div className="flex-1 p-6 overflow-y-auto bg-slate-50 flex flex-col gap-4">
+        {messages.map((msg) => (
+          <div key={msg.id} className={`flex flex-col max-w-[70%] ${msg.sender === 'doctor' ? 'self-end' : 'self-start'}`}>
+            <div className={`p-3 rounded-2xl text-sm shadow-sm ${
+              msg.sender === 'doctor' 
+                ? 'bg-teal-600 text-white rounded-br-none' 
+                : 'bg-white text-slate-800 border border-slate-200 rounded-bl-none'
+            }`}>
+              {msg.text}
+            </div>
+            <span className={`text-[10px] text-slate-400 mt-1 font-semibold ${msg.sender === 'doctor' ? 'text-right' : 'text-left'}`}>
+              {msg.time}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="p-4 bg-white border-t border-slate-100 flex items-center gap-3">
+        <input 
+          type="text" 
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+          placeholder="Type a message to the patient..."
+          className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+        />
+        <button 
+          onClick={handleSend}
+          className="w-12 h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-xl flex items-center justify-center transition-colors shadow-md"
+        >
+          <Send size={18} />
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
 function PlaceholderView({ navId, onBack }) {
   const item = NAV_ITEMS.find((n) => n.id === navId) || { label: "Module View", icon: LayoutGrid };
   const Icon = item.icon;
