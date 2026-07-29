@@ -16,6 +16,7 @@ import PendingTasks from './components/PendingTasks';
 import PatientSnapshot from './components/PatientSnapshot';
 import MedicalTimeline from './components/MedicalTimeline';
 import DocumentationAssistant from './components/DocumentationAssistant';
+import PatientChat from './components/PatientChat';
 import WorkloadCard from './components/WorkloadCard';
 import WorkloadIndicator from './components/WorkloadIndicator';
 import DoctorSchedule from './components/DoctorSchedule';
@@ -271,6 +272,11 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
                   {/* DOCUMENTATION ASSISTANT (Priority 6) */}
                   <div id="doc-assistant" className="lg:col-span-6 scroll-mt-24 min-w-0">
                     <DocumentationAssistant />
+                  </div>
+
+                  {/* PATIENT CHAT (Priority 6b) */}
+                  <div id="patient-chat" className="lg:col-span-6 scroll-mt-24 min-w-0">
+                    <PatientChat selectedPatient={selectedPatient} />
                   </div>
 
                   {/* WORKLOAD INTELLIGENCE (Priority 7a) */}
