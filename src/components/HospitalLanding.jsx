@@ -286,7 +286,7 @@ const TESTIMONIALS = [
   }
 ];
 
-export default function HospitalLanding({ user, onLoginSuccess, onLogout, onOpenDoctorDashboard }) {
+export default function HospitalLanding({ user, onLoginSuccess, onLogout, onOpenDoctorDashboard, onOpenPatientDashboard }) {
   const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [selectedDoctorProfile, setSelectedDoctorProfile] = useState(null);
@@ -337,6 +337,14 @@ export default function HospitalLanding({ user, onLoginSuccess, onLogout, onOpen
     setIsAppointmentOpen(true);
   };
 
+  const handleOpenDashboard = () => {
+    if (user?.role === 'doctor' && onOpenDoctorDashboard) {
+      onOpenDoctorDashboard();
+    } else if (user?.role === 'patient' && onOpenPatientDashboard) {
+      onOpenPatientDashboard();
+    }
+  };
+
   const filteredDoctors = activeDeptFilter === 'All' 
     ? DOCTORS 
     : DOCTORS.filter(d => d.department.toLowerCase() === activeDeptFilter.toLowerCase());
@@ -384,11 +392,7 @@ export default function HospitalLanding({ user, onLoginSuccess, onLogout, onOpen
               {user ? (
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => {
-                      if (user.role === 'doctor' && onOpenDoctorDashboard) {
-                        onOpenDoctorDashboard();
-                      }
-                    }}
+                    onClick={handleOpenDashboard}
                     className="px-4 py-2 rounded-xl text-xs font-black bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-600/20 transition-all flex items-center gap-2"
                   >
                     <User className="w-3.5 h-3.5" />
@@ -474,9 +478,7 @@ export default function HospitalLanding({ user, onLoginSuccess, onLogout, onOpen
                   <button
                     onClick={() => {
                       setMobileMenuOpen(false);
-                      if (user.role === 'doctor' && onOpenDoctorDashboard) {
-                        onOpenDoctorDashboard();
-                      }
+                      handleOpenDashboard();
                     }}
                     className="w-full py-2.5 rounded-xl text-xs font-bold bg-teal-600 text-white shadow-md flex items-center justify-center gap-2"
                   >
