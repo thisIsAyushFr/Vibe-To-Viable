@@ -186,6 +186,82 @@
   <script>
     const API_KEY = "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";
 
+    const WEBSITE_CONTEXT = `
+CareSync Hospital Information:
+
+SERVICES & DEPARTMENTS:
+- 35+ Medical Specialties
+- Cardiology, Neurology, Orthopedics, Pediatrics, Dermatology
+- 24×7 Emergency & Trauma Services
+- Advanced Operation Theaters
+- 3T MRI & Diagnostic Facilities
+- Multi-bed ICUs
+- Robotic Surgical Tools
+
+DOCTORS & SPECIALISTS:
+- 250+ Qualified Doctors
+- Dr. Arjun Sharma - Cardiology
+- Dr. Ananya Rao - Neurology
+- Dr. Vikram Patel - Orthopedics
+- Dr. Priya Nair - Emergency Medicine
+
+OPD TIMINGS:
+- Monday to Saturday: 09:00 AM - 05:00 PM
+- All departments available
+- 24×7 Emergency services
+
+PATIENT SERVICES:
+- Digital health records
+- Real-time appointment booking
+- Medicine reminders
+- Medical report access
+- AI-powered health summaries
+- Recovery guidance
+
+FACILITIES:
+- State-of-the-art diagnostic facilities
+- NABH & ISO 9001:2015 Accredited
+- Modern patient care services
+- Digital queue confirmation
+- Instant consultation booking
+
+EMERGENCY:
+- 24×7 Trauma & Emergency: +91 1800 123 4567
+- Ambulance: 108
+- Emergency Gate 1 available
+
+PATIENT HEALTH MONITORING:
+- Vitals tracking (Blood pressure, Oxygen, Temperature)
+- Blood sugar monitoring
+- Medication adherence tracking
+- Lab results access
+- Health trends analysis
+- Recovery progress tracking
+
+MEDICINES & PRESCRIPTIONS:
+- Digital prescription management
+- Medicine reminders
+- Dosage instructions
+- Allergy tracking
+- Drug interaction checks
+
+APPOINTMENTS:
+- Instant online booking
+- Doctor selection by specialty
+- Time slot availability
+- Digital confirmation
+- Follow-up scheduling
+
+PATIENT DASHBOARD FEATURES:
+- Upcoming appointments
+- Active diagnoses
+- Allergies & precautions
+- Lab results
+- Recovery milestones
+- Care team information
+- Hospital journey tracking
+`;
+
     async function sendMessageToAI(message) {
       try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -199,7 +275,17 @@
             messages: [
               {
                 role: "system",
-                content: "You are CareSync Hospital's helpful AI assistant. Answer patient and healthcare worker questions politely and briefly."
+                content: `You are CareSync Hospital's AI assistant. Answer ONLY based on the provided hospital information below. If a question is not related to CareSync Hospital or cannot be answered from the provided information, politely decline and redirect to hospital services.
+
+Hospital Information:
+${WEBSITE_CONTEXT}
+
+IMPORTANT RULES:
+1. Only answer questions about CareSync Hospital services, doctors, facilities, and patient care
+2. Do NOT answer general knowledge questions unrelated to the hospital
+3. Do NOT provide medical diagnosis or treatment advice - refer to doctors
+4. Be helpful, concise, and professional
+5. If uncertain, suggest contacting the hospital directly at +91 1800 123 4567`
               },
               {
                 role: "user",
