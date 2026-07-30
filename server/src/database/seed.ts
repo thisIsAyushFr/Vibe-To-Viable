@@ -58,7 +58,7 @@ const seedTable = async (
     const delimiter = options.delimiter || ',';
 
     createReadStream(filepath)
-      .pipe(parse({ delimiter, skip_empty_lines: true }))
+      .pipe(parse({ delimiter, skip_empty_lines: true, from_line: 2 }))
       .on('data', async (row) => {
         rowCount++;
 
@@ -72,9 +72,12 @@ const seedTable = async (
           }
 
           // Handle date conversions (MM/DD/YYYY to YYYY-MM-DD)
-          if (col.includes('date') && typeof value === 'string' && value.match(/\d{2}\/\d{2}\/\d{4}/)) {
-            const [month, day, year] = value.split('/');
-            return `${year}-${month}-${day}`;
+          if ((col.includes('date') || col.includes('checkup')) && typeof value === 'string' && value.trim() !== '') {
+            const dateMatch = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+            if (dateMatch) {
+              const [, month, day, year] = dateMatch;
+              return `${year}-${month}-${day}`;
+            }
           }
 
           // Handle numeric conversions

@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS clinics (
 CREATE TABLE IF NOT EXISTS patients (
     patient_id VARCHAR(20) PRIMARY KEY,
     full_name VARCHAR(255) NOT NULL,
-    gender CHAR(1) NOT NULL CHECK (gender IN ('M', 'F', 'O')),
+    gender VARCHAR(10) NOT NULL CHECK (gender IN ('Male', 'Female', 'Other')),
     date_of_birth DATE NOT NULL,
     phone VARCHAR(20) NOT NULL,
     email VARCHAR(255),

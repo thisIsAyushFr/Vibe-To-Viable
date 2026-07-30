@@ -67,10 +67,22 @@ const statusStyles = {
 
 const glassCard = 'rounded-2xl sm:rounded-3xl p-5 sm:p-6 bg-white/90 backdrop-blur-2xl border border-white/90 shadow-lg shadow-[#0F766E]/5';
 
+const clinics = [
+  { id: 'ICU', name: 'ICU' },
+  { id: 'Emergency', name: 'Emergency' },
+  { id: 'General Ward', name: 'General Ward' },
+  { id: 'Private Rooms', name: 'Private Rooms' },
+  { id: 'Pediatrics', name: 'Pediatrics' }
+];
+
 export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
   const [patients, setPatients] = useState(initialPatients);
   const [tasks, setTasks] = useState(initialTasks);
   const [medications, setMedications] = useState(initialMedications);
+  const [showAllocateModal, setShowAllocateModal] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState('');
+  const [selectedClinic, setSelectedClinic] = useState('');
+  const [allocateError, setAllocateError] = useState('');
 
   const updatePatient = (id, updates) => {
     setPatients((current) => current.map((patient) => (
@@ -88,6 +100,39 @@ export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
     setMedications((current) => current.map((med) => (
       med.id === id ? { ...med, status: med.status === 'Due' ? 'Given' : 'Due' } : med
     )));
+  };
+
+  const handleAllocateBed = async (e) => {
+    e.preventDefault();
+    setAllocateError('');
+
+    if (!selectedPatient || !selectedClinic) {
+      setAllocateError('Please select both a patient and a clinic');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/analytics/allocate-bed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clinic_id: selectedClinic })
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setAllocateError(data.error || 'Failed to allocate bed');
+        return;
+      }
+
+      const patient = patients.find(p => p.id === parseInt(selectedPatient));
+      setShowAllocateModal(false);
+      setSelectedPatient('');
+      setSelectedClinic('');
+      alert(`Bed allocated to ${patient?.name} in ${selectedClinic}`);
+    } catch (error) {
+      setAllocateError('Error allocating bed');
+      console.error(error);
+    }
   };
 
   const pendingTasksCount = tasks.filter((t) => !t.done).length;
@@ -294,6 +339,12 @@ export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
           <div className="mb-4 flex items-center gap-2">
             <BedDouble className="h-5 w-5 text-[#0F766E]" />
             <h2 className="text-xl font-bold">Room & Doctor Assignment</h2>
+            <button
+              onClick={() => setShowAllocateModal(true)}
+              className="ml-auto rounded-xl bg-[#0F766E] px-3 py-2 text-sm font-semibold text-white hover:bg-[#0d5f58]"
+            >
+              Allocate Bed
+            </button>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {patients.map((patient) => (
@@ -319,6 +370,82 @@ export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
             ))}
           </div>
         </div>
+
+        {showAllocateModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
+            <div className={`${glassCard} w-full max-w-md`}>
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-xl font-bold">Allocate Bed</h3>
+                <button
+                  onClick={() => {
+                    setShowAllocateModal(false);
+                    setAllocateError('');
+                  }}
+                  className="text-lg font-semibold text-slate-400 hover:text-slate-600"
+                >
+                  ✕
+                </button>
+              </div>
+              <form onSubmit={handleAllocateBed} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-[#0F172A] mb-2">Select Patient</label>
+                  <select
+                    value={selectedPatient}
+                    onChange={(e) => setSelectedPatient(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-[#0F766E] focus:outline-none"
+                    required
+                  >
+                    <option value="">-- Choose a patient --</option>
+                    {patients.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-[#0F172A] mb-2">Select Clinic</label>
+                  <select
+                    value={selectedClinic}
+                    onChange={(e) => setSelectedClinic(e.target.value)}
+                    className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-[#0F766E] focus:outline-none"
+                    required
+                  >
+                    <option value="">-- Choose a clinic --</option>
+                    {clinics.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {allocateError && (
+                  <div className="rounded-lg bg-rose-50 p-3 text-sm text-rose-600 border border-rose-200">
+                    {allocateError}
+                  </div>
+                )}
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAllocateModal(false);
+                      setAllocateError('');
+                    }}
+                    className="flex-1 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold hover:bg-slate-100"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 rounded-xl bg-[#0F766E] px-3 py-2 text-sm font-semibold text-white hover:bg-[#0d5f58]"
+                  >
+                    Allocate
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

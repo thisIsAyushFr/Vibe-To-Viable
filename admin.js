@@ -119,6 +119,7 @@ $('.nav-item.logout')?.addEventListener('click', (e) => {
 function openModal(modalSel) {
   const modal = $(modalSel);
   if (modal) modal.classList.add('active');
+  if (modalSel === '#addBedsModal') populateAddBedsClinicSelect();
 }
 
 function closeModal(modalSel) {
@@ -676,9 +677,7 @@ function renderBedCards() {
         </div>
         <div class="progress-bar"><div class="progress-bar-fill ${fillClass}" data-width="${pct}"></div></div>
         <div class="bed-card-actions">
-          <button class="btn btn-sm btn-primary" style="flex:1;">Allocate</button>
-          <button class="btn btn-sm btn-outline">Transfer</button>
-          <button class="btn btn-sm btn-outline">Discharge</button>
+          <button class="btn btn-sm btn-primary" style="flex:1;">Add Beds</button>
         </div>
       </div>
     `;
@@ -1491,7 +1490,49 @@ $('#addDoctorForm')?.addEventListener('submit', (e) => {
   window.AarogyaAPI?.emit('doctorAdded', newDoctor);
 });
 
+// Populate clinic dropdown for Add Beds modal
+function populateAddBedsClinicSelect() {
+  const select = $('#addBedsClinicSelect');
+  if (!select) return;
+  select.innerHTML = '<option value="">-- Choose a clinic --</option>';
+  beds.forEach(bed => {
+    const option = document.createElement('option');
+    option.value = bed.ward;
+    option.textContent = bed.ward;
+    select.appendChild(option);
+  });
+}
 
+// Add Beds Form Submit
+$('#addBedsForm')?.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const clinicName = $('#addBedsClinicSelect').value.trim();
+  const bedCount = parseInt($('#addBedsCount').value, 10);
+
+  if (!clinicName || !bedCount || bedCount <= 0) {
+    showToast('Invalid Input', 'Please select a clinic and enter a valid bed count.', 'warning');
+    return;
+  }
+
+  const bed = beds.find(b => b.ward === clinicName);
+  if (bed) {
+    bed.capacity += bedCount;
+    renderBedCards();
+    closeModal('#addBedsModal');
+    e.target.reset();
+    showToast('Beds Added', `Added ${bedCount} bed(s) to ${clinicName}. New capacity: ${bed.capacity}`, 'success');
+
+    fetch('/api/analytics/add-beds', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clinic_id: clinicName, bed_count: bedCount })
+    }).catch(err => console.error('Backend sync failed:', err));
+  }
+});
+
+// Close handlers for Add Beds modal
+$('#closeAddBedsModal')?.addEventListener('click', () => closeModal('#addBedsModal'));
+$('#cancelAddBedsModal')?.addEventListener('click', () => closeModal('#addBedsModal'));
 
 // Edit Patient Form Submit
 $('#editPatientForm')?.addEventListener('submit', (e) => {
@@ -1677,27 +1718,8 @@ document.addEventListener('click', (e) => {
 
   // Bed Card Actions
   if (btn.closest('.bed-card')) {
-    const card = btn.closest('.bed-card');
-    const wardTitle = card.querySelector('h4')?.textContent.trim() || 'Ward';
-    const wardName = wardTitle.replace(/[^a-zA-Z\s]/g, '').trim();
-
-    if (text === 'Allocate') {
-      openModal('#bedAllocationModal');
-      $('#bedWardSelect').value = wardName;
-      $('#bedActionType').value = 'allocate';
-    } else if (text === 'Transfer') {
-      openModal('#bedAllocationModal');
-      $('#bedWardSelect').value = wardName;
-      $('#bedActionType').value = 'transfer';
-    } else if (text === 'Discharge') {
-      if (confirm(`Confirm patient discharge from ${wardName}?`)) {
-        const bed = beds.find(b => b.ward.toLowerCase().includes(wardName.toLowerCase()));
-        if (bed && bed.occupied > 0) {
-          bed.occupied--;
-          renderBedCards();
-          showToast('Patient Discharged', `Patient discharged from ${wardName}. Freed 1 bed.`, 'success');
-        }
-      }
+    if (text === 'Add Beds') {
+      openModal('#addBedsModal');
     }
     return;
   }
