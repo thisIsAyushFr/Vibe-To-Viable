@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Users, CheckSquare, Clock3, ClipboardList, LayoutGrid, ArrowLeft, Send,
+  Users, CheckSquare, Clock3, ClipboardList, LayoutGrid, ArrowLeft, ArrowRight,
   Activity, Bed, Calendar, Settings, LogOut, X, Stethoscope
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -486,7 +486,7 @@ function DedicatedChatView({ selectedPatient }) {
           onClick={handleSend}
           className="w-12 h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-xl flex items-center justify-center transition-colors shadow-md"
         >
-          <Send size={18} />
+          <ArrowRight size={18} />
         </button>
       </div>
     </motion.div>

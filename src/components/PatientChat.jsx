@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageCircle, Send } from 'lucide-react';
+import { MessageCircle, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function PatientChat({ selectedPatient }) {
@@ -75,7 +75,7 @@ export default function PatientChat({ selectedPatient }) {
           onClick={handleSend}
           className="w-9 h-9 rounded-xl bg-[#0F766E] text-white flex items-center justify-center shadow-md shadow-[#0F766E]/20 active:scale-95 transition-all"
         >
-          <Send size={14} />
+          <ArrowRight size={18} />
         </button>
       </div>
     </motion.div>

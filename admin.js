@@ -2048,6 +2048,57 @@ window.AarogyaAPI = {
 };
 
 // ────────────────────────────────────────────────────────────────
+// AI FAB & CHAT PANEL
+// ────────────────────────────────────────────────────────────────
+const aiFab = $('#aiFab');
+const aiPanel = $('#aiPanel');
+const aiPanelClose = $('#aiPanelClose');
+const aiChatSend = document.querySelector('.ai-chat-send');
+const aiChatInput = document.querySelector('.ai-chat-input');
+const aiChatLog = document.querySelector('.ai-chat-log');
+
+if (aiFab) {
+  aiFab.addEventListener('click', () => {
+    aiPanel.classList.toggle('open');
+  });
+}
+
+if (aiPanelClose) {
+  aiPanelClose.addEventListener('click', () => {
+    aiPanel.classList.remove('open');
+  });
+}
+
+if (aiChatSend && aiChatInput) {
+  aiChatSend.addEventListener('click', () => {
+    const message = aiChatInput.value.trim();
+    if (!message) return;
+
+    if (aiChatLog) {
+      const msgEl = document.createElement('div');
+      msgEl.className = 'ai-chat-msg';
+      msgEl.textContent = 'You: ' + message;
+      aiChatLog.appendChild(msgEl);
+
+      const replyEl = document.createElement('div');
+      replyEl.className = 'ai-chat-msg';
+      replyEl.textContent = 'AI: Response coming soon.';
+      aiChatLog.appendChild(replyEl);
+
+      aiChatLog.scrollTop = aiChatLog.scrollHeight;
+    }
+
+    aiChatInput.value = '';
+  });
+
+  aiChatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      aiChatSend.click();
+    }
+  });
+}
+
+// ────────────────────────────────────────────────────────────────
 // RE-OBSERVE DYNAMICALLY ADDED ELEMENTS
 // ────────────────────────────────────────────────────────────────
 setTimeout(() => {
