@@ -286,7 +286,7 @@ const TESTIMONIALS = [
   }
 ];
 
-export default function HospitalLanding({ user, onLoginSuccess, onLogout, onOpenDoctorDashboard }) {
+export default function HospitalLanding({ user, onLoginSuccess, onLogout, onOpenDoctorDashboard, onOpenPatientDashboard }) {
   const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [selectedDoctorProfile, setSelectedDoctorProfile] = useState(null);
@@ -384,9 +384,15 @@ export default function HospitalLanding({ user, onLoginSuccess, onLogout, onOpen
               {user ? (
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
                       if (user.role === 'doctor' && onOpenDoctorDashboard) {
                         onOpenDoctorDashboard();
+                      } else if (user.role === 'patient') {
+                        if (onOpenPatientDashboard) onOpenPatientDashboard();
+                        window.location.replace('Patient.html');
+                      } else if (user.role === 'admin') {
+                        window.location.replace('admin.html');
                       }
                     }}
                     className="px-4 py-2 rounded-xl text-xs font-black bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-600/20 transition-all flex items-center gap-2"
@@ -472,10 +478,16 @@ export default function HospitalLanding({ user, onLoginSuccess, onLogout, onOpen
               {user ? (
                 <>
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
                       setMobileMenuOpen(false);
                       if (user.role === 'doctor' && onOpenDoctorDashboard) {
                         onOpenDoctorDashboard();
+                      } else if (user.role === 'patient') {
+                        if (onOpenPatientDashboard) onOpenPatientDashboard();
+                        window.location.replace('Patient.html');
+                      } else if (user.role === 'admin') {
+                        window.location.replace('admin.html');
                       }
                     }}
                     className="w-full py-2.5 rounded-xl text-xs font-bold bg-teal-600 text-white shadow-md flex items-center justify-center gap-2"

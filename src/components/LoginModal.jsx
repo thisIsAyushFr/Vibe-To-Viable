@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Lock, ShieldCheck, UserCheck, Stethoscope, HeartPulse, ShieldAlert, KeyRound, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { X, Lock, ShieldCheck, UserCheck, Stethoscope, HeartPulse, ShieldAlert, KeyRound, ArrowRight, Eye, EyeOff, Zap } from 'lucide-react';
 
 const ROLES = [
   {
@@ -59,41 +59,14 @@ const ROLES = [
 ];
 
 export default function LoginModal({ isOpen, onClose, onLoginSuccess, onOpenDoctorDashboard }) {
-  const [selectedRole, setSelectedRole] = useState('doctor');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [selectedRole, setSelectedRole] = useState('patient');
+  const [email, setEmail] = useState('patient@aarogyahospital.com');
+  const [password, setPassword] = useState('patient123');
   const [showPassword, setShowPassword] = useState(false);
   const [demoLoginStatus, setDemoLoginStatus] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const currentRoleData = ROLES.find(r => r.id === selectedRole) || ROLES[1];
-
-  const handleClose = () => {
-    setSelectedRole('doctor');
-    setEmail('');
-    setPassword('');
-    setShowPassword(false);
-    setDemoLoginStatus(null);
-    setErrorMessage('');
-    if (onClose) onClose();
-  };
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') handleClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  const handleRoleSelect = (roleId) => {
-    setSelectedRole(roleId);
-    setErrorMessage('');
-  };
+  const currentRoleData = ROLES.find(r => r.id === selectedRole) || ROLES[0];
 
   const getExpectedCredentials = (role) => {
     switch (role) {
@@ -105,16 +78,43 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, onOpenDoct
         return { email: 'nurse@aarogyahospital.com', pass: 'nurse123' };
       case 'admin':
         return { email: 'admin@aarogyahospital.com', pass: 'admin123' };
-      case 'owner':
-        return { email: 'owner@aarogyahospital.com', pass: 'owner123' };
       default:
-        return { email: 'doctor@aarogyahospital.com', pass: 'doctor123' };
+        return { email: 'patient@aarogyahospital.com', pass: 'patient123' };
     }
   };
 
+  const handleClose = () => {
+    setDemoLoginStatus(null);
+    setErrorMessage('');
+    if (onClose) onClose();
+  };
+
+  const handleRoleSelect = (roleId) => {
+    setSelectedRole(roleId);
+    setErrorMessage('');
+    const creds = getExpectedCredentials(roleId);
+    setEmail(creds.email);
+    setPassword(creds.pass);
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const creds = getExpectedCredentials(selectedRole);
+    setEmail(creds.email);
+    setPassword(creds.pass);
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, selectedRole]);
+
+  if (!isOpen) return null;
+
   const executeLogin = (userData) => {
-    setDemoLoginStatus(`Authenticating ${userData.name}...`);
     localStorage.setItem('aarogya_user', JSON.stringify(userData));
+    setDemoLoginStatus(`Authenticating ${userData.name}...`);
 
     setTimeout(() => {
       setDemoLoginStatus(null);
@@ -122,10 +122,14 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, onOpenDoct
       if (onLoginSuccess) {
         onLoginSuccess(userData);
       }
-      if (userData.role === 'doctor' && onOpenDoctorDashboard) {
+      if (userData.role === 'patient') {
+        try { window.location.href = 'Patient.html'; } catch (e) {}
+      } else if (userData.role === 'admin') {
+        try { window.location.href = 'admin.html'; } catch (e) {}
+      } else if (userData.role === 'doctor' && onOpenDoctorDashboard) {
         onOpenDoctorDashboard();
       }
-    }, 600);
+    }, 400);
   };
 
   const handleLoginSubmit = (e) => {
@@ -134,20 +138,10 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, onOpenDoct
 
     const expected = getExpectedCredentials(selectedRole);
     const enteredEmail = email.trim().toLowerCase();
-    const enteredPass = password.trim();
-
-    // Check credentials match
-    const isEmailValid = enteredEmail === expected.email || (selectedRole === 'doctor' && enteredEmail === 'arjun@aarogyahospital.com');
-    const isPassValid = enteredPass === expected.pass;
-
-    if (!isEmailValid || !isPassValid) {
-      setErrorMessage(`Authentication Failed! Invalid Email or Password for ${currentRoleData.title}. Please check your credentials and try again.`);
-      return;
-    }
 
     const userData = {
-      name: selectedRole === 'doctor' ? 'Dr. Arjun Sharma' : selectedRole === 'patient' ? 'Rahul Verma' : 'Hospital Administrator',
-      email: enteredEmail,
+      name: selectedRole === 'doctor' ? 'Dr. Arjun Sharma' : selectedRole === 'patient' ? 'Rahul Verma' : selectedRole === 'admin' ? 'Hospital Administrator' : 'Nurse Staff',
+      email: enteredEmail || expected.email,
       role: selectedRole
     };
 
