@@ -1,10 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import DoctorDashboard from './DoctorDashboard.jsx';
+import HospitalLanding from './components/HospitalLanding.jsx';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <DoctorDashboard />
+    <HospitalLanding />
   </React.StrictMode>,
 );
