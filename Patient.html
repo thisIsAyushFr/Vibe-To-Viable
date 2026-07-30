@@ -1716,7 +1716,7 @@
 
 // Real AI calls must go through the backend (Python/FastAPI AI services layer per CLAUDE.md),
 // never directly from the browser with an embedded API key.
-const API_KEY = "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";
+const API_KEY = "YOUR_GROQ_API_KEY";
 
 async function sendMessageToAI(message) {
 
@@ -1745,6 +1745,10 @@ async function sendMessageToAI(message) {
             })
         });
 
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
         const data = await response.json();
 
         return data.choices[0].message.content;
@@ -1759,7 +1763,7 @@ const sendBtn = document.querySelector("#aiPanel .ai-chat-send");
 const input = document.querySelector("#aiPanel .ai-chat-input");
 const chatLog = document.querySelector("#aiPanel .ai-chat-log");
 
-sendBtn.addEventListener("click", () => {
+sendBtn.addEventListener("click", async () => {
 
     const message = input.value.trim();
 
@@ -1767,20 +1771,40 @@ sendBtn.addEventListener("click", () => {
 
     chatLog.innerHTML += `
         <div class="ai-chat-msg">
-            You: ${message}
+            <strong>You:</strong> ${message}
         </div>
     `;
 
     input.value = "";
+    chatLog.scrollTop = chatLog.scrollHeight;
 
-    const aiReply = sendMessageToAI(message);
-
+    // Optional loading message
     chatLog.innerHTML += `
-        <div class="ai-chat-msg">
-            AI: ${aiReply}
+        <div class="ai-chat-msg" id="thinking">
+            <strong>AI:</strong> Thinking...
         </div>
     `;
 
+    chatLog.scrollTop = chatLog.scrollHeight;
+
+    const aiReply = await sendMessageToAI(message);
+
+    document.getElementById("thinking").remove();
+
+    chatLog.innerHTML += `
+        <div class="ai-chat-msg">
+            <strong>AI:</strong> ${aiReply}
+        </div>
+    `;
+
+    chatLog.scrollTop = chatLog.scrollHeight;
+
+});
+
+input.addEventListener("keypress", async (e) => {
+    if (e.key === "Enter") {
+        sendBtn.click();
+    }
 });
 
 </script>
