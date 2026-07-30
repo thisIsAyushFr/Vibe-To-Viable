@@ -337,6 +337,14 @@ export default function HospitalLanding({ user, onLoginSuccess, onLogout, onOpen
     setIsAppointmentOpen(true);
   };
 
+  const handleOpenDashboard = () => {
+    if (user?.role === 'doctor' && onOpenDoctorDashboard) {
+      onOpenDoctorDashboard();
+    } else if (user?.role === 'patient' && onOpenPatientDashboard) {
+      onOpenPatientDashboard();
+    }
+  };
+
   const filteredDoctors = activeDeptFilter === 'All' 
     ? DOCTORS 
     : DOCTORS.filter(d => d.department.toLowerCase() === activeDeptFilter.toLowerCase());
@@ -384,15 +392,9 @@ export default function HospitalLanding({ user, onLoginSuccess, onLogout, onOpen
               {user ? (
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={(e) => {
-                      e.preventDefault();
+                    onClick={() => {
                       if (user.role === 'doctor' && onOpenDoctorDashboard) {
                         onOpenDoctorDashboard();
-                      } else if (user.role === 'patient') {
-                        if (onOpenPatientDashboard) onOpenPatientDashboard();
-                        window.location.replace('Patient.html');
-                      } else if (user.role === 'admin') {
-                        window.location.replace('admin.html');
                       }
                     }}
                     className="px-4 py-2 rounded-xl text-xs font-black bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-600/20 transition-all flex items-center gap-2"
@@ -483,11 +485,6 @@ export default function HospitalLanding({ user, onLoginSuccess, onLogout, onOpen
                       setMobileMenuOpen(false);
                       if (user.role === 'doctor' && onOpenDoctorDashboard) {
                         onOpenDoctorDashboard();
-                      } else if (user.role === 'patient') {
-                        if (onOpenPatientDashboard) onOpenPatientDashboard();
-                        window.location.replace('Patient.html');
-                      } else if (user.role === 'admin') {
-                        window.location.replace('admin.html');
                       }
                     }}
                     className="w-full py-2.5 rounded-xl text-xs font-bold bg-teal-600 text-white shadow-md flex items-center justify-center gap-2"
