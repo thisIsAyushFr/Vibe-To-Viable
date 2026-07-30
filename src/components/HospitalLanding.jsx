@@ -1267,10 +1267,11 @@ export default function HospitalLanding({ user, onLoginSuccess, onLogout, onOpen
         preselectedDept={preselectedDept}
       />
 
-      <LoginModal 
-        isOpen={isLoginOpen} 
-        onClose={() => setIsLoginOpen(false)} 
-        onLoginSuccess={onLoginSuccess}
+      <LoginModal
+          isOpen={isLoginOpen}
+          onClose={() => setIsLoginOpen(false)}
+          onLoginSuccess={onLoginSuccess}
+          onOpenDoctorDashboard={onOpenDoctorDashboard}
       />
 
       <DoctorProfileModal 
