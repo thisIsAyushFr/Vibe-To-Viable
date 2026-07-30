@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Imports from modular data & components
 import { DOCTOR, PATIENTS, INITIAL_QUEUE, INITIAL_TASKS } from './data/doctorDemoData';
+import { useWalkIns, updateWalkIn } from './data/hospitalDemoStore';
 import DoctorTopbar from './components/DoctorTopbar';
 import StatCard from './components/StatCard';
 import NextPatientCard from './components/NextPatientCard';
@@ -51,20 +52,58 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
     Object.fromEntries(INITIAL_QUEUE.map((q) => [q.id, q.status]))
   );
 
-  const activeQueueItem = INITIAL_QUEUE.find(
+  const WALKIN_STATUS_MAP = { Waiting: 'waiting', 'In Consultation': 'in-consultation', Completed: 'completed' };
+
+  const walkIns = useWalkIns().filter((w) => w.assignedDoctor === DOCTOR.name);
+
+  const walkInPatients = Object.fromEntries(
+    walkIns.map((w) => [w.patientId, {
+      id: w.patientId,
+      name: w.name,
+      initials: (w.name || '').split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase(),
+      age: w.age,
+      gender: w.gender,
+      bloodGroup: '-',
+      conditions: [w.reason || 'Walk-in visit'],
+      medications: [],
+      allergies: 'Not recorded',
+      lastVisit: 'First visit (Walk-In)',
+      vitals: [],
+      alert: { title: 'Walk-In Patient', description: w.reason || 'No reason provided' },
+      timeline: [{ date: 'Today', title: 'Walk-In Registered', detail: w.reason || 'Walk-in visit' }]
+    }])
+  );
+
+  const allPatients = { ...PATIENTS, ...walkInPatients };
+
+  const walkInQueue = walkIns.map((w) => ({
+    id: w.patientId,
+    time: w.arrivalTime,
+    patientId: w.patientId,
+    visitType: 'Walk-In',
+    status: WALKIN_STATUS_MAP[w.status] || 'waiting',
+    priority: w.priority,
+    reason: w.reason
+  }));
+
+  const combinedQueue = [...INITIAL_QUEUE, ...walkInQueue];
+
+  const activeQueueItem = combinedQueue.find(
     (q) => (queueStatuses[q.id] || q.status) !== 'completed'
   );
 
-  const nextPatient = activeQueueItem ? PATIENTS[activeQueueItem.patientId] : null;
+  const nextPatient = activeQueueItem ? allPatients[activeQueueItem.patientId] : null;
   const isConsultationActive = activeQueueItem
     ? (queueStatuses[activeQueueItem.id] || activeQueueItem.status) === 'in-consultation'
     : false;
 
-  const selectedPatient = PATIENTS[selectedPatientId] || PATIENTS.rahul;
+  const selectedPatient = allPatients[selectedPatientId] || PATIENTS.rahul;
 
-  const completedQueueCount = Object.values(queueStatuses).filter((s) => s === 'completed').length;
+  const completedQueueCount = Object.values(queueStatuses).filter((s) => s === 'completed').length
+    + walkInQueue.filter((q) => q.status === 'completed').length;
   const pendingCount = tasks.filter((t) => !t.done).length;
-  const waitingCount = Object.values(queueStatuses).filter((s) => s === 'waiting').length;
+  const waitingCount = Object.values(queueStatuses).filter((s) => s === 'waiting').length
+    + walkInQueue.filter((q) => (queueStatuses[q.id] || q.status) === 'waiting').length;
 
   const toggleTask = (id) => {
     setTasks((prev) =>
@@ -77,6 +116,9 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
       ...prev,
       [queueId]: 'completed',
     }));
+    if (queueId.startsWith('P')) {
+      updateWalkIn(queueId, { status: 'Completed' });
+    }
   };
 
   const handleStartConsultation = () => {
@@ -86,6 +128,9 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
         [activeQueueItem.id]: 'in-consultation',
       }));
       setSelectedPatientId(activeQueueItem.patientId);
+      if (activeQueueItem.id.startsWith('P')) {
+        updateWalkIn(activeQueueItem.id, { status: 'In Consultation' });
+      }
     }
   };
 
@@ -95,6 +140,9 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
         ...prev,
         [activeQueueItem.id]: 'completed',
       }));
+      if (activeQueueItem.id.startsWith('P')) {
+        updateWalkIn(activeQueueItem.id, { status: 'Completed' });
+      }
     }
   };
 
@@ -227,7 +275,8 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
 
                   <div id="queue" className="lg:col-span-7 scroll-mt-24 min-w-0">
                     <PatientQueue
-                      queue={INITIAL_QUEUE}
+                      queue={combinedQueue}
+                      patients={allPatients}
                       queueStatuses={queueStatuses}
                       selectedPatientId={selectedPatientId}
                       onSelectPatient={setSelectedPatientId}

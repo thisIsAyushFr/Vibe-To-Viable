@@ -4,6 +4,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import StatusBadge from './StatusBadge';
 import { PATIENTS } from '../data/doctorDemoData';
 
+const priorityStyles = {
+  Urgent: 'bg-rose-100 text-rose-700 border-rose-200',
+  Priority: 'bg-amber-100 text-amber-700 border-amber-200',
+  Normal: 'bg-slate-100 text-slate-600 border-slate-200'
+};
+
 export default function PatientQueue({
   queue,
   queueStatuses,
@@ -11,7 +17,8 @@ export default function PatientQueue({
   onSelectPatient,
   queueFilter,
   setQueueFilter,
-  onMarkDone
+  onMarkDone,
+  patients = PATIENTS
 }) {
   const filteredQueue = queue.filter((q) => {
     const status = queueStatuses[q.id] || q.status;
@@ -63,7 +70,8 @@ export default function PatientQueue({
         <div className="flex flex-col gap-2.5 max-h-[380px] overflow-y-auto pr-1">
           <AnimatePresence mode="popLayout">
             {filteredQueue.map((q) => {
-              const p = PATIENTS[q.patientId];
+              const p = patients[q.patientId];
+              if (!p) return null;
               const currentStatus = queueStatuses[q.id] || q.status;
               const isSelected = selectedPatientId === q.patientId;
 
@@ -95,10 +103,20 @@ export default function PatientQueue({
 
                     {/* Patient Info */}
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-xs sm:text-sm font-black text-[#0F172A] truncate">
                           {p.name}
                         </p>
+                        <span className={`text-[8px] font-black px-1.5 py-0.5 rounded border uppercase flex-shrink-0 ${
+                          q.visitType === 'Walk-In' ? 'bg-sky-50 text-sky-600 border-sky-200' : 'bg-teal-50 text-teal-700 border-teal-200'
+                        }`}>
+                          {q.visitType === 'Walk-In' ? 'Walk-In' : 'Appointment'}
+                        </span>
+                        {q.priority && (
+                          <span className={`text-[8px] font-black px-1.5 py-0.5 rounded border uppercase flex-shrink-0 ${priorityStyles[q.priority] || priorityStyles.Normal}`}>
+                            {q.priority}
+                          </span>
+                        )}
                         {isSelected && (
                           <span className="text-[8px] font-black px-1.5 py-0.2 rounded bg-[#0F766E] text-white uppercase flex-shrink-0">
                             Active
@@ -106,7 +124,7 @@ export default function PatientQueue({
                         )}
                       </div>
                       <p className="text-[10px] sm:text-[11px] font-semibold text-[#64748B] truncate mt-0.5">
-                        {q.visitType} • {p.age}y {p.gender}
+                        {q.patientId} • {p.age}y {p.gender}{q.reason ? ` • ${q.reason}` : ''}
                       </p>
                     </div>
                   </div>

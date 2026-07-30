@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import {
   Activity, BedDouble, ClipboardCheck, ArrowLeft, Users, ListTodo,
-  Pill, Clock3, AlertTriangle, CheckCircle2
+  Pill, Clock3, AlertTriangle, CheckCircle2, Plus, X, UserPlus
 } from 'lucide-react';
 import StatCard from './StatCard';
+import { DEPARTMENTS, DOCTORS_BY_DEPARTMENT, addWalkIn, updateWalkIn, useWalkIns } from '../data/hospitalDemoStore';
 
 const initialPatients = [
   {
@@ -67,10 +68,31 @@ const statusStyles = {
 
 const glassCard = 'rounded-2xl sm:rounded-3xl p-5 sm:p-6 bg-white/90 backdrop-blur-2xl border border-white/90 shadow-lg shadow-[#0F766E]/5';
 
+const walkInPriorityStyles = {
+  Urgent: 'bg-rose-50 text-rose-600 border border-rose-200',
+  Priority: 'bg-amber-50 text-amber-600 border border-amber-200',
+  Normal: 'bg-slate-100 text-slate-600 border border-slate-200'
+};
+
+const walkInStatusStyles = {
+  Waiting: 'bg-amber-50 text-amber-600 border border-amber-200',
+  'In Consultation': 'bg-sky-50 text-sky-600 border border-sky-200',
+  Completed: 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+};
+
+const emptyWalkInForm = {
+  name: '', age: '', gender: 'Male', phone: '', reason: '',
+  department: DEPARTMENTS[0], assignedDoctor: DOCTORS_BY_DEPARTMENT[DEPARTMENTS[0]][0], priority: 'Normal'
+};
+
 export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
   const [patients, setPatients] = useState(initialPatients);
   const [tasks, setTasks] = useState(initialTasks);
   const [medications, setMedications] = useState(initialMedications);
+  const walkIns = useWalkIns();
+  const [showWalkInModal, setShowWalkInModal] = useState(false);
+  const [walkInForm, setWalkInForm] = useState(emptyWalkInForm);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const updatePatient = (id, updates) => {
     setPatients((current) => current.map((patient) => (
@@ -90,12 +112,27 @@ export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
     )));
   };
 
+  const handleDepartmentChange = (department) => {
+    setWalkInForm((prev) => ({ ...prev, department, assignedDoctor: DOCTORS_BY_DEPARTMENT[department][0] }));
+  };
+
+  const submitWalkIn = (e) => {
+    e.preventDefault();
+    if (!walkInForm.name || !walkInForm.age) return;
+    const patient = addWalkIn({ ...walkInForm, age: Number(walkInForm.age) });
+    setShowWalkInModal(false);
+    setWalkInForm(emptyWalkInForm);
+    setSuccessMessage(`${patient.name} (${patient.patientId}) added and checked in to ${patient.assignedDoctor}'s queue.`);
+    setTimeout(() => setSuccessMessage(''), 4000);
+  };
+
   const pendingTasksCount = tasks.filter((t) => !t.done).length;
   const medicationsDueCount = medications.filter((m) => m.status === 'Due').length;
-  const patientsWaitingCount = patients.filter((p) => p.status === 'Pending Check-In').length;
+  const patientsWaitingCount = patients.filter((p) => p.status === 'Pending Check-In').length
+    + walkIns.filter((w) => w.status === 'Waiting').length;
 
   const stats = [
-    { label: 'Assigned Patients', value: patients.length, icon: Users, color: '#0F766E', trend: 'General Medicine' },
+    { label: 'Assigned Patients', value: patients.length + walkIns.length, icon: Users, color: '#0F766E', trend: 'General Medicine' },
     { label: 'Pending Tasks', value: pendingTasksCount, icon: ListTodo, color: '#F59E0B', trend: 'Action needed' },
     { label: 'Medications Due', value: medicationsDueCount, icon: Pill, color: '#38BDF8', trend: 'Ward A' },
     { label: 'Patients Waiting', value: patientsWaitingCount, icon: Clock3, color: '#EF4444', trend: 'Check-in queue' }
@@ -181,10 +218,64 @@ export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
 
         <div className="grid gap-6 lg:grid-cols-2">
           <div className={glassCard}>
-            <div className="mb-4 flex items-center gap-2">
-              <ClipboardCheck className="h-5 w-5 text-[#0F766E]" />
-              <h2 className="text-xl font-bold">Patient Check-In</h2>
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <ClipboardCheck className="h-5 w-5 text-[#0F766E]" />
+                <h2 className="text-xl font-bold">Patient Check-In & Walk-Ins</h2>
+              </div>
+              <button
+                onClick={() => setShowWalkInModal(true)}
+                className="flex items-center gap-1.5 rounded-xl bg-[#0F766E] px-3 py-2 text-xs font-bold text-white hover:bg-[#0d5f58]"
+              >
+                <Plus className="h-4 w-4" /> Add Walk-In Patient
+              </button>
             </div>
+
+            {successMessage && (
+              <div className="mb-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700">
+                {successMessage}
+              </div>
+            )}
+
+            {walkIns.length > 0 && (
+              <div className="mb-4 space-y-3">
+                {walkIns.map((w) => (
+                  <div key={w.patientId} className="rounded-2xl border border-sky-200 bg-sky-50/40 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="font-semibold">{w.name}</p>
+                          <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-700">{w.patientId}</span>
+                          <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-slate-600 border border-slate-200">Walk-In</span>
+                        </div>
+                        <p className="mt-1 text-sm text-[#64748B]">{w.department} • {w.reason} • Arrived {w.arrivalTime}</p>
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <span className={`rounded-full px-3 py-1 text-xs font-bold ${walkInStatusStyles[w.status] || walkInStatusStyles.Waiting}`}>
+                            {w.status}
+                          </span>
+                          <span className={`rounded-full px-3 py-1 text-xs font-bold ${walkInPriorityStyles[w.priority] || walkInPriorityStyles.Normal}`}>
+                            {w.priority}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-xs font-semibold text-[#64748B]">
+                        <label className="mb-1 block">Assigned Doctor</label>
+                        <select
+                          value={w.assignedDoctor}
+                          onChange={(e) => updateWalkIn(w.patientId, { assignedDoctor: e.target.value })}
+                          className="rounded-lg border border-slate-200 px-2 py-1.5 text-sm font-semibold text-[#0F172A]"
+                        >
+                          {DOCTORS_BY_DEPARTMENT[w.department].map((doc) => (
+                            <option key={doc} value={doc}>{doc}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="space-y-3">
               {patients.map((patient) => (
                 <div key={patient.id} className="rounded-2xl border border-slate-200 p-4">
@@ -320,6 +411,94 @@ export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
           </div>
         </div>
       </div>
+
+      {showWalkInModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
+          <div className="w-full max-w-lg rounded-2xl sm:rounded-3xl bg-white p-6 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <UserPlus className="h-5 w-5 text-[#0F766E]" />
+                <h2 className="text-lg font-bold">Add Walk-In Patient</h2>
+              </div>
+              <button onClick={() => setShowWalkInModal(false)} className="rounded-lg p-1 hover:bg-slate-100">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <form onSubmit={submitWalkIn} className="grid gap-3 sm:grid-cols-2">
+              <input
+                required
+                placeholder="Patient Name"
+                value={walkInForm.name}
+                onChange={(e) => setWalkInForm((prev) => ({ ...prev, name: e.target.value }))}
+                className="sm:col-span-2 rounded-xl border border-slate-200 px-3 py-2 text-sm"
+              />
+              <input
+                required
+                type="number"
+                min="0"
+                placeholder="Age"
+                value={walkInForm.age}
+                onChange={(e) => setWalkInForm((prev) => ({ ...prev, age: e.target.value }))}
+                className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+              />
+              <select
+                value={walkInForm.gender}
+                onChange={(e) => setWalkInForm((prev) => ({ ...prev, gender: e.target.value }))}
+                className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+              >
+                <option>Male</option>
+                <option>Female</option>
+                <option>Other</option>
+              </select>
+              <input
+                placeholder="Phone"
+                value={walkInForm.phone}
+                onChange={(e) => setWalkInForm((prev) => ({ ...prev, phone: e.target.value }))}
+                className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+              />
+              <select
+                value={walkInForm.priority}
+                onChange={(e) => setWalkInForm((prev) => ({ ...prev, priority: e.target.value }))}
+                className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+              >
+                <option>Normal</option>
+                <option>Priority</option>
+                <option>Urgent</option>
+              </select>
+              <input
+                placeholder="Reason for Visit"
+                value={walkInForm.reason}
+                onChange={(e) => setWalkInForm((prev) => ({ ...prev, reason: e.target.value }))}
+                className="sm:col-span-2 rounded-xl border border-slate-200 px-3 py-2 text-sm"
+              />
+              <select
+                value={walkInForm.department}
+                onChange={(e) => handleDepartmentChange(e.target.value)}
+                className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+              >
+                {DEPARTMENTS.map((dept) => (
+                  <option key={dept} value={dept}>{dept}</option>
+                ))}
+              </select>
+              <select
+                value={walkInForm.assignedDoctor}
+                onChange={(e) => setWalkInForm((prev) => ({ ...prev, assignedDoctor: e.target.value }))}
+                className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
+              >
+                {DOCTORS_BY_DEPARTMENT[walkInForm.department].map((doc) => (
+                  <option key={doc} value={doc}>{doc}</option>
+                ))}
+              </select>
+              <button
+                type="submit"
+                className="sm:col-span-2 mt-1 rounded-xl bg-[#0F766E] py-2.5 text-sm font-bold text-white hover:bg-[#0d5f58]"
+              >
+                Add & Check In
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
