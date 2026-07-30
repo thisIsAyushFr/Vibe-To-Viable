@@ -76,6 +76,23 @@ const clinics = [
   { id: 'Pediatrics', name: 'Pediatrics' }
 ];
 
+const walkInPriorityStyles = {
+  Urgent: 'bg-rose-50 text-rose-600 border border-rose-200',
+  Priority: 'bg-amber-50 text-amber-600 border border-amber-200',
+  Normal: 'bg-slate-100 text-slate-600 border border-slate-200'
+};
+
+const walkInStatusStyles = {
+  Waiting: 'bg-amber-50 text-amber-600 border border-amber-200',
+  'In Consultation': 'bg-sky-50 text-sky-600 border border-sky-200',
+  Completed: 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+};
+
+const emptyWalkInForm = {
+  name: '', age: '', gender: 'Male', phone: '', reason: '',
+  department: DEPARTMENTS[0], assignedDoctor: DOCTORS_BY_DEPARTMENT[DEPARTMENTS[0]][0], priority: 'Normal'
+};
+
 export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
   const [patients, setPatients] = useState(initialPatients);
   const [tasks, setTasks] = useState(initialTasks);
@@ -84,6 +101,10 @@ export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
   const [selectedPatient, setSelectedPatient] = useState('');
   const [selectedClinic, setSelectedClinic] = useState('');
   const [allocateError, setAllocateError] = useState('');
+  const walkIns = useWalkIns();
+  const [showWalkInModal, setShowWalkInModal] = useState(false);
+  const [walkInForm, setWalkInForm] = useState(emptyWalkInForm);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const updatePatient = (id, updates) => {
     setPatients((current) => current.map((patient) => (
@@ -134,6 +155,20 @@ export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
       setAllocateError('Error allocating bed');
       console.error(error);
     }
+  };
+
+  const handleDepartmentChange = (department) => {
+    setWalkInForm((prev) => ({ ...prev, department, assignedDoctor: DOCTORS_BY_DEPARTMENT[department][0] }));
+  };
+
+  const submitWalkIn = (e) => {
+    e.preventDefault();
+    if (!walkInForm.name || !walkInForm.age) return;
+    const patient = addWalkIn({ ...walkInForm, age: Number(walkInForm.age) });
+    setShowWalkInModal(false);
+    setWalkInForm(emptyWalkInForm);
+    setSuccessMessage(`${patient.name} (${patient.patientId}) added and checked in to ${patient.assignedDoctor}'s queue.`);
+    setTimeout(() => setSuccessMessage(''), 4000);
   };
 
   const pendingTasksCount = tasks.filter((t) => !t.done).length;
