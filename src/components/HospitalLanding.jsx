@@ -286,7 +286,14 @@ const TESTIMONIALS = [
   }
 ];
 
-export default function HospitalLanding({ user, onLoginSuccess, onLogout, onOpenDoctorDashboard, onOpenPatientDashboard }) {
+export default function HospitalLanding({
+  user,
+  onLoginSuccess,
+  onLogout,
+  onOpenDoctorDashboard,
+  onOpenPatientDashboard,
+  onOpenNurseDashboard
+}) {
   const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [selectedDoctorProfile, setSelectedDoctorProfile] = useState(null);
@@ -1272,6 +1279,7 @@ export default function HospitalLanding({ user, onLoginSuccess, onLogout, onOpen
           onClose={() => setIsLoginOpen(false)}
           onLoginSuccess={onLoginSuccess}
           onOpenDoctorDashboard={onOpenDoctorDashboard}
+          onOpenNurseDashboard={onOpenNurseDashboard}
       />
 
       <DoctorProfileModal 

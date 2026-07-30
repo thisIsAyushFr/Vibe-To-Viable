@@ -58,7 +58,13 @@ const ROLES = [
   }
 ];
 
-export default function LoginModal({ isOpen, onClose, onLoginSuccess, onOpenDoctorDashboard }) {
+export default function LoginModal({
+  isOpen,
+  onClose,
+  onLoginSuccess,
+  onOpenDoctorDashboard,
+  onOpenNurseDashboard
+}) {
   const [selectedRole, setSelectedRole] = useState('patient');
   const [email, setEmail] = useState('patient@aarogyahospital.com');
   const [password, setPassword] = useState('patient123');
@@ -123,12 +129,14 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, onOpenDoct
         onLoginSuccess(userData);
       }
       if (userData.role === 'patient') {
-        try { window.location.href = 'Patient.html'; } catch (e) {}
-      } else if (userData.role === 'admin') {
-        try { window.location.href = 'admin.html'; } catch (e) {}
-      } else if (userData.role === 'doctor' && onOpenDoctorDashboard) {
-        onOpenDoctorDashboard();
-      }
+      try { window.location.href = 'Patient.html'; } catch (e) {}
+    } else if (userData.role === 'admin') {
+      try { window.location.href = 'admin.html'; } catch (e) {}
+    } else if (userData.role === 'doctor' && onOpenDoctorDashboard) {
+      onOpenDoctorDashboard();
+    } else if (userData.role === 'nurse' && onOpenNurseDashboard) {
+      onOpenNurseDashboard();
+    }
     }, 400);
   };
 
