@@ -7,7 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Imports from modular data & components
 import { DOCTOR, PATIENTS, INITIAL_QUEUE, INITIAL_TASKS } from './data/doctorDemoData';
-import { useWalkIns, updateWalkIn } from './data/hospitalDemoStore';
+import { useWalkIns, updateWalkIn } from './data/hospitalStore';
+import { useMessages, sendMessage, markAsRead } from './data/messageStore';
 import DoctorTopbar from './components/DoctorTopbar';
 import StatCard from './components/StatCard';
 import NextPatientCard from './components/NextPatientCard';
@@ -358,11 +359,14 @@ function InlineDoctorSidebar({ activeNav, setActiveNav, drawerOpen, setDrawerOpe
         }`}
       >
         <div className="p-5 flex items-center justify-between border-b border-slate-100">
-          <div className="flex items-center gap-3 text-teal-900 font-black text-xl tracking-tight">
-            <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center shadow-md">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center shadow-md flex-shrink-0">
               <Activity size={18} strokeWidth={3} />
             </div>
-            CareSync
+            <div className="min-w-0">
+              <p className="text-teal-900 font-black text-sm leading-tight tracking-tight truncate">Aarogya Multispeciality Hospital</p>
+              <p className="text-[10px] font-semibold text-slate-400 leading-tight">Powered by CareSync</p>
+            </div>
           </div>
           <button 
             onClick={() => setDrawerOpen(false)} 
@@ -427,41 +431,26 @@ function InlineDoctorSidebar({ activeNav, setActiveNav, drawerOpen, setDrawerOpe
    DEDICATED CHAT VIEW WITH LOCALSTORAGE SYNC
    ========================================================================= */
 function DedicatedChatView({ selectedPatient }) {
-  const CHAT_KEY = 'caresync_shared_chat';
-  
-  const [messages, setMessages] = useState(() => {
-    const saved = localStorage.getItem(CHAT_KEY);
-    return saved ? JSON.parse(saved) : [
-      { id: 1, sender: 'patient', text: 'Hello Doctor, I wanted to ask about my prescription.', time: '10:05 AM' },
-      { id: 2, sender: 'doctor', text: 'Hi Ravi, sure. What seems to be the issue?', time: '10:12 AM' }
-    ];
-  });
-  
+  const CONVERSATION_ID = 'P001-D001';
+  const DOCTOR_ID = 'D001';
+  const PATIENT_ID = 'P001';
+
+  const messages = useMessages(CONVERSATION_ID);
   const [input, setInput] = useState('');
 
   useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === CHAT_KEY && e.newValue) {
-        setMessages(JSON.parse(e.newValue));
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+    markAsRead(CONVERSATION_ID, DOCTOR_ID);
+  }, [messages.length]);
 
   const handleSend = () => {
     if (!input.trim()) return;
-    
-    const newMsg = {
-      id: Date.now(),
-      sender: 'doctor',
-      text: input,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    
-    const updated = [...messages, newMsg];
-    setMessages(updated);
-    localStorage.setItem(CHAT_KEY, JSON.stringify(updated));
+    sendMessage({
+      conversationId: CONVERSATION_ID,
+      senderId: DOCTOR_ID,
+      senderRole: 'doctor',
+      receiverId: PATIENT_ID,
+      text: input.trim()
+    });
     setInput('');
   };
 
@@ -480,31 +469,31 @@ function DedicatedChatView({ selectedPatient }) {
 
       <div className="flex-1 p-6 overflow-y-auto bg-slate-50 flex flex-col gap-4">
         {messages.map((msg) => (
-          <div key={msg.id} className={`flex flex-col max-w-[70%] ${msg.sender === 'doctor' ? 'self-end' : 'self-start'}`}>
-            <div className={`p-3 rounded-2xl text-sm shadow-sm ${
-              msg.sender === 'doctor' 
-                ? 'bg-teal-600 text-white rounded-br-none' 
+          <div key={msg.id} className={`flex flex-col max-w-[70%] ${msg.senderRole === 'doctor' ? 'self-end' : 'self-start'}`}>
+            <div className={`p-3 rounded-2xl text-sm shadow-sm break-words ${
+              msg.senderRole === 'doctor'
+                ? 'bg-teal-600 text-white rounded-br-none'
                 : 'bg-white text-slate-800 border border-slate-200 rounded-bl-none'
             }`}>
               {msg.text}
             </div>
-            <span className={`text-[10px] text-slate-400 mt-1 font-semibold ${msg.sender === 'doctor' ? 'text-right' : 'text-left'}`}>
-              {msg.time}
+            <span className={`text-[10px] text-slate-400 mt-1 font-semibold ${msg.senderRole === 'doctor' ? 'text-right' : 'text-left'}`}>
+              {msg.timestamp}
             </span>
           </div>
         ))}
       </div>
 
       <div className="p-4 bg-white border-t border-slate-100 flex items-center gap-3">
-        <input 
-          type="text" 
+        <input
+          type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           placeholder="Type a message to the patient..."
           className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
         />
-        <button 
+        <button
           onClick={handleSend}
           className="w-12 h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-xl flex items-center justify-center transition-colors shadow-md"
         >
