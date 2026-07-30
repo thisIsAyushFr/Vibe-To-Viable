@@ -1,12 +1,13 @@
-import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
 
 export default defineConfig({
-  base: './',
   plugins: [react()],
+
   build: {
-    outDir: 'docs',
+    outDir: 'dist',
+
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
@@ -15,13 +16,14 @@ export default defineConfig({
       },
     },
   },
+
   server: {
     host: true,
     port: 3000,
-    open: false,
   },
+
   preview: {
     host: true,
     port: 3000,
-  }
+  },
 });
