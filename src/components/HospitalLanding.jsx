@@ -392,7 +392,11 @@ export default function HospitalLanding({ user, onLoginSuccess, onLogout, onOpen
               {user ? (
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={handleOpenDashboard}
+                    onClick={() => {
+                      if (user.role === 'doctor' && onOpenDoctorDashboard) {
+                        onOpenDoctorDashboard();
+                      }
+                    }}
                     className="px-4 py-2 rounded-xl text-xs font-black bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-600/20 transition-all flex items-center gap-2"
                   >
                     <User className="w-3.5 h-3.5" />
@@ -476,9 +480,12 @@ export default function HospitalLanding({ user, onLoginSuccess, onLogout, onOpen
               {user ? (
                 <>
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
                       setMobileMenuOpen(false);
-                      handleOpenDashboard();
+                      if (user.role === 'doctor' && onOpenDoctorDashboard) {
+                        onOpenDoctorDashboard();
+                      }
                     }}
                     className="w-full py-2.5 rounded-xl text-xs font-bold bg-teal-600 text-white shadow-md flex items-center justify-center gap-2"
                   >

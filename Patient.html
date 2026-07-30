@@ -1691,6 +1691,25 @@
           }
       });
     }
+
+    // Sync logged-in user profile from localStorage if available
+    try {
+      const savedUser = localStorage.getItem('aarogya_user');
+      if (savedUser) {
+        const u = JSON.parse(savedUser);
+        if (u && u.name) {
+          const nameEl = document.querySelector('.patient-name');
+          const avatarEl = document.querySelector('.avatar');
+          if (nameEl) nameEl.textContent = u.name;
+          if (avatarEl) {
+            const initials = u.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            avatarEl.textContent = initials || 'RM';
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Failed to sync user profile in Patient.html", e);
+    }
   });
 </script>
 <script>
