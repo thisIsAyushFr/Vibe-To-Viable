@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Users, CheckSquare, Clock3, ClipboardList, LayoutGrid, ArrowLeft, Send,
-  Activity, Bed, Calendar, BrainCircuit, Clock, Settings, MessageSquare, LogOut, X
+  Activity, Bed, Calendar, BrainCircuit, Clock, Settings, MessageSquare, LogOut, X, Stethoscope
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -19,11 +19,9 @@ import PendingTasks from './components/PendingTasks';
 import PatientSnapshot from './components/PatientSnapshot';
 import MedicalTimeline from './components/MedicalTimeline';
 import DocumentationAssistant from './components/DocumentationAssistant';
-import PatientChat from './components/PatientChat';
 import WorkloadCard from './components/WorkloadCard';
 import WorkloadIndicator from './components/WorkloadIndicator';
 import DoctorSchedule from './components/DoctorSchedule';
-import QuickActions from './components/QuickActions';
 
 import OperationTheaterView from './components/OperationTheaterView';
 import AdmittedPatientsView from './components/AdmittedPatientsView';
@@ -33,10 +31,9 @@ export const NAV_ITEMS = [
   { id: 'overview', label: 'Overview', icon: LayoutGrid },
   { id: 'ot-schedules', label: 'Operation Theater', icon: Activity },
   { id: 'admitted-patients', label: 'Admitted Patients & Beds', icon: Bed },
+  { id: 'patients', label: 'Patients', icon: Stethoscope },
   { id: 'appointments', label: 'Appointments', icon: Calendar },
   { id: 'outpatient-queue', label: 'Outpatient Queue', icon: Users },
-  { id: 'tasks', label: 'Tasks', icon: CheckSquare },
-  { id: 'workload', label: 'Workload Intelligence', icon: BrainCircuit },
   { id: 'opd-schedule', label: 'OPD Schedule', icon: Clock },
   { id: 'chat', label: 'Messages', icon: MessageSquare },
   { id: 'settings', label: 'Settings', icon: Settings },
@@ -147,16 +144,6 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
     }
   };
 
-  const scrollToId = (id) => {
-    setActiveNav('overview');
-    setTimeout(() => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 50);
-  };
-
   const stats = [
     { label: "TODAY'S PATIENTS", value: 14, icon: Users, color: '#0F766E', trend: 'On schedule' },
     { label: "COMPLETED", value: 6 + completedQueueCount, icon: CheckSquare, color: '#22C55E', trend: `${6 + completedQueueCount} / 14` },
@@ -206,7 +193,7 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
                 patients={PATIENTS}
                 onViewPatient={(id) => {
                   setSelectedPatientId(id);
-                  scrollToId('snapshot');
+                  setActiveNav('patients');
                 }}
               />
             ) : activeNav === 'outpatient-queue' ? (
@@ -222,15 +209,23 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
                   onMarkDone={markQueueDone}
                 />
               </div>
-            ) : activeNav === 'tasks' ? (
-              <div className="max-w-2xl mx-auto">
-                <PendingTasks tasks={tasks} onToggleTask={toggleTask} />
-              </div>
-            ) : activeNav === 'workload' ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 max-w-5xl mx-auto">
-                <WorkloadCard pendingCount={pendingCount} />
-                <WorkloadIndicator />
-              </div>
+            ) : activeNav === 'patients' ? (
+              <PatientsView
+                combinedQueue={combinedQueue}
+                allPatients={allPatients}
+                queueStatuses={queueStatuses}
+                selectedPatientId={selectedPatientId}
+                setSelectedPatientId={setSelectedPatientId}
+                queueFilter={queueFilter}
+                setQueueFilter={setQueueFilter}
+                markQueueDone={markQueueDone}
+                nextPatient={nextPatient}
+                activeQueueItem={activeQueueItem}
+                isConsultationActive={isConsultationActive}
+                handleStartConsultation={handleStartConsultation}
+                handleFinishConsultation={handleFinishConsultation}
+                selectedPatient={selectedPatient}
+              />
             ) : activeNav === 'opd-schedule' ? (
               <div className="max-w-3xl mx-auto">
                 <DoctorSchedule walkIns={walkIns} />
@@ -242,37 +237,19 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
               />
             ) : (
               <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-full min-w-0">
+                {/* 1. Summary cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
                   {stats.map((s, idx) => (
                     <StatCard key={s.label} {...s} delay={idx * 0.05} />
                   ))}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 w-full min-w-0">
-                  <div id="next-patient" className="lg:col-span-6 scroll-mt-24 min-w-0">
-                    <NextPatientCard
-                      nextPatient={nextPatient}
-                      queueItem={activeQueueItem}
-                      onViewPatient={() => {
-                        if (nextPatient) {
-                          setSelectedPatientId(nextPatient.id);
-                          scrollToId('snapshot');
-                        }
-                      }}
-                      consultationStarted={isConsultationActive}
-                      onStartConsultation={handleStartConsultation}
-                      onFinishConsultation={handleFinishConsultation}
-                    />
-                  </div>
-
-                  <div id="ai-brief" className="lg:col-span-6 scroll-mt-24 min-w-0">
-                    <AIPatientBrief />
-                  </div>
-
-                  <div className="lg:col-span-6 min-w-0">
-                    <div 
+                {/* 2. Operation Theatre | Admitted Patients & Beds */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 w-full min-w-0">
+                  <div className="min-w-0">
+                    <div
                       onClick={() => setActiveNav('ot-schedules')}
-                      className="p-5 rounded-3xl bg-gradient-to-r from-teal-900 via-slate-900 to-teal-950 text-white shadow-lg cursor-pointer hover:shadow-xl transition-all border border-teal-800/80 group"
+                      className="p-5 rounded-3xl bg-gradient-to-r from-teal-900 via-slate-900 to-teal-950 text-white shadow-lg cursor-pointer hover:shadow-xl transition-all border border-teal-800/80 group h-full"
                     >
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-xs font-bold text-cyan-300 uppercase tracking-widest">Surgical Suite Telemetry</span>
@@ -289,10 +266,10 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
                     </div>
                   </div>
 
-                  <div className="lg:col-span-6 min-w-0">
-                    <div 
+                  <div className="min-w-0">
+                    <div
                       onClick={() => setActiveNav('admitted-patients')}
-                      className="p-5 rounded-3xl bg-white border border-teal-200/80 shadow-md cursor-pointer hover:shadow-xl transition-all group"
+                      className="p-5 rounded-3xl bg-white border border-teal-200/80 shadow-md cursor-pointer hover:shadow-xl transition-all group h-full"
                     >
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-xs font-bold text-teal-700 uppercase tracking-widest">Inpatient Beds</span>
@@ -308,58 +285,33 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
                       </p>
                     </div>
                   </div>
+                </div>
 
-                  <div id="queue" className="lg:col-span-7 scroll-mt-24 min-w-0">
-                    <PatientQueue
-                      queue={combinedQueue}
-                      patients={allPatients}
-                      queueStatuses={queueStatuses}
-                      selectedPatientId={selectedPatientId}
-                      onSelectPatient={setSelectedPatientId}
-                      queueFilter={queueFilter}
-                      setQueueFilter={setQueueFilter}
-                      onMarkDone={markQueueDone}
-                    />
-                  </div>
-
-                  <div id="tasks" className="lg:col-span-5 scroll-mt-24 min-w-0">
-                    <PendingTasks tasks={tasks} onToggleTask={toggleTask} />
-                  </div>
-
-                  <div id="snapshot" className="lg:col-span-6 scroll-mt-24 min-w-0">
-                    <PatientSnapshot patient={selectedPatient} />
-                  </div>
-
-                  <div id="timeline" className="lg:col-span-6 scroll-mt-24 min-w-0">
-                    <MedicalTimeline
-                      timeline={selectedPatient.timeline}
-                      patientName={selectedPatient.name}
-                    />
-                  </div>
-
-                  <div id="doc-assistant" className="lg:col-span-6 scroll-mt-24 min-w-0">
-                    <DocumentationAssistant />
-                  </div>
-
-                  <div id="patient-chat" className="lg:col-span-6 scroll-mt-24 min-w-0">
-                    <PatientChat selectedPatient={selectedPatient} />
-                  </div>
-
-                  <div id="workload" className="lg:col-span-6 scroll-mt-24 min-w-0">
-                    <WorkloadCard pendingCount={pendingCount} />
-                  </div>
-
-                  <div id="burnout" className="lg:col-span-6 scroll-mt-24 min-w-0">
-                    <WorkloadIndicator />
-                  </div>
-
-                  <div id="schedule" className="lg:col-span-6 scroll-mt-24 min-w-0">
+                {/* 3. Today's Schedule | Pending Tasks */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 w-full min-w-0">
+                  <div id="schedule" className="scroll-mt-24 min-w-0">
                     <DoctorSchedule />
                   </div>
 
-                  <div id="quick-actions" className="lg:col-span-12 scroll-mt-24 min-w-0">
-                    <QuickActions onActionClick={scrollToId} />
+                  <div id="tasks" className="scroll-mt-24 min-w-0">
+                    <PendingTasks tasks={tasks} onToggleTask={toggleTask} />
                   </div>
+                </div>
+
+                {/* 4. Workload Intelligence | Burnout / Operational Workload Indicator */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 w-full min-w-0">
+                  <div id="workload" className="scroll-mt-24 min-w-0">
+                    <WorkloadCard pendingCount={pendingCount} />
+                  </div>
+
+                  <div id="burnout" className="scroll-mt-24 min-w-0">
+                    <WorkloadIndicator />
+                  </div>
+                </div>
+
+                {/* 5. Documentation Assistant */}
+                <div id="doc-assistant" className="scroll-mt-24 min-w-0 w-full">
+                  <DocumentationAssistant />
                 </div>
               </div>
             )}
@@ -536,6 +488,68 @@ function DedicatedChatView({ selectedPatient }) {
         </button>
       </div>
     </motion.div>
+  );
+}
+
+function PatientsView({
+  combinedQueue,
+  allPatients,
+  queueStatuses,
+  selectedPatientId,
+  setSelectedPatientId,
+  queueFilter,
+  setQueueFilter,
+  markQueueDone,
+  nextPatient,
+  activeQueueItem,
+  isConsultationActive,
+  handleStartConsultation,
+  handleFinishConsultation,
+  selectedPatient,
+}) {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 w-full min-w-0">
+      <div className="lg:col-span-12 min-w-0">
+        <PatientQueue
+          queue={combinedQueue}
+          patients={allPatients}
+          queueStatuses={queueStatuses}
+          selectedPatientId={selectedPatientId}
+          onSelectPatient={setSelectedPatientId}
+          queueFilter={queueFilter}
+          setQueueFilter={setQueueFilter}
+          onMarkDone={markQueueDone}
+        />
+      </div>
+
+      <div className="lg:col-span-6 min-w-0">
+        <NextPatientCard
+          nextPatient={nextPatient}
+          queueItem={activeQueueItem}
+          onViewPatient={() => {
+            if (nextPatient) setSelectedPatientId(nextPatient.id);
+          }}
+          consultationStarted={isConsultationActive}
+          onStartConsultation={handleStartConsultation}
+          onFinishConsultation={handleFinishConsultation}
+        />
+      </div>
+
+      <div className="lg:col-span-6 min-w-0">
+        <AIPatientBrief />
+      </div>
+
+      <div className="lg:col-span-6 min-w-0">
+        <PatientSnapshot patient={selectedPatient} />
+      </div>
+
+      <div className="lg:col-span-6 min-w-0">
+        <MedicalTimeline
+          timeline={selectedPatient.timeline}
+          patientName={selectedPatient.name}
+        />
+      </div>
+    </div>
   );
 }
 

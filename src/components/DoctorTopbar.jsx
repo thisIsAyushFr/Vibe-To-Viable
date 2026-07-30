@@ -28,6 +28,21 @@ export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFil
     day: 'numeric'
   });
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'Good Morning';
+    if (hour >= 12 && hour < 17) return 'Good Afternoon';
+    if (hour >= 17 && hour < 22) return 'Good Evening';
+    return 'Good Night';
+  };
+
+  const [greeting, setGreeting] = useState(getGreeting());
+
+  useEffect(() => {
+    const interval = setInterval(() => setGreeting(getGreeting()), 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <header className="sticky top-0 z-30 px-3 sm:px-8 py-3 backdrop-blur-xl bg-[#F0FDFA]/90 border-b border-white/80 shadow-sm w-full max-w-full">
       <div className="flex items-center justify-between gap-2">
@@ -49,7 +64,7 @@ export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFil
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h1 className="text-sm sm:text-xl font-black text-[#0F172A] tracking-tight truncate">
-                Good Morning, {DOCTOR.name}
+                {greeting}, {DOCTOR.name}
               </h1>
               <span className="hidden sm:inline-flex text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#0F766E]/10 text-[#0F766E] border border-[#0F766E]/20">
                 {DOCTOR.department}
