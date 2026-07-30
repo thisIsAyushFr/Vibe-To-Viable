@@ -1,33 +1,54 @@
 import React, { useState } from 'react';
-import { 
-  Activity, 
-  Clock, 
-  User, 
-  CheckCircle2, 
-  AlertCircle, 
-  Calendar, 
-  ShieldAlert, 
-  Info, 
+import {
+  Activity,
+  Clock,
+  CheckCircle2,
+  Info,
   Building2,
-  Stethoscope,
-  Scissors
+  Siren,
+  X
 } from 'lucide-react';
-import { OPERATION_THEATERS, SCHEDULED_SURGERIES } from '../data/doctorDemoData';
+import { OPERATION_THEATERS } from '../data/doctorDemoData';
+
+const OT4_RESERVATION_KEY = 'caresync_ot4_emergency_reservation';
 
 export default function OperationTheaterView() {
-  const [activeDeptFilter, setActiveDeptFilter] = useState('All');
-
-  const filteredSurgeries = SCHEDULED_SURGERIES.filter((surg) => {
-    if (activeDeptFilter === 'All') return true;
-    return surg.department === activeDeptFilter;
+  const [ot4Reservation, setOt4Reservation] = useState(() => {
+    try {
+      const stored = localStorage.getItem(OT4_RESERVATION_KEY);
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
   });
+  const [showReserveModal, setShowReserveModal] = useState(false);
+  const [form, setForm] = useState({ patient: '', reason: '', doctor: '', duration: '' });
+
+  const standardTheaters = OPERATION_THEATERS.filter((ot) => ot.id !== 'ot-4');
+
+  const updateForm = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
+
+  const handleConfirmReservation = () => {
+    const reservation = { ...form };
+    setOt4Reservation(reservation);
+    localStorage.setItem(OT4_RESERVATION_KEY, JSON.stringify(reservation));
+    setShowReserveModal(false);
+    setForm({ patient: '', reason: '', doctor: '', duration: '' });
+  };
+
+  const handleReleaseReservation = () => {
+    setOt4Reservation(null);
+    localStorage.removeItem(OT4_RESERVATION_KEY);
+  };
+
+  const isFormValid = form.patient && form.reason && form.doctor && form.duration;
 
   return (
     <div className="space-y-6 w-full max-w-full">
       {/* Header Banner */}
       <div className="p-6 rounded-3xl bg-gradient-to-r from-teal-900 via-slate-900 to-cyan-950 text-white shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-80 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
-        
+
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 text-xs font-bold border border-teal-500/30 mb-2">
@@ -38,7 +59,7 @@ export default function OperationTheaterView() {
               Operation Theater (OT) Management
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
-              Live OT slot occupancy, surgeon allocations, and surgical schedules at Aarogya Multispeciality Hospital.
+              Live OT slot occupancy, surgeon allocations, and emergency trauma readiness at Aarogya Multispeciality Hospital.
             </p>
           </div>
 
@@ -71,31 +92,26 @@ export default function OperationTheaterView() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {OPERATION_THEATERS.map((ot) => {
+          {standardTheaters.map((ot) => {
             const isOccupied = ot.status === 'occupied';
             const isVacant = ot.status === 'vacant';
-            const isStandby = ot.status === 'standby';
 
             return (
-              <div 
+              <div
                 key={ot.id}
                 className={`p-5 rounded-2xl border transition-all shadow-sm flex flex-col justify-between ${
-                  isOccupied 
-                    ? 'bg-rose-50/60 border-rose-200' 
-                    : isVacant 
-                    ? 'bg-emerald-50/60 border-emerald-200' 
-                    : 'bg-cyan-50/60 border-cyan-200'
+                  isOccupied
+                    ? 'bg-rose-50/60 border-rose-200'
+                    : 'bg-emerald-50/60 border-emerald-200'
                 }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-xs font-black text-[#0F172A]">{ot.name}</span>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                      isOccupied 
-                        ? 'bg-rose-100 text-rose-800 border border-rose-200' 
-                        : isVacant 
-                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' 
-                        : 'bg-cyan-100 text-cyan-800 border border-cyan-200'
+                      isOccupied
+                        ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                        : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                     }`}>
                       {ot.status}
                     </span>
@@ -120,7 +136,7 @@ export default function OperationTheaterView() {
                         <span>Slot: {ot.timeSlot}</span>
                       </div>
                     </div>
-                  ) : isVacant ? (
+                  ) : (
                     <div className="space-y-3 py-2 text-center">
                       <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
                         <CheckCircle2 size={22} />
@@ -133,16 +149,6 @@ export default function OperationTheaterView() {
                         Reserve OT Slot
                       </button>
                     </div>
-                  ) : (
-                    <div className="space-y-3 py-2 text-center">
-                      <div className="w-10 h-10 rounded-full bg-cyan-100 text-cyan-700 flex items-center justify-center mx-auto">
-                        <ShieldAlert size={22} />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-cyan-900">Level-1 Trauma Standby Suite</p>
-                        <p className="text-[11px] text-cyan-700 mt-0.5">{ot.nextAvailableSlot}</p>
-                      </div>
-                    </div>
                   )}
                 </div>
 
@@ -153,87 +159,141 @@ export default function OperationTheaterView() {
               </div>
             );
           })}
+
+          {/* OT 4 — Dedicated Emergency Trauma Suite */}
+          <div
+            className={`p-5 rounded-2xl border transition-all shadow-sm flex flex-col justify-between ${
+              ot4Reservation ? 'bg-rose-50/60 border-rose-200' : 'bg-amber-50/60 border-amber-200'
+            }`}
+          >
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-black text-[#0F172A]">OT 4 — Emergency Trauma Suite</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                  ot4Reservation
+                    ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                    : 'bg-amber-100 text-amber-800 border border-amber-200'
+                }`}>
+                  {ot4Reservation ? 'Emergency Reserved' : 'Reserved for Emergency'}
+                </span>
+              </div>
+
+              {ot4Reservation ? (
+                <div className="space-y-2 text-xs">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">Patient</span>
+                    <p className="font-bold text-slate-800">{ot4Reservation.patient}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">Emergency Reason</span>
+                    <p className="font-semibold text-rose-800">{ot4Reservation.reason}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">Doctor</span>
+                    <p className="font-medium text-slate-700">{ot4Reservation.doctor}</p>
+                  </div>
+                  <div className="pt-2 border-t border-rose-200/60 flex items-center gap-1.5 text-rose-700 text-[11px] font-bold">
+                    <Clock size={13} />
+                    <span>Expected: {ot4Reservation.duration}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3 py-2 text-center">
+                  <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mx-auto">
+                    <Siren size={22} />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-amber-900">Available 24×7</p>
+                    <p className="text-[11px] text-amber-700 mt-0.5 leading-snug">
+                      This OT is normally reserved and can be used when normal OTs are unavailable during an emergency.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowReserveModal(true)}
+                    className="w-full py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-all"
+                  >
+                    Reserve for Emergency
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-500 font-medium">
+              <span>Dept: Emergency Medicine</span>
+              {ot4Reservation ? (
+                <button onClick={handleReleaseReservation} className="font-bold text-rose-700 hover:underline">
+                  Release
+                </button>
+              ) : (
+                <span className="font-bold text-teal-700">Available 24×7</span>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Scheduled Operations Timeline */}
-      <div className="p-6 rounded-3xl bg-white border border-slate-200/80 shadow-md">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-          <div>
-            <h3 className="text-base font-bold text-[#0F172A] flex items-center gap-2">
-              <Scissors size={18} className="text-[#0F766E]" />
-              <span>Surgical Operation Schedule</span>
-            </h3>
-            <p className="text-xs text-slate-500">Upcoming procedures for doctors using Operation Theater</p>
-          </div>
+      {/* Emergency Reservation Modal */}
+      {showReserveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 relative">
+            <button
+              onClick={() => setShowReserveModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700"
+            >
+              <X size={18} />
+            </button>
+            <h3 className="text-lg font-black text-[#0F172A] mb-1">Reserve OT 4 for Emergency</h3>
+            <p className="text-xs text-slate-500 mb-4">Emergency Trauma Suite — Available 24×7</p>
 
-          {/* Department Filter Tabs */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            {['All', 'Cardiology', 'Orthopedics', 'Neurology'].map((dept) => (
-              <button
-                key={dept}
-                onClick={() => setActiveDeptFilter(dept)}
-                className={`px-3 py-1 rounded-xl text-xs font-bold transition-all ${
-                  activeDeptFilter === dept 
-                    ? 'bg-teal-700 text-white shadow-sm' 
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                }`}
-              >
-                {dept}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="divide-y divide-slate-100">
-          {filteredSurgeries.map((surg) => (
-            <div key={surg.id} className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/80 px-3 rounded-2xl transition-colors">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-100 text-teal-700 flex items-center justify-center font-bold flex-shrink-0 mt-0.5">
-                  <Stethoscope size={18} />
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-bold text-slate-900">{surg.procedure}</span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-teal-100 text-teal-800">
-                      {surg.otName}
-                    </span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                      surg.status === 'In-Progress' 
-                        ? 'bg-rose-100 text-rose-800 border border-rose-200' 
-                        : surg.status === 'Pre-Op Preparation'
-                        ? 'bg-amber-100 text-amber-800'
-                        : 'bg-sky-100 text-sky-800'
-                    }`}>
-                      {surg.status}
-                    </span>
-                  </div>
-
-                  <p className="text-xs font-medium text-slate-600 mt-1">
-                    Surgeon: <span className="font-bold text-teal-900">{surg.surgeonName}</span> ({surg.degree})
-                  </p>
-                  
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Patient: <span className="font-semibold text-slate-800">{surg.patientName} ({surg.patientAge} yrs)</span> • Dept: <span className="font-semibold">{surg.department}</span>
-                  </p>
-                </div>
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Patient</label>
+                <input
+                  value={form.patient}
+                  onChange={updateForm('patient')}
+                  placeholder="Patient name"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:border-teal-500"
+                />
               </div>
-
-              <div className="flex md:flex-col items-center md:items-end justify-between text-xs text-slate-600 gap-1 border-t md:border-t-0 pt-2 md:pt-0 border-slate-100">
-                <div className="flex items-center gap-1.5 font-bold text-slate-800">
-                  <Calendar size={14} className="text-teal-600" />
-                  <span>{surg.date}</span>
-                </div>
-                <div className="flex items-center gap-1.5 font-mono text-teal-700 font-semibold">
-                  <Clock size={14} />
-                  <span>{surg.time}</span>
-                </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Emergency Reason</label>
+                <input
+                  value={form.reason}
+                  onChange={updateForm('reason')}
+                  placeholder="e.g. Trauma, cardiac arrest"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:border-teal-500"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Doctor</label>
+                <input
+                  value={form.doctor}
+                  onChange={updateForm('doctor')}
+                  placeholder="Attending doctor"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:border-teal-500"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Expected Duration</label>
+                <input
+                  value={form.duration}
+                  onChange={updateForm('duration')}
+                  placeholder="e.g. 2 hours"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:border-teal-500"
+                />
               </div>
             </div>
-          ))}
+
+            <button
+              onClick={handleConfirmReservation}
+              disabled={!isFormValid}
+              className="w-full mt-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold shadow-md transition-all"
+            >
+              Confirm Reservation
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

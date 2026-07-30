@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Users, CheckSquare, Clock3, ClipboardList, LayoutGrid, ArrowLeft, Send,
-  Activity, Bed, Calendar, BrainCircuit, Clock, Settings, MessageSquare, LogOut, X, Stethoscope
+  Activity, Bed, Calendar, Settings, LogOut, X, Stethoscope
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -29,20 +29,14 @@ import DoctorSettings from './components/DoctorSettings';
 
 export const NAV_ITEMS = [
   { id: 'overview', label: 'Overview', icon: LayoutGrid },
+  { id: 'patients', label: 'Patients', icon: Stethoscope },
   { id: 'ot-schedules', label: 'Operation Theater', icon: Activity },
   { id: 'admitted-patients', label: 'Admitted Patients & Beds', icon: Bed },
-  { id: 'patients', label: 'Patients', icon: Stethoscope },
-  { id: 'appointments', label: 'Appointments', icon: Calendar },
-  { id: 'outpatient-queue', label: 'Outpatient Queue', icon: Users },
-  { id: 'opd-schedule', label: 'OPD Schedule', icon: Clock },
-  { id: 'chat', label: 'Messages', icon: MessageSquare },
-  { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
 export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
   const [activeNav, setActiveNav] = useState('overview');
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [searchFilter, setSearchFilter] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState('rahul');
   const [tasks, setTasks] = useState(INITIAL_TASKS);
   const [queueFilter, setQueueFilter] = useState('all');
@@ -172,10 +166,7 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
         <main className="flex-1 lg:ml-64 min-h-screen pb-12 w-full max-w-full min-w-0 overflow-x-hidden">
           <DoctorTopbar
             setDrawerOpen={setDrawerOpen}
-            searchFilter={searchFilter}
-            setSearchFilter={setSearchFilter}
             onBackToLanding={onBackToLanding}
-            setActiveNav={setActiveNav}
           />
 
           <div className="px-3 sm:px-8 py-4 sm:py-6 w-full max-w-full min-w-0 overflow-x-hidden">
@@ -400,8 +391,19 @@ function InlineDoctorSidebar({ activeNav, setActiveNav, drawerOpen, setDrawerOpe
           })}
         </nav>
 
-        <div className="p-4 border-t border-slate-100 bg-slate-50">
-          <button 
+        <div className="p-4 border-t border-slate-100 bg-slate-50 space-y-2">
+          <button
+            onClick={() => { setActiveNav('settings'); setDrawerOpen(false); }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-200 group ${
+              activeNav === 'settings'
+                ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/25'
+                : 'text-slate-500 hover:bg-teal-50 hover:text-teal-800'
+            }`}
+          >
+            <Settings size={20} className={`${activeNav === 'settings' ? 'text-white' : 'text-slate-400 group-hover:text-teal-600'} transition-colors`} />
+            Settings
+          </button>
+          <button
             onClick={onBackToLanding}
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 shadow-sm hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all active:scale-95"
           >

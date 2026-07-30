@@ -1,14 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Menu, Search, Bell, Calendar, Sparkles, X, CheckCircle2, HeartPulse, ArrowLeft, MessageSquare } from 'lucide-react';
+import { Menu, Bell, Calendar, CheckCircle2, HeartPulse, ArrowLeft } from 'lucide-react';
 import { DOCTOR, NOTIFICATIONS } from '../data/doctorDemoData';
-import { useUnreadCount } from '../data/messageStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFilter, onBackToLanding, setActiveNav }) {
+export default function DoctorTopbar({ setDrawerOpen, onBackToLanding }) {
   const [notifOpen, setNotifOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [unreadList, setUnreadList] = useState(NOTIFICATIONS);
-  const unreadMessages = useUnreadCount('D001');
   const notifRef = useRef(null);
 
   useEffect(() => {
@@ -92,47 +89,6 @@ export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFil
               <span className="hidden sm:inline">Hospital Website</span>
             </button>
           )}
-          {/* Mobile Search Toggle Icon */}
-          <button
-            onClick={() => setMobileSearchOpen((v) => !v)}
-            className="md:hidden w-8 h-8 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center text-[#0F172A] hover:bg-slate-50 active:scale-95 shadow-xs"
-          >
-            <Search size={15} />
-          </button>
-
-          {/* Desktop Search bar */}
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200/80 shadow-inner w-48 lg:w-60 focus-within:border-[#0F766E] focus-within:ring-2 focus-within:ring-[#0F766E]/15 transition-all">
-            <Search size={14} className="text-[#64748B]" />
-            <input
-              value={searchFilter}
-              onChange={(e) => setSearchFilter(e.target.value)}
-              placeholder="Search patient, task..."
-              className="bg-transparent outline-none text-xs w-full text-[#0F172A] placeholder:text-slate-400 font-medium"
-            />
-            {searchFilter && (
-              <button onClick={() => setSearchFilter('')} className="text-slate-400 hover:text-slate-600">
-                <X size={12} />
-              </button>
-            )}
-          </div>
-
-          {/* Chat Button */}
-          {setActiveNav && (
-            <button
-              onClick={() => setActiveNav('chat')}
-              className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center relative hover:bg-slate-50 shadow-xs transition-all active:scale-95"
-              title="Messages"
-              aria-label="Open Messages"
-            >
-              <MessageSquare size={16} className="text-[#0F172A]" />
-              {unreadMessages > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 rounded-full text-[8px] flex items-center justify-center text-white font-extrabold bg-[#EF4444]">
-                  {unreadMessages}
-                </span>
-              )}
-            </button>
-          )}
-
           {/* Notification Button & Popup */}
           <div className="relative" ref={notifRef}>
             <button
@@ -203,31 +159,6 @@ export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFil
           </div>
         </div>
       </div>
-
-      {/* Expandable Mobile Search Input Bar */}
-      <AnimatePresence>
-        {mobileSearchOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden mt-2 pt-2 border-t border-slate-200/60"
-          >
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 shadow-inner">
-              <Search size={14} className="text-[#64748B]" />
-              <input
-                value={searchFilter}
-                onChange={(e) => setSearchFilter(e.target.value)}
-                placeholder="Search patient, task..."
-                className="bg-transparent outline-none text-xs w-full text-[#0F172A] placeholder:text-slate-400 font-medium"
-              />
-              <button onClick={() => setMobileSearchOpen(false)} className="text-slate-400">
-                <X size={14} />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </header>
   );
 }

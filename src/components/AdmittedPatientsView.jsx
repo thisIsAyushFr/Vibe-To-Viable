@@ -12,15 +12,17 @@ import {
   AlertTriangle,
   Stethoscope
 } from 'lucide-react';
-import { ADMITTED_PATIENTS } from '../data/doctorDemoData';
+import { ADMITTED_PATIENTS, DOCTOR } from '../data/doctorDemoData';
 
 export default function AdmittedPatientsView() {
   const [filterCondition, setFilterCondition] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredPatients = ADMITTED_PATIENTS.filter((pat) => {
+  const myPatients = ADMITTED_PATIENTS.filter((pat) => pat.attendingDoctor.startsWith(DOCTOR.name));
+
+  const filteredPatients = myPatients.filter((pat) => {
     const matchesCondition = filterCondition === 'All' || pat.condition === filterCondition;
-    const matchesSearch = pat.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    const matchesSearch = pat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           pat.bedNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           pat.ward.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCondition && matchesSearch;
@@ -48,12 +50,12 @@ export default function AdmittedPatientsView() {
 
           <div className="grid grid-cols-2 gap-3 bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 text-center">
             <div>
-              <p className="text-[10px] uppercase font-bold text-slate-300">Total Wards</p>
-              <p className="text-lg font-black text-emerald-300">5 Wards</p>
+              <p className="text-[10px] uppercase font-bold text-slate-300">My Patients</p>
+              <p className="text-lg font-black text-emerald-300">{myPatients.length} Admitted</p>
             </div>
             <div>
-              <p className="text-[10px] uppercase font-bold text-slate-300">Occupied Beds</p>
-              <p className="text-lg font-black text-cyan-300">5 Active</p>
+              <p className="text-[10px] uppercase font-bold text-slate-300">Critical</p>
+              <p className="text-lg font-black text-cyan-300">{myPatients.filter((p) => p.condition === 'Critical').length} Active</p>
             </div>
           </div>
         </div>
@@ -179,12 +181,18 @@ export default function AdmittedPatientsView() {
               </div>
 
               {/* Footer */}
-              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1.5 text-slate-600 truncate">
-                  <Stethoscope size={14} className="text-teal-600 flex-shrink-0" />
-                  <span className="truncate font-semibold">{patient.attendingDoctor}</span>
+              <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col gap-1.5 text-xs">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 text-slate-600 truncate">
+                    <Stethoscope size={14} className="text-teal-600 flex-shrink-0" />
+                    <span className="truncate font-semibold">{patient.attendingDoctor}</span>
+                  </div>
+                  <span className="text-[11px] font-bold text-slate-400 flex-shrink-0">Adm: {patient.admissionDate}</span>
                 </div>
-                <span className="text-[11px] font-bold text-slate-400 flex-shrink-0">Adm: {patient.admissionDate}</span>
+                <div className="flex items-center gap-1.5 text-slate-500">
+                  <UserCheck size={14} className="text-teal-500 flex-shrink-0" />
+                  <span className="truncate font-medium">Nurse: {patient.assignedNurse}</span>
+                </div>
               </div>
             </div>
           );
