@@ -358,6 +358,24 @@
   }
   .view-btn:hover{background:var(--bg);}
 
+  /* ---------- report modal ---------- */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:center;justify-content:center;}
+  .modal-overlay.active{display:flex;}
+  .modal-content{background:var(--surface);border-radius:20px;max-width:700px;max-height:85vh;overflow-y:auto;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);border:1px solid var(--border);}
+  .modal-header{padding:24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .modal-title{font-size:18px;font-weight:700;color:var(--navy);}
+  .modal-close{background:none;border:none;font-size:24px;color:var(--navy-soft);cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;}
+  .modal-close:hover{color:var(--navy);}
+  .modal-body{padding:24px;}
+  .report-section{margin-bottom:20px;}
+  .report-section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--navy-soft);margin-bottom:12px;}
+  .report-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+  .report-item:last-child{border-bottom:none;}
+  .report-label{font-size:12px;font-weight:600;color:var(--navy);}
+  .report-value{font-size:12px;font-weight:700;color:var(--teal-dark);}
+  .report-note{padding:12px;background:var(--inset-bg);border-radius:10px;font-size:12px;color:var(--navy);line-height:1.5;margin:10px 0;}
+  .report-footer{padding:24px;border-top:1px solid var(--border);background:var(--inset-bg);border-radius:0 0 20px 20px;text-align:center;font-size:11px;color:var(--navy-soft);}
+
   /* ---------- smart alerts ---------- */
   .alert-item{display:flex;align-items:flex-start;gap:13px;padding:13px 15px;margin-bottom:10px;}
   .alert-item:last-child{margin-bottom:0;}
@@ -1845,5 +1863,174 @@ doctorChatSend.addEventListener("click", () => {
 });
 
 </script>
+
+<div id="reportModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Report</div>
+      <button class="modal-close" onclick="closeReportModal()">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <p>Generated on <strong id="reportDate"></strong> by CareSync Hospital</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEMO_REPORTS = {
+  'blood-test': {
+    title: 'Blood Test Panel',
+    date: 'Jul 22, 2026',
+    sections: [
+      {
+        name: 'Complete Blood Count',
+        items: [
+          { label: 'Hemoglobin', value: '14.2 g/dL', normal: '✓ Normal' },
+          { label: 'RBC Count', value: '4.8 M/μL', normal: '✓ Normal' },
+          { label: 'WBC Count', value: '7.2 K/μL', normal: '✓ Normal' },
+          { label: 'Platelets', value: '245 K/μL', normal: '✓ Normal' }
+        ]
+      },
+      {
+        name: 'Metabolic Panel',
+        items: [
+          { label: 'Glucose (Fasting)', value: '105 mg/dL', normal: '⚠ Slightly elevated' },
+          { label: 'Creatinine', value: '0.9 mg/dL', normal: '✓ Normal' },
+          { label: 'BUN', value: '18 mg/dL', normal: '✓ Normal' },
+          { label: 'Electrolytes', value: 'Balanced', normal: '✓ Normal' }
+        ]
+      },
+      {
+        name: 'Lipid Profile',
+        items: [
+          { label: 'Total Cholesterol', value: '215 mg/dL', normal: '⚠ Borderline' },
+          { label: 'LDL', value: '135 mg/dL', normal: '⚠ Elevated' },
+          { label: 'HDL', value: '45 mg/dL', normal: '✓ Good' },
+          { label: 'Triglycerides', value: '150 mg/dL', normal: '✓ Normal' }
+        ]
+      }
+    ],
+    notes: 'Blood glucose and cholesterol slightly elevated. Recommend continuing current diet and exercise regimen. Follow-up test in 30 days.'
+  },
+  'xray': {
+    title: 'Chest X-ray Report',
+    date: 'Jul 18, 2026',
+    sections: [
+      {
+        name: 'Findings',
+        items: [
+          { label: 'Heart Size', value: 'Normal', normal: '✓' },
+          { label: 'Lungs', value: 'Clear bilaterally', normal: '✓' },
+          { label: 'Mediastinum', value: 'Unremarkable', normal: '✓' },
+          { label: 'Pleural Spaces', value: 'No effusion', normal: '✓' }
+        ]
+      },
+      {
+        name: 'Impression',
+        items: [
+          { label: 'Overall Assessment', value: 'No acute cardiopulmonary abnormality', normal: '✓' }
+        ]
+      }
+    ],
+    notes: 'Chest X-ray shows normal cardiac silhouette and clear lungs. No evidence of acute pulmonary disease or cardiomegaly. Status post-stent placement noted.'
+  },
+  'prescription': {
+    title: 'Prescription Update',
+    date: 'Jul 15, 2026',
+    sections: [
+      {
+        name: 'Current Medications',
+        items: [
+          { label: 'Metformin 500mg', value: 'After breakfast daily', normal: '✓' },
+          { label: 'Atorvastatin 10mg', value: 'After dinner daily', normal: '✓' },
+          { label: 'Aspirin 75mg', value: 'Morning daily', normal: '✓' },
+          { label: 'Lisinopril 5mg', value: 'Morning daily', normal: '✓' }
+        ]
+      },
+      {
+        name: 'Dosage Instructions',
+        items: [
+          { label: 'Take with water', value: 'All tablets', normal: '✓' },
+          { label: 'Food interaction', value: 'Avoid high-fat meals with Atorvastatin', normal: '⚠' },
+          { label: 'Timing', value: 'Maintain consistent times', normal: '✓' }
+        ]
+      }
+    ],
+    notes: 'Continue current medication regimen. No new prescriptions added. Monitor blood sugar regularly. Schedule follow-up appointment in 2 weeks.'
+  },
+  'notes': {
+    title: "Doctor's Clinical Notes",
+    date: 'Jul 27, 2026',
+    sections: [
+      {
+        name: 'Clinical Assessment',
+        items: [
+          { label: 'Patient Status', value: 'Stable & improving', normal: '✓' },
+          { label: 'Recovery Progress', value: '75% of expected recovery', normal: '✓' },
+          { label: 'Pain Level', value: 'Mild discomfort', normal: '✓' }
+        ]
+      },
+      {
+        name: 'Vital Signs',
+        items: [
+          { label: 'Blood Pressure', value: '120/80 mmHg', normal: '✓ Normal' },
+          { label: 'Heart Rate', value: '72 bpm', normal: '✓ Normal' },
+          { label: 'Temperature', value: '98.6°F', normal: '✓ Normal' }
+        ]
+      }
+    ],
+    notes: 'Patient recovering well post-angioplasty. Stent placement successful. Continue current medication. Blood pressure and heart rate stable. Cleared for light physical activity. Follow-up cardiology appointment scheduled for August 10.'
+  }
+};
+
+function openReportModal(reportKey) {
+  const report = DEMO_REPORTS[reportKey];
+  const modal = document.getElementById('reportModal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalBody = document.getElementById('modalBody');
+  const reportDate = document.getElementById('reportDate');
+
+  modalTitle.textContent = report.title;
+  reportDate.textContent = report.date;
+
+  let html = '';
+  report.sections.forEach(section => {
+    html += `<div class="report-section">
+      <div class="report-section-title">${section.name}</div>`;
+    section.items.forEach(item => {
+      html += `<div class="report-item">
+        <div class="report-label">${item.label}</div>
+        <div style="text-align:right;">
+          <div class="report-value">${item.value}</div>
+          <div style="font-size:10px;color:var(--navy-soft);margin-top:2px;">${item.normal}</div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+
+  if (report.notes) {
+    html += `<div class="report-note"><strong>Doctor's Notes:</strong><br>${report.notes}</div>`;
+  }
+
+  modalBody.innerHTML = html;
+  modal.classList.add('active');
+}
+
+function closeReportModal() {
+  document.getElementById('reportModal').classList.remove('active');
+}
+
+document.getElementById('reportModal').addEventListener('click', (e) => {
+  if (e.target.id === 'reportModal') closeReportModal();
+});
+
+document.querySelectorAll('.view-btn').forEach((btn, idx) => {
+  const keys = ['blood-test', 'xray', 'prescription', 'notes'];
+  btn.onclick = () => openReportModal(keys[idx]);
+});
+</script>
+
 </body>
 </html>
