@@ -1,0 +1,275 @@
+/* ================================================================
+   CareSync AI widget — single shared stylesheet
+   ----------------------------------------------------------------
+   Source of truth: the Patient dashboard (Patient.html) AI widget.
+   Every rule below is copied verbatim from that reference; the only
+   change is that reference CSS custom properties are resolved to
+   their literal values so the widget renders identically on pages
+   that do not define the Patient palette (admin.html, React pages).
+
+     --surface    #FFFFFF      --navy        #17263B
+     --bg         #F4F7FB      --navy-soft   #5E7186
+     --border     #E2E8F0      --green       #43A96B
+     --teal       #2E9E90      --teal-dark   #20756A
+     --teal-soft  #DCF1EC      --radius-lg   28px
+
+   Do not add page-specific overrides. Change this file only.
+   ================================================================ */
+
+/* ---------- floating action button ---------- */
+.ai-fab {
+  position: fixed;
+  bottom: 28px;
+  right: 32px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(150deg, #2E9E90, #20756A);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 50;
+  border: none;
+  /* pinned so host resets (Tailwind preflight, admin.css) cannot shift it */
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.ai-fab svg {
+  width: 26px;
+  height: 26px;
+  stroke: #fff;
+}
+
+/* ---------- panel shell ---------- */
+/* width/padding/overflow from `.ai-panel`; background/border/radius from the
+   reference `.raised` class, inlined here so the panel needs no extra class. */
+.ai-panel {
+  position: fixed;
+  bottom: 104px;
+  right: 32px;
+  z-index: 50;
+  width: 320px;
+  padding: 0;
+  overflow: hidden;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 28px;
+  opacity: 0;
+  transform: translateY(10px) scale(.96);
+  transform-origin: bottom right;
+  pointer-events: none;
+  transition: opacity .22s ease, transform .22s ease;
+  /* Typography pinned to the reference page's `body`, because the three host
+     contexts inherit differently and would otherwise change the panel's
+     height: Patient.html gives line-height `normal`, admin.css gives 1.6 and
+     Tailwind's preflight gives 1.5. Descendants inherit from here. */
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: normal;
+  letter-spacing: normal;
+  text-align: left;
+  color: #17263B;
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+}
+
+.ai-panel.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.ai-panel * {
+  box-sizing: border-box;
+}
+
+.ai-panel-inner {
+  padding: 18px 18px 14px;
+}
+
+/* ---------- header ---------- */
+.ai-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.ai-panel-head .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #43A96B;
+  flex-shrink: 0;
+}
+
+.ai-panel-title {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+
+.ai-panel-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  color: #5E7186;
+  padding: 2px;
+  /* pinned so host button resets cannot change the glyph metrics */
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  margin-top: 0;
+  margin-bottom: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.ai-panel-sub {
+  font-size: 11.5px;
+  color: #5E7186;
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+/* ---------- chat log ---------- */
+.ai-chat-log {
+  max-height: 130px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+
+.ai-chat-msg {
+  background: #F4F7FB;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  padding: 10px 13px;
+  font-size: 12px;
+  color: #17263B;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+/* ---------- input row ---------- */
+.ai-chat-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: #FFFFFF;
+  border-top: 1px solid #E2E8F0;
+}
+
+.ai-chat-input {
+  flex: 1;
+  background: #F4F7FB;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 10px 13px;
+  font-size: 12.5px;
+  font-family: 'Inter', sans-serif;
+  color: #17263B;
+  outline: none;
+  /* pinned so host resets cannot change field metrics */
+  box-sizing: border-box;
+  font-weight: 400;
+  line-height: normal;
+  margin: 0;
+  min-width: 0;
+}
+
+/* The reference leaves the placeholder unstyled, which resolves to the browser
+   default on Patient.html/admin.html but to #9ca3af under Tailwind's preflight.
+   Pinned to the palette's muted text so "Ask CareSync AI..." is identical
+   everywhere. */
+.ai-chat-input::placeholder {
+  color: #93A2B3;
+  opacity: 1;
+}
+
+.ai-chat-send {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  flex-shrink: 0;
+  background: linear-gradient(150deg, #2E9E90, #20756A);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  /* The reference button contains the text glyph U+27A4 and inherits its
+     colour/size from the host page, which differs per page. Pinned here so
+     the arrow is identical everywhere. See AI-WIDGET.md for the one
+     deliberate deviation from the reference (white instead of inherited). */
+  color: #fff;
+  font-size: 15px;
+  line-height: 1;
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.ai-chat-send svg {
+  width: 16px;
+  height: 16px;
+  stroke: #fff;
+}
+
+/* ---------- optional sub-components (kept for parity with the reference) ---------- */
+.ai-prompt-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.ai-prompt-chip {
+  font-size: 11px;
+  font-weight: 600;
+  color: #20756A;
+  background: #DCF1EC;
+  padding: 6px 11px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.ai-option-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ai-option-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 13px;
+  background: #F4F7FB;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #17263B;
+  cursor: pointer;
+  transition: background .2s ease;
+}
+
+.ai-option-item:hover {
+  background: #DCF1EC;
+  color: #20756A;
+}
