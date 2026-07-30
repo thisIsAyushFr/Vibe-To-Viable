@@ -146,7 +146,7 @@ $$('.modal-overlay').forEach(modal => {
 });
 
 // Close buttons inside modals
-['#cancelRegisterPatientModal', '#cancelAddDoctorModal', '#cancelBookApptModal', '#cancelBedModal', '#confirmInspectorModal', '#cancelQuickActionModal', '#cancelNotifModal', '#cancelMsgModal', '#cancelEditPatientModal', '#cancelEditDoctorModal', '#cancelAllActivitiesModal', '#cancelInventoryManageModal'].forEach(id => {
+['#cancelAddDoctorModal', '#confirmInspectorModal', '#cancelQuickActionModal', '#cancelNotifModal', '#cancelMsgModal', '#cancelEditPatientModal', '#cancelEditDoctorModal', '#cancelAllActivitiesModal', '#cancelInventoryManageModal'].forEach(id => {
   $(id)?.addEventListener('click', () => {
     const overlay = $(id).closest('.modal-overlay');
     if (overlay) overlay.classList.remove('active');
@@ -398,10 +398,7 @@ const activities = [
 // Quick Actions data
 const quickActions = [
   { label: 'Add Doctor', icon: '👨‍⚕️', gradient: 'linear-gradient(135deg, #0F766E, #14B8A6)' },
-  { label: 'Register Patient', icon: '📋', gradient: 'linear-gradient(135deg, #3B82F6, #38BDF8)' },
-  { label: 'Book Appointment', icon: '📅', gradient: 'linear-gradient(135deg, #EA580C, #F59E0B)' },
   { label: 'Assign Shift', icon: '🕐', gradient: 'linear-gradient(135deg, #7C3AED, #A78BFA)' },
-  { label: 'Allocate Bed', icon: '🛏️', gradient: 'linear-gradient(135deg, #059669, #34D399)' },
   { label: 'Generate Report', icon: '📊', gradient: 'linear-gradient(135deg, #0F766E, #38BDF8)' },
   { label: 'Export PDF', icon: '📄', gradient: 'linear-gradient(135deg, #DC2626, #F87171)' },
   { label: 'Export Excel', icon: '📗', gradient: 'linear-gradient(135deg, #16A34A, #4ADE80)' },
@@ -1085,16 +1082,6 @@ $('#pageHeaderQuickActionBtn')?.addEventListener('click', () => {
   populateModalQuickActions();
 });
 
-// Register Patient section button
-$('#registerPatientBtn')?.addEventListener('click', () => {
-  openModal('#registerPatientModal');
-});
-
-// Bed Management section header button
-$('#headerAllocateBedBtn')?.addEventListener('click', () => {
-  openModal('#bedAllocationModal');
-  if ($('#bedActionType')) $('#bedActionType').value = 'allocate';
-});
 
 // Inventory Management button & form
 $('#manageInventoryBtn')?.addEventListener('click', () => {
@@ -1453,11 +1440,7 @@ function populateModalQuickActions() {
 function triggerQuickAction(label) {
   if (label === 'Add Doctor') {
     openModal('#addDoctorModal');
-  } else if (label === 'Register Patient') {
-    openModal('#registerPatientModal');
-  } else if (label === 'Book Appointment') {
-    openModal('#bookAppointmentModal');
-  } else if (label === 'Allocate Bed' || label === 'Assign Shift') {
+  } else if (label === 'Assign Shift') {
     openModal('#bedAllocationModal');
   } else if (label === 'Generate Report') {
     openModal('#reportsModal');
@@ -1477,44 +1460,6 @@ function triggerQuickAction(label) {
 // FORM SUBMISSIONS & DATA MUTATIONS
 // ────────────────────────────────────────────────────────────────
 
-// Register Patient Form
-$('#registerPatientForm')?.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const name = $('#regPatientName').value.trim();
-  const dept = $('#regPatientDept').value;
-  const doctor = $('#regPatientDoctor').value;
-  const priority = $('#regPatientPriority').value;
-  const room = $('#regPatientRoom').value.trim() || 'General';
-  const status = $('#regPatientStatus').value;
-
-  const newPatient = {
-    id: `PT-${Math.floor(10000 + Math.random() * 90000)}`,
-    name,
-    doctor,
-    dept,
-    priority,
-    appt: 'Just Now',
-    room,
-    status
-  };
-
-  patients.unshift(newPatient);
-  renderPatientTable();
-  closeModal('#registerPatientModal');
-  e.target.reset();
-  showToast('Patient Registered', `${name} (${newPatient.id}) registered in ${dept}.`, 'success');
-
-  // Add activity item
-  activities.unshift({
-    text: 'Patient Registered',
-    desc: `${name} registered for ${dept} with ${doctor}.`,
-    time: 'Just now',
-    dot: 'teal'
-  });
-  renderActivityFeed();
-
-  window.AarogyaAPI?.emit('patientRegistered', newPatient);
-});
 
 // Add Doctor Form
 $('#addDoctorForm')?.addEventListener('submit', (e) => {
@@ -1546,61 +1491,7 @@ $('#addDoctorForm')?.addEventListener('submit', (e) => {
   window.AarogyaAPI?.emit('doctorAdded', newDoctor);
 });
 
-// Book Appointment Form
-$('#bookAppointmentForm')?.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const patient = $('#apptPatientName').value.trim();
-  const doctor = $('#apptDoctorName').value;
-  const type = $('#apptType').value.trim();
-  const time = $('#apptTimeStr').value.trim() || '12:30 PM';
 
-  const newAppt = {
-    time,
-    patient,
-    doctor,
-    type,
-    status: 'upcoming'
-  };
-
-  appointments.unshift(newAppt);
-  renderAppointments();
-  closeModal('#bookAppointmentModal');
-  e.target.reset();
-  showToast('Appointment Scheduled', `Appointment for ${patient} with ${doctor} booked at ${time}.`, 'success');
-
-  window.AarogyaAPI?.emit('appointmentBooked', newAppt);
-});
-
-// Bed Allocation Form
-$('#bedAllocationForm')?.addEventListener('submit', (e) => {
-  e.preventDefault();
-  const wardName = $('#bedWardSelect').value;
-  const actionType = $('#bedActionType').value;
-  const patientInfo = $('#bedPatientInfo').value.trim();
-
-  const bed = beds.find(b => b.ward === wardName);
-  if (bed) {
-    if (actionType === 'allocate') {
-      if (bed.occupied < bed.capacity) {
-        bed.occupied++;
-        showToast('Bed Allocated', `Allocated 1 bed in ${wardName} for ${patientInfo}.`, 'success');
-      } else {
-        showToast('Ward Full', `${wardName} is currently at max capacity!`, 'danger');
-      }
-    } else if (actionType === 'transfer') {
-      showToast('Bed Transferred', `Bed transfer requested for ${patientInfo} to ${wardName}.`, 'info');
-    } else if (actionType === 'discharge') {
-      if (bed.occupied > 0) {
-        bed.occupied--;
-        showToast('Patient Discharged', `Freed 1 bed in ${wardName}. Patient ${patientInfo} discharged.`, 'success');
-      }
-    }
-    renderBedCards();
-  }
-
-  closeModal('#bedAllocationModal');
-  e.target.reset();
-});
 
 // Edit Patient Form Submit
 $('#editPatientForm')?.addEventListener('submit', (e) => {
