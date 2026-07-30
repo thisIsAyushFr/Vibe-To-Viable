@@ -19,9 +19,15 @@ function App() {
     setPage("landing");
   };
 
-  if (page === "doctor") {
-    return <DoctorDashboard />;
-  }
+if (page === "doctor") {
+  return (
+    <DoctorDashboard
+      user={user}
+      onLogout={handleLogout}
+      onBackToLanding={handleLogout}
+    />
+  );
+}
 
   return (
     <HospitalLanding
