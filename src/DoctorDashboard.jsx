@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Users, CheckSquare, Clock3, ClipboardList, LayoutGrid, ArrowLeft, Send,
-  Activity, Bed, Calendar, Bot, BrainCircuit, Clock, Settings, MessageSquare, LogOut, X
+  Activity, Bed, Calendar, BrainCircuit, Clock, Settings, MessageSquare, LogOut, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -14,6 +14,7 @@ import StatCard from './components/StatCard';
 import NextPatientCard from './components/NextPatientCard';
 import AIPatientBrief from './components/AIPatientBrief';
 import PatientQueue from './components/PatientQueue';
+import StatusBadge from './components/StatusBadge';
 import PendingTasks from './components/PendingTasks';
 import PatientSnapshot from './components/PatientSnapshot';
 import MedicalTimeline from './components/MedicalTimeline';
@@ -34,11 +35,10 @@ export const NAV_ITEMS = [
   { id: 'admitted-patients', label: 'Admitted Patients & Beds', icon: Bed },
   { id: 'appointments', label: 'Appointments', icon: Calendar },
   { id: 'outpatient-queue', label: 'Outpatient Queue', icon: Users },
-  { id: 'ai-assistant', label: 'AI Clinical Assistant', icon: Bot, badge: 'AI' },
   { id: 'tasks', label: 'Tasks', icon: CheckSquare },
   { id: 'workload', label: 'Workload Intelligence', icon: BrainCircuit },
   { id: 'opd-schedule', label: 'OPD Schedule', icon: Clock },
-  { id: 'chat', label: 'Messages', icon: MessageSquare }, // <-- Included here natively!
+  { id: 'chat', label: 'Messages', icon: MessageSquare },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
@@ -200,6 +200,41 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
               <DoctorSettings onLogout={onLogout} />
             ) : activeNav === 'chat' ? (
               <DedicatedChatView selectedPatient={selectedPatient} />
+            ) : activeNav === 'appointments' ? (
+              <AppointmentsView
+                queue={INITIAL_QUEUE}
+                patients={PATIENTS}
+                onViewPatient={(id) => {
+                  setSelectedPatientId(id);
+                  scrollToId('snapshot');
+                }}
+              />
+            ) : activeNav === 'outpatient-queue' ? (
+              <div className="max-w-4xl mx-auto">
+                <PatientQueue
+                  queue={combinedQueue}
+                  patients={allPatients}
+                  queueStatuses={queueStatuses}
+                  selectedPatientId={selectedPatientId}
+                  onSelectPatient={setSelectedPatientId}
+                  queueFilter={queueFilter}
+                  setQueueFilter={setQueueFilter}
+                  onMarkDone={markQueueDone}
+                />
+              </div>
+            ) : activeNav === 'tasks' ? (
+              <div className="max-w-2xl mx-auto">
+                <PendingTasks tasks={tasks} onToggleTask={toggleTask} />
+              </div>
+            ) : activeNav === 'workload' ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 max-w-5xl mx-auto">
+                <WorkloadCard pendingCount={pendingCount} />
+                <WorkloadIndicator />
+              </div>
+            ) : activeNav === 'opd-schedule' ? (
+              <div className="max-w-3xl mx-auto">
+                <DoctorSchedule walkIns={walkIns} />
+              </div>
             ) : activeNav !== 'overview' ? (
               <PlaceholderView
                 navId={activeNav}
@@ -499,6 +534,59 @@ function DedicatedChatView({ selectedPatient }) {
         >
           <Send size={18} />
         </button>
+      </div>
+    </motion.div>
+  );
+}
+
+function AppointmentsView({ queue, patients, onViewPatient }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="rounded-3xl p-5 sm:p-7 max-w-4xl mx-auto bg-white/90 backdrop-blur-2xl border border-white shadow-xl"
+    >
+      <div className="flex items-center gap-2.5 mb-5">
+        <div className="p-2 rounded-xl bg-[#0F766E]/10 text-[#0F766E] shadow-inner">
+          <Calendar size={18} />
+        </div>
+        <div>
+          <h2 className="text-xs font-black tracking-widest text-[#0F172A] uppercase">TODAY'S APPOINTMENTS</h2>
+          <p className="text-[10px] font-bold text-[#64748B]">Scheduled online consultations</p>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        {queue.map((q) => {
+          const p = patients[q.patientId];
+          if (!p) return null;
+          return (
+            <div
+              key={q.id}
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-slate-100 bg-white hover:border-[#0F766E]/30 hover:bg-[#F0FDFA] transition-all"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="text-xs font-black text-[#0F172A] w-16 flex-shrink-0">{q.time}</span>
+                <div className="min-w-0">
+                  <p className="text-sm font-black text-[#0F172A] truncate">{p.name}</p>
+                  <p className="text-[11px] font-semibold text-[#64748B] truncate">
+                    {q.visitType} • {p.age}y {p.gender} • Online Appointment
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <StatusBadge status={q.status} />
+                <button
+                  onClick={() => onViewPatient(q.patientId)}
+                  className="text-[10px] font-black px-3 py-1.5 rounded-xl bg-[#0F766E] text-white hover:bg-[#0d5f58] transition-all active:scale-95"
+                >
+                  View Patient
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </motion.div>
   );

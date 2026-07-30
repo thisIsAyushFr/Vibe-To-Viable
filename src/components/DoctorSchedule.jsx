@@ -3,7 +3,14 @@ import { Clock3, Stethoscope, Coffee, Zap, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { SCHEDULE } from '../data/doctorDemoData';
 
-export default function DoctorSchedule() {
+export default function DoctorSchedule({ walkIns = [] }) {
+  const combinedSchedule = [
+    ...SCHEDULE,
+    ...walkIns
+      .filter((w) => w.status !== 'Completed')
+      .map((w) => ({ time: w.arrivalTime, type: 'patient', label: `${w.name} (Walk-In)` }))
+  ];
+
   const getStyleMap = (type) => {
     switch (type) {
       case 'consultation':
@@ -38,13 +45,13 @@ export default function DoctorSchedule() {
           </div>
 
           <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#0F766E]/10 text-[#0F766E]">
-            9 Time Slots
+            {combinedSchedule.length} Time Slots
           </span>
         </div>
 
         {/* Schedule List */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[320px] overflow-y-auto pr-1">
-          {SCHEDULE.map((s, idx) => {
+          {combinedSchedule.map((s, idx) => {
             const st = getStyleMap(s.type);
             const Icon = st.icon;
 
