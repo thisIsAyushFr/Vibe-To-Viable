@@ -1,12 +1,26 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Menu, Search, Bell, Calendar, Sparkles, X, CheckCircle2, HeartPulse, ArrowLeft, MessageSquare } from 'lucide-react';
 import { DOCTOR, NOTIFICATIONS } from '../data/doctorDemoData';
+import { useUnreadCount } from '../data/messageStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFilter, onBackToLanding, setActiveNav }) {
   const [notifOpen, setNotifOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [unreadList, setUnreadList] = useState(NOTIFICATIONS);
+  const unreadMessages = useUnreadCount('D001');
+  const notifRef = useRef(null);
+
+  useEffect(() => {
+    if (!notifOpen) return;
+    const handleClickOutside = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [notifOpen]);
 
   const todayStr = new Date().toLocaleDateString('en-US', {
     weekday: 'short',
@@ -15,7 +29,7 @@ export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFil
   });
 
   return (
-    <header className="sticky top-0 z-20 px-3 sm:px-8 py-3 backdrop-blur-xl bg-[#F0FDFA]/90 border-b border-white/80 shadow-sm w-full max-w-full overflow-hidden">
+    <header className="sticky top-0 z-30 px-3 sm:px-8 py-3 backdrop-blur-xl bg-[#F0FDFA]/90 border-b border-white/80 shadow-sm w-full max-w-full">
       <div className="flex items-center justify-between gap-2">
         {/* Left Greeting & Mobile Hamburger */}
         <div className="flex items-center gap-2 min-w-0">
@@ -91,16 +105,21 @@ export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFil
           {setActiveNav && (
             <button
               onClick={() => setActiveNav('chat')}
-              className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center hover:bg-slate-50 shadow-xs transition-all active:scale-95"
+              className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center relative hover:bg-slate-50 shadow-xs transition-all active:scale-95"
               title="Messages"
               aria-label="Open Messages"
             >
               <MessageSquare size={16} className="text-[#0F172A]" />
+              {unreadMessages > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 rounded-full text-[8px] flex items-center justify-center text-white font-extrabold bg-[#EF4444]">
+                  {unreadMessages}
+                </span>
+              )}
             </button>
           )}
 
           {/* Notification Button & Popup */}
-          <div className="relative">
+          <div className="relative" ref={notifRef}>
             <button
               onClick={() => setNotifOpen((v) => !v)}
               className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center relative hover:bg-slate-50 shadow-xs transition-all active:scale-95"
@@ -120,7 +139,7 @@ export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFil
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="fixed sm:absolute left-3 right-3 sm:left-auto sm:right-0 mt-2 sm:w-80 rounded-2xl p-4 bg-white/95 backdrop-blur-2xl border border-white shadow-2xl z-50"
+                  className="absolute top-full right-0 mt-2 w-[calc(100vw-1.5rem)] max-w-[20rem] sm:w-80 rounded-2xl p-4 bg-white/95 backdrop-blur-2xl border border-white shadow-2xl z-[60]"
                 >
                   <div className="flex items-center justify-between mb-3 border-b pb-2">
                     <div className="flex items-center gap-1.5">
@@ -145,7 +164,7 @@ export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFil
                         key={n.id}
                         className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 hover:bg-[#F0FDFA] transition-colors relative group"
                       >
-                        <p className="text-xs font-medium text-[#0F172A] pr-4">{n.text}</p>
+                        <p className="text-xs font-medium text-[#0F172A] pr-4 break-words">{n.text}</p>
                         <p className="text-[10px] font-semibold text-[#64748B] mt-1">{n.time}</p>
                       </div>
                     ))}
