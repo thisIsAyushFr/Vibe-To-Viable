@@ -55,6 +55,7 @@ const sectionMap = {
   emergency: 'section-emergency',
   departments: 'section-departments',
   'bed-management': 'section-beds',
+  'ot-status': 'section-ot',
   'staff-shifts': 'section-staff',
   analytics: 'section-analytics',
   'ai-insights': 'section-ai-insights',
@@ -177,39 +178,47 @@ $('#saveSettingsBtn')?.addEventListener('click', () => {
 });
 
 // ────────────────────────────────────────────────────────────────
-// SCROLL ANIMATION (IntersectionObserver)
+// SCROLL ANIMATION (IntersectionObserver) — Optimized
 // ────────────────────────────────────────────────────────────────
 const animateObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
+      requestAnimationFrame(() => {
+        entry.target.classList.add('visible');
+      });
       animateObserver.unobserve(entry.target);
     }
   });
 }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
 
-$$('.animate-in').forEach(el => animateObserver.observe(el));
+// Defer observer setup to avoid blocking initial render
+requestAnimationFrame(() => {
+  $$('.animate-in').forEach(el => animateObserver.observe(el));
+});
 
 // ────────────────────────────────────────────────────────────────
 // KPI ANIMATED COUNTERS
 // ────────────────────────────────────────────────────────────────
-function animateCounter(el, target, duration = 2000) {
+function animateCounter(el, target, duration = 1200) {
   const prefix = el.dataset.prefix || '';
   const suffix = el.dataset.suffix || '';
   const start = 0;
   const startTime = performance.now();
+  let lastUpdate = 0;
 
   function update(currentTime) {
     const elapsed = currentTime - startTime;
     const progress = Math.min(elapsed / duration, 1);
-    // Ease-out
     const eased = 1 - Math.pow(1 - progress, 3);
     const current = Math.round(start + (target - start) * eased);
 
-    if (target >= 1_000_000) {
-      el.textContent = prefix + (current / 100_000).toFixed(1) + 'L';
-    } else {
-      el.textContent = prefix + current.toLocaleString('en-IN') + suffix;
+    if (currentTime - lastUpdate > 50 || progress >= 1) {
+      if (target >= 1_000_000) {
+        el.textContent = prefix + (current / 100_000).toFixed(1) + 'L';
+      } else {
+        el.textContent = prefix + current.toLocaleString('en-IN') + suffix;
+      }
+      lastUpdate = currentTime;
     }
 
     if (progress < 1) requestAnimationFrame(update);
@@ -218,7 +227,7 @@ function animateCounter(el, target, duration = 2000) {
   requestAnimationFrame(update);
 }
 
-// Observe KPI values
+// Observe KPI values — Deferred
 const counterObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
@@ -229,7 +238,9 @@ const counterObserver = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.3 });
 
-$$('[data-count]').forEach(el => counterObserver.observe(el));
+requestAnimationFrame(() => {
+  $$('[data-count]').forEach(el => counterObserver.observe(el));
+});
 
 // ────────────────────────────────────────────────────────────────
 // MINI BAR CHARTS (KPI Cards)
@@ -252,7 +263,6 @@ createMiniChart('miniChart2', [60, 55, 70, 65, 80, 75, 90, 70], '#38BDF8');
 createMiniChart('miniChart3', [50, 70, 45, 85, 60, 75, 80, 65], '#F59E0B');
 createMiniChart('miniChart4', [80, 70, 60, 55, 50, 45, 40, 35], '#22C55E');
 createMiniChart('miniChart5', [20, 35, 40, 55, 45, 60, 70, 80], '#EF4444');
-createMiniChart('miniChart6', [50, 60, 55, 70, 80, 85, 90, 95], '#7C3AED');
 createMiniChart('miniChart7', [30, 40, 35, 50, 60, 55, 45, 40], '#F59E0B');
 
 // ────────────────────────────────────────────────────────────────
@@ -264,21 +274,10 @@ function animateHealthRing() {
   if (!ring || !valueEl) return;
 
   const score = 92;
-  const circumference = 2 * Math.PI * 72; // r=72
+  const circumference = 2 * Math.PI * 72;
   const offset = circumference - (score / 100) * circumference;
-
-  // Animate ring
-  setTimeout(() => {
-    ring.style.strokeDashoffset = offset;
-  }, 500);
-
-  // Animate number
-  let current = 0;
-  const interval = setInterval(() => {
-    current++;
-    valueEl.textContent = current;
-    if (current >= score) clearInterval(interval);
-  }, 20);
+  ring.style.strokeDashoffset = offset;
+  valueEl.textContent = score;
 }
 
 const healthObserver = new IntersectionObserver((entries) => {
@@ -290,8 +289,10 @@ const healthObserver = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.3 });
 
-const healthCard = $('.health-score-card');
-if (healthCard) healthObserver.observe(healthCard);
+requestAnimationFrame(() => {
+  const healthCard = $('.health-score-card');
+  if (healthCard) healthObserver.observe(healthCard);
+});
 
 // ────────────────────────────────────────────────────────────────
 // PROGRESS BARS ANIMATION
@@ -301,13 +302,15 @@ const progressObserver = new IntersectionObserver((entries) => {
     if (entry.isIntersecting) {
       const fill = entry.target;
       const width = fill.dataset.width;
-      setTimeout(() => { fill.style.width = width + '%'; }, 300);
+      fill.style.width = width + '%';
       progressObserver.unobserve(fill);
     }
   });
 }, { threshold: 0.2 });
 
-$$('.progress-bar-fill[data-width]').forEach(el => progressObserver.observe(el));
+requestAnimationFrame(() => {
+  $$('.progress-bar-fill[data-width]').forEach(el => progressObserver.observe(el));
+});
 
 // ────────────────────────────────────────────────────────────────
 // DUMMY DATA
@@ -373,6 +376,64 @@ const shifts = [
   { name: 'Night', badge: 'night', doctors: 42, nurses: 80, hours: '10:00 PM – 6:00 AM', overtime: '15h' },
 ];
 
+// Staff data by shift
+const staffByShift = {
+  'Morning': [
+    { id: 'S1', name: 'Dr. Priya Sharma', role: 'Doctor' },
+    { id: 'S2', name: 'Dr. Rahul Mehra', role: 'Doctor' },
+    { id: 'S3', name: 'Nurse Aisha Patel', role: 'Nurse' },
+    { id: 'S4', name: 'Nurse Vikram Singh', role: 'Nurse' },
+    { id: 'S5', name: 'Admin Sneha Reddy', role: 'Receptionist' },
+  ],
+  'Afternoon': [
+    { id: 'S6', name: 'Dr. Ananya Patel', role: 'Doctor' },
+    { id: 'S7', name: 'Dr. Arjun Nair', role: 'Doctor' },
+    { id: 'S8', name: 'Nurse Kavya Nair', role: 'Nurse' },
+    { id: 'S9', name: 'Nurse Rajesh Kumar', role: 'Nurse' },
+  ],
+  'Night': [
+    { id: 'S10', name: 'Dr. Vikram Singh', role: 'Doctor' },
+    { id: 'S11', name: 'Dr. Sneha Reddy', role: 'Doctor' },
+    { id: 'S12', name: 'Nurse Meera Joshi', role: 'Nurse' },
+  ],
+};
+
+// All available staff (for assignment)
+const allStaff = [
+  { id: 'S1', name: 'Dr. Priya Sharma', role: 'Doctor' },
+  { id: 'S2', name: 'Dr. Rahul Mehra', role: 'Doctor' },
+  { id: 'S3', name: 'Nurse Aisha Patel', role: 'Nurse' },
+  { id: 'S4', name: 'Nurse Vikram Singh', role: 'Nurse' },
+  { id: 'S5', name: 'Admin Sneha Reddy', role: 'Receptionist' },
+  { id: 'S6', name: 'Dr. Ananya Patel', role: 'Doctor' },
+  { id: 'S7', name: 'Dr. Arjun Nair', role: 'Doctor' },
+  { id: 'S8', name: 'Nurse Kavya Nair', role: 'Nurse' },
+  { id: 'S9', name: 'Nurse Rajesh Kumar', role: 'Nurse' },
+  { id: 'S10', name: 'Dr. Vikram Singh', role: 'Doctor' },
+  { id: 'S11', name: 'Dr. Sneha Reddy', role: 'Doctor' },
+  { id: 'S12', name: 'Nurse Meera Joshi', role: 'Nurse' },
+];
+
+// Operating Theatres data
+const operatingTheatres = [
+  { id: 'OT1', name: 'Operation Theatre 1', status: 'Available', isEmergencyReserved: false, surgeriesCount: 0 },
+  { id: 'OT2', name: 'Operation Theatre 2', status: 'In Use', isEmergencyReserved: true, surgeriesCount: 2 },
+  { id: 'OT3', name: 'Operation Theatre 3', status: 'Cleaning', isEmergencyReserved: false, surgeriesCount: 1 },
+  { id: 'OT4', name: 'Operation Theatre 4', status: 'Available', isEmergencyReserved: false, surgeriesCount: 0 },
+  { id: 'OT5', name: 'Operation Theatre 5', status: 'Available', isEmergencyReserved: false, surgeriesCount: 0 },
+  { id: 'OT6', name: 'Operation Theatre 6', status: 'Available', isEmergencyReserved: true, surgeriesCount: 1 },
+  { id: 'OT7', name: 'Operation Theatre 7', status: 'In Use', isEmergencyReserved: false, surgeriesCount: 2 },
+  { id: 'OT8', name: 'Operation Theatre 8', status: 'In Use', isEmergencyReserved: false, surgeriesCount: 1 },
+  { id: 'OT9', name: 'Operation Theatre 9', status: 'Available', isEmergencyReserved: true, surgeriesCount: 0 },
+  { id: 'OT10', name: 'Operation Theatre 10', status: 'Under Maintenance', isEmergencyReserved: false, surgeriesCount: 0 },
+  { id: 'OT11', name: 'Operation Theatre 11', status: 'Available', isEmergencyReserved: false, surgeriesCount: 0 },
+  { id: 'OT12', name: 'Operation Theatre 12', status: 'In Use', isEmergencyReserved: false, surgeriesCount: 2 },
+  { id: 'OT13', name: 'Operation Theatre 13', status: 'Cleaning', isEmergencyReserved: true, surgeriesCount: 1 },
+  { id: 'OT14', name: 'Operation Theatre 14', status: 'Available', isEmergencyReserved: false, surgeriesCount: 0 },
+  { id: 'OT15', name: 'Operation Theatre 15', status: 'Available', isEmergencyReserved: false, surgeriesCount: 1 },
+  { id: 'OT16', name: 'Operation Theatre 16', status: 'In Use', isEmergencyReserved: true, surgeriesCount: 2 },
+];
+
 // Inventory data
 const inventory = [
   { name: 'Medicine Stock', count: '12,450 units', status: 'active', statusText: 'Healthy', icon: '💊' },
@@ -436,13 +497,21 @@ renderDeptTable();
 // ────────────────────────────────────────────────────────────────
 // RENDER: Doctor Cards & Workload Table
 // ────────────────────────────────────────────────────────────────
-function renderDoctorCards(filter = '') {
+let activeShiftFilter = 'all';
+
+function renderDoctorCards(filter = '', shiftFilter = 'all') {
   const container = $('#doctorCardsGrid');
   if (!container) return;
 
-  const filtered = filter
-    ? doctors.filter(d => d.name.toLowerCase().includes(filter.toLowerCase()) || d.dept.toLowerCase().includes(filter.toLowerCase()))
-    : doctors;
+  let filtered = doctors;
+
+  if (filter) {
+    filtered = filtered.filter(d => d.name.toLowerCase().includes(filter.toLowerCase()) || d.dept.toLowerCase().includes(filter.toLowerCase()));
+  }
+
+  if (shiftFilter && shiftFilter !== 'all') {
+    filtered = filtered.filter(d => d.shift === shiftFilter);
+  }
 
   if (filtered.length === 0) {
     container.innerHTML = `<div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--text-muted);font-size:13px;">No doctors found matching "${filter}".</div>`;
@@ -502,45 +571,28 @@ function renderDoctorCards(filter = '') {
 }
 renderDoctorCards();
 
-function renderDoctorTable(filter = '') {
-  const tbody = $('#doctorTable tbody');
-  if (!tbody) return;
-  const filtered = filter
-    ? doctors.filter(d => d.name.toLowerCase().includes(filter.toLowerCase()) || d.dept.toLowerCase().includes(filter.toLowerCase()))
-    : doctors;
-
-  tbody.innerHTML = filtered.map(d => `
-    <tr>
-      <td>
-        <div class="doctor-cell">
-          <div class="avatar ${d.avatar}">${d.initials}</div>
-          <div>
-            <div style="font-weight:600;">${d.name}</div>
-          </div>
-        </div>
-      </td>
-      <td>${d.dept}</td>
-      <td><strong>${d.patients}</strong></td>
-      <td>${d.hours}</td>
-      <td><span class="status-chip info">${d.shift}</span></td>
-      <td>
-        <div class="burnout-indicator ${d.burnout}">
-          <div class="burnout-bar"><div class="burnout-bar-fill ${d.burnout}"></div></div>
-          ${d.burnout.charAt(0).toUpperCase() + d.burnout.slice(1)}
-        </div>
-      </td>
-      <td><span class="status-chip ${d.status === 'active' ? 'active' : 'busy'}"><span class="status-dot ${d.status === 'active' ? 'green' : 'yellow'}"></span>${d.status === 'active' ? 'Available' : 'Busy'}</span></td>
-      <td><button class="btn btn-sm btn-secondary">Manage</button></td>
-    </tr>
-  `).join('');
-}
-renderDoctorTable();
-
 // Doctor Section Listeners
 $('#doctorSearch')?.addEventListener('input', (e) => {
   const query = e.target.value.trim();
-  renderDoctorCards(query);
-  renderDoctorTable(query);
+  renderDoctorCards(query, activeShiftFilter);
+});
+
+// Shift filter button listeners
+$$('.shift-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    $$('.shift-filter-btn').forEach(b => {
+      b.style.background = 'transparent';
+      b.style.color = '#64748B';
+      b.style.border = '1px solid #E2E8F0';
+    });
+    btn.style.background = 'rgba(15,118,110,0.15)';
+    btn.style.color = '#0F766E';
+    btn.style.border = 'none';
+
+    activeShiftFilter = btn.dataset.shift;
+    const searchQuery = $('#doctorSearch')?.value.trim() || '';
+    renderDoctorCards(searchQuery, activeShiftFilter);
+  });
 });
 
 $('#addDoctorSectionBtn')?.addEventListener('click', () => {
@@ -572,7 +624,6 @@ function renderPatientTable(filter = '') {
         <td><span class="status-chip ${statusClass}"><span class="status-dot ${statusDot}"></span>${p.status}</span></td>
         <td class="table-actions">
           <button class="btn btn-sm btn-secondary">View</button>
-          <button class="btn btn-sm btn-outline">Edit</button>
           <button class="btn btn-sm btn-outline">Record</button>
         </td>
       </tr>
@@ -695,7 +746,7 @@ function renderShiftCards() {
   const container = $('#shiftCards');
   if (!container) return;
   container.innerHTML = shifts.map(s => `
-    <div class="shift-card glass-strong">
+    <div class="shift-card glass-strong" data-shift="${s.name}" style="cursor:pointer;">
       <div>
         <div class="shift-badge ${s.badge}">${s.name} Shift</div>
         <div style="font-size:11px;color:var(--text-secondary);margin-bottom:12px;font-weight:500;">${s.hours}</div>
@@ -720,8 +771,105 @@ function renderShiftCards() {
       </div>
     </div>
   `).join('');
+
+  // Add click handlers to shift cards
+  $$('.shift-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const shiftName = card.dataset.shift;
+      openShiftStaffModal(shiftName);
+    });
+  });
 }
 renderShiftCards();
+renderOTCards();
+
+// Shift Staff Modal
+function openShiftStaffModal(shiftName) {
+  $('#shiftModalTitle').textContent = shiftName + ' Shift Staff';
+
+  const staff = staffByShift[shiftName] || [];
+  const staffListEl = $('#shiftStaffList');
+
+  staffListEl.innerHTML = staff.map(s => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:rgba(15,118,110,0.03);border-radius:8px;border:1px solid rgba(15,118,110,0.06);">
+      <div>
+        <div style="font-weight:600;font-size:13px;color:var(--text-primary);">${s.name}</div>
+        <div style="font-size:11px;color:var(--text-secondary);">${s.role}</div>
+      </div>
+    </div>
+  `).join('');
+
+  // Populate available staff dropdown (exclude already assigned)
+  const assignedIds = staff.map(s => s.id);
+  const availableStaff = allStaff.filter(s => !assignedIds.includes(s.id));
+
+  const selectEl = $('#assignStaffSelect');
+  selectEl.innerHTML = '<option value="">-- Select staff to add --</option>' +
+    availableStaff.map(s => `<option value="${s.id}">${s.name} (${s.role})</option>`).join('');
+
+  // Store current shift for assignment
+  window.currentShiftForAssignment = shiftName;
+
+  openModal('#shiftStaffModal');
+}
+
+// Assign staff button
+$('#assignStaffBtn')?.addEventListener('click', () => {
+  const selectEl = $('#assignStaffSelect');
+  const staffId = selectEl.value;
+  const shiftName = window.currentShiftForAssignment;
+
+  if (!staffId) {
+    showToast('Select Staff', 'Please select a staff member to assign.', 'warning');
+    return;
+  }
+
+  const staff = allStaff.find(s => s.id === staffId);
+  if (!staff) return;
+
+  if (!staffByShift[shiftName]) staffByShift[shiftName] = [];
+  staffByShift[shiftName].push(staff);
+
+  showToast('Staff Assigned', `${staff.name} assigned to ${shiftName} shift.`, 'success');
+  openShiftStaffModal(shiftName);
+});
+
+$('#closeShiftStaffModal')?.addEventListener('click', () => closeModal('#shiftStaffModal'));
+$('#confirmShiftStaffModal')?.addEventListener('click', () => closeModal('#shiftStaffModal'));
+
+// ────────────────────────────────────────────────────────────────
+// RENDER: Operating Theatres
+// ────────────────────────────────────────────────────────────────
+function renderOTCards() {
+  const container = $('#otCardsGrid');
+  if (!container) return;
+
+  const statusColors = {
+    'Available': { bg: '#D1FAE5', text: '#047857', icon: '✓' },
+    'In Use': { bg: '#DBEAFE', text: '#1E40AF', icon: '⚙' },
+    'Cleaning': { bg: '#FEF3C7', text: '#B45309', icon: '🧹' },
+    'Under Maintenance': { bg: '#FED7AA', text: '#9A3412', icon: '🔧' }
+  };
+
+  container.innerHTML = operatingTheatres.map(ot => {
+    const statusInfo = statusColors[ot.status] || statusColors['Available'];
+    return `
+      <div class="ot-card glass">
+        <div class="ot-card-header">
+          <div class="ot-name">${ot.name}</div>
+          ${ot.isEmergencyReserved ? '<span class="emergency-badge">🚨 Emergency Reserved</span>' : ''}
+        </div>
+        <div class="ot-status" style="background: ${statusInfo.bg}; color: ${statusInfo.text};">
+          <span class="status-icon">${statusInfo.icon}</span>
+          <span>${ot.status}</span>
+        </div>
+        <div class="ot-footer">
+          <span class="surgeries-count">Today: ${ot.surgeriesCount} surgeries</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 
 // ────────────────────────────────────────────────────────────────
 // RENDER: Inventory
@@ -840,7 +988,7 @@ function initCharts() {
   // ── Bar Chart: Department Workload ──
   const barCtx = $('#chartBar');
   if (barCtx) {
-    new Chart(barCtx, {
+    window.barChartInstance = new Chart(barCtx, {
       type: 'bar',
       data: {
         labels: ['Cardio', 'Ortho', 'Neuro', 'Pedia', 'ER', 'Onco'],
@@ -873,7 +1021,7 @@ function initCharts() {
   // ── Doughnut Chart: Patient Distribution ──
   const doughnutCtx = $('#chartDoughnut');
   if (doughnutCtx) {
-    new Chart(doughnutCtx, {
+    window.doughnutChartInstance = new Chart(doughnutCtx, {
       type: 'doughnut',
       data: {
         labels: ['In-Patient', 'Out-Patient', 'Emergency', 'ICU', 'Day Care'],
@@ -949,7 +1097,7 @@ function initCharts() {
   // ── Donut 2: Bed Occupancy ──
   const donut2Ctx = $('#chartDonut2');
   if (donut2Ctx) {
-    new Chart(donut2Ctx, {
+    window.donut2ChartInstance = new Chart(donut2Ctx, {
       type: 'doughnut',
       data: {
         labels: ['ICU', 'Emergency', 'General', 'Private', 'Pediatrics'],
@@ -975,6 +1123,46 @@ function initCharts() {
         animation: { animateRotate: true, duration: 1500 },
       }
     });
+
+    // Revenue chart
+    const revenueCtx = $('#chartRevenue');
+    if (revenueCtx) {
+      window.revenueChartInstance = new Chart(revenueCtx, {
+        type: 'bar',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+          datasets: [{
+            label: 'Total Revenue',
+            data: [2200000, 2450000, 2650000, 2840000, 2720000, 2950000, 3120000, 3240000, 2890000, 3180000, 3420000, 3650000],
+            backgroundColor: '#14B8A6',
+            borderRadius: 8,
+            borderSkipped: false,
+            barPercentage: 0.7,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'x',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `₹ ${(ctx.raw / 100000).toFixed(1)}L`
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { callback: (value) => `₹${(value / 100000).toFixed(1)}L` },
+              grid: { drawBorder: false, color: 'rgba(15,118,110,0.06)' }
+            },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
   }
 }
 
@@ -1107,71 +1295,164 @@ $('#inventoryManageForm')?.addEventListener('submit', (e) => {
 });
 
 // Analytics Timeframe Toggle Buttons (This Week / This Month)
-$('#analyticsMonthBtn')?.addEventListener('click', () => {
+// Analytics range filter
+let currentAnalyticsRange = 'week';
+
+function updateAnalyticsRange(range) {
+  currentAnalyticsRange = range;
+  const dayBtn = $('#analyticsDayBtn');
   const weekBtn = $('#analyticsWeekBtn');
   const monthBtn = $('#analyticsMonthBtn');
-  if (weekBtn && monthBtn) {
-    weekBtn.classList.remove('btn-secondary');
-    weekBtn.classList.add('btn-outline');
-    monthBtn.classList.remove('btn-outline');
-    monthBtn.classList.add('btn-secondary');
+  const yearBtn = $('#analyticsYearBtn');
+
+  [dayBtn, weekBtn, monthBtn, yearBtn].forEach(btn => {
+    if (btn) {
+      btn.classList.remove('btn-secondary');
+      btn.classList.add('btn-outline');
+    }
+  });
+
+  const activeBtn = range === 'day' ? dayBtn : range === 'month' ? monthBtn : range === 'year' ? yearBtn : weekBtn;
+  if (activeBtn) {
+    activeBtn.classList.remove('btn-outline');
+    activeBtn.classList.add('btn-secondary');
   }
 
-  // Update Line Chart (Patients This Month)
+  // Update all charts based on range
+  const chartData = getChartDataByRange(range);
+
+  // Update Line Chart
   if (window.lineChartInstance) {
-    window.lineChartInstance.data.labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-    window.lineChartInstance.data.datasets[0].data = [680, 840, 790, 950];
+    window.lineChartInstance.data.labels = chartData.labels;
+    window.lineChartInstance.data.datasets[0].data = chartData.lineData;
     window.lineChartInstance.update();
+    const lineTitle = document.querySelector('#chartLine')?.closest('.dashboard-card')?.querySelector('.chart-title');
+    const lineSub = document.querySelector('#chartLine')?.closest('.dashboard-card')?.querySelector('.chart-subtitle');
+    if (lineTitle) lineTitle.textContent = chartData.lineTitle;
+    if (lineSub) lineSub.textContent = chartData.lineSubtitle;
   }
 
-  // Update Area Chart (Appointments This Month)
+  // Update Bar Chart (Department Workload)
+  if (window.barChartInstance) {
+    window.barChartInstance.data.labels = chartData.deptLabels;
+    window.barChartInstance.data.datasets[0].data = chartData.barData;
+    window.barChartInstance.update();
+  }
+
+  // Update Doughnut Chart (Patient Distribution) - static
+  if (window.doughnutChartInstance) {
+    window.doughnutChartInstance.data.datasets[0].data = chartData.doughnutData;
+    window.doughnutChartInstance.update();
+  }
+
+  // Update Area Chart
   if (window.areaChartInstance) {
-    window.areaChartInstance.data.labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-    window.areaChartInstance.data.datasets[0].data = [240, 310, 280, 340];
-    window.areaChartInstance.data.datasets[1].data = [210, 280, 260, 315];
+    window.areaChartInstance.data.labels = chartData.labels;
+    window.areaChartInstance.data.datasets[0].data = chartData.areaData1;
+    window.areaChartInstance.data.datasets[1].data = chartData.areaData2;
     window.areaChartInstance.update();
+    const areaTitle = document.querySelector('#chartArea')?.closest('.dashboard-card')?.querySelector('.chart-title');
+    const areaSub = document.querySelector('#chartArea')?.closest('.dashboard-card')?.querySelector('.chart-subtitle');
+    if (areaTitle) areaTitle.textContent = chartData.areaTitle;
+    if (areaSub) areaSub.textContent = chartData.areaSubtitle;
   }
 
-  const lineChartTitle = document.querySelector('#chartLine')?.closest('.dashboard-card')?.querySelector('.chart-title');
-  const lineChartSub = document.querySelector('#chartLine')?.closest('.dashboard-card')?.querySelector('.chart-subtitle');
-  if (lineChartTitle) lineChartTitle.textContent = 'Patients This Month';
-  if (lineChartSub) lineChartSub.textContent = 'Monthly patient admissions overview';
-
-  showToast('Analytics Timeframe', 'Displaying operational analytics for This Month.', 'info');
-});
-
-$('#analyticsWeekBtn')?.addEventListener('click', () => {
-  const weekBtn = $('#analyticsWeekBtn');
-  const monthBtn = $('#analyticsMonthBtn');
-  if (weekBtn && monthBtn) {
-    monthBtn.classList.remove('btn-secondary');
-    monthBtn.classList.add('btn-outline');
-    weekBtn.classList.remove('btn-outline');
-    weekBtn.classList.add('btn-secondary');
+  // Update Donut2 Chart (Bed Occupancy) - static per range
+  if (window.donut2ChartInstance) {
+    window.donut2ChartInstance.data.datasets[0].data = chartData.donutData;
+    window.donut2ChartInstance.update();
   }
 
-  // Revert Line Chart (Patients This Week)
-  if (window.lineChartInstance) {
-    window.lineChartInstance.data.labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    window.lineChartInstance.data.datasets[0].data = [145, 178, 162, 210, 195, 230, 198];
-    window.lineChartInstance.update();
+  // Update Revenue Chart
+  if (window.revenueChartInstance) {
+    window.revenueChartInstance.data.labels = chartData.revenueLabels;
+    window.revenueChartInstance.data.datasets[0].data = chartData.revenueData;
+    window.revenueChartInstance.update();
   }
 
-  // Revert Area Chart (Appointments This Week)
-  if (window.areaChartInstance) {
-    window.areaChartInstance.data.labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    window.areaChartInstance.data.datasets[0].data = [42, 55, 48, 62, 58, 72, 65];
-    window.areaChartInstance.data.datasets[1].data = [38, 50, 44, 55, 52, 64, 58];
-    window.areaChartInstance.update();
+  showToast('Analytics Timeframe', `Displaying operational analytics for ${chartData.rangeName}.`, 'info');
+}
+
+function getChartDataByRange(range) {
+  if (range === 'day') {
+    return {
+      rangeName: 'This Day',
+      labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+      lineData: [18, 24, 32, 45, 38, 28, 15],
+      lineTitle: 'Patients This Day',
+      lineSubtitle: 'Hourly patient admissions',
+      deptLabels: ['Cardio', 'Ortho', 'Neuro', 'Pedi', 'Emergency', 'Oncology', 'Derm'],
+      barData: [12, 19, 8, 5, 22, 4, 3],
+      doughnutData: [180, 210, 140, 85, 220, 110, 55],
+      areaData1: [8, 12, 16, 24, 20, 16, 12],
+      areaData2: [6, 10, 14, 22, 18, 14, 10],
+      areaTitle: 'Appointments This Day',
+      areaSubtitle: 'Hourly appointment trend',
+      donutData: [85, 78, 92, 68, 55],
+      revenueLabels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '24:00'],
+      revenueData: [180000, 240000, 320000, 450000, 380000, 280000, 150000]
+    };
+  } else if (range === 'month') {
+    return {
+      rangeName: 'This Month',
+      labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+      lineData: [680, 840, 790, 950],
+      lineTitle: 'Patients This Month',
+      lineSubtitle: 'Weekly patient admissions overview',
+      deptLabels: ['Cardio', 'Ortho', 'Neuro', 'Pedi', 'Emergency', 'Oncology', 'Derm'],
+      barData: [156, 248, 104, 65, 286, 52, 39],
+      doughnutData: [780, 840, 560, 340, 880, 440, 220],
+      areaData1: [240, 310, 280, 340],
+      areaData2: [210, 280, 260, 315],
+      areaTitle: 'Appointments This Month',
+      areaSubtitle: 'Weekly appointment trend',
+      donutData: [73.5, 62, 89, 75, 62],
+      revenueLabels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+      revenueData: [2200000, 2450000, 2650000, 2840000]
+    };
+  } else if (range === 'year') {
+    return {
+      rangeName: 'This Year',
+      labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+      lineData: [2680, 3140, 2890, 3450],
+      lineTitle: 'Patients This Year',
+      lineSubtitle: 'Quarterly patient admissions',
+      deptLabels: ['Cardio', 'Ortho', 'Neuro', 'Pedi', 'Emergency', 'Oncology', 'Derm'],
+      barData: [468, 744, 312, 195, 858, 156, 117],
+      doughnutData: [2340, 2520, 1680, 1020, 2640, 1320, 660],
+      areaData1: [720, 930, 840, 1020],
+      areaData2: [630, 840, 780, 945],
+      areaTitle: 'Appointments This Year',
+      areaSubtitle: 'Quarterly appointment trend',
+      donutData: [71.2, 65, 88, 72, 60],
+      revenueLabels: ['Q1', 'Q2', 'Q3', 'Q4'],
+      revenueData: [8100000, 8340000, 8910000, 10450000]
+    };
+  } else { // week (default)
+    return {
+      rangeName: 'This Week',
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      lineData: [145, 178, 162, 210, 195, 230, 198],
+      lineTitle: 'Patients This Week',
+      lineSubtitle: 'Daily patient admissions',
+      deptLabels: ['Cardio', 'Ortho', 'Neuro', 'Pedi', 'Emergency', 'Oncology', 'Derm'],
+      barData: [78, 124, 52, 33, 143, 26, 20],
+      doughnutData: [390, 420, 280, 170, 440, 220, 110],
+      areaData1: [42, 55, 48, 62, 58, 72, 65],
+      areaData2: [38, 50, 44, 55, 52, 64, 58],
+      areaTitle: 'Appointments This Week',
+      areaSubtitle: 'Daily appointment trend',
+      donutData: [73.5, 62.5, 74, 70, 62],
+      revenueLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      revenueData: [2200000, 2450000, 2650000, 2840000, 2720000, 2950000, 3120000]
+    };
   }
+}
 
-  const lineChartTitle = document.querySelector('#chartLine')?.closest('.dashboard-card')?.querySelector('.chart-title');
-  const lineChartSub = document.querySelector('#chartLine')?.closest('.dashboard-card')?.querySelector('.chart-subtitle');
-  if (lineChartTitle) lineChartTitle.textContent = 'Patients This Week';
-  if (lineChartSub) lineChartSub.textContent = 'Daily patient admissions';
-
-  showToast('Analytics Timeframe', 'Displaying operational analytics for This Week.', 'info');
-});
+$('#analyticsDayBtn')?.addEventListener('click', () => updateAnalyticsRange('day'));
+$('#analyticsWeekBtn')?.addEventListener('click', () => updateAnalyticsRange('week'));
+$('#analyticsMonthBtn')?.addEventListener('click', () => updateAnalyticsRange('month'));
+$('#analyticsYearBtn')?.addEventListener('click', () => updateAnalyticsRange('year'));
 
 // Admin profile
 $('#adminProfile')?.addEventListener('click', () => {
@@ -1196,7 +1477,7 @@ function handleGlobalSearch(query) {
 
   // 1. Live filter on-page sections/tables
   renderPatientTable(q);
-  renderDoctorTable(q);
+  renderDoctorCards(q, activeShiftFilter);
   renderDeptTable(q);
   renderInventory(q);
 
@@ -1481,8 +1762,7 @@ $('#addDoctorForm')?.addEventListener('submit', (e) => {
   };
 
   doctors.unshift(newDoctor);
-  renderDoctorTable();
-  renderDoctorCards();
+  renderDoctorCards('', activeShiftFilter);
   closeModal('#addDoctorModal');
   e.target.reset();
   showToast('Doctor Added', `${name} assigned to ${dept} (${shift} shift).`, 'success');
@@ -1565,8 +1845,7 @@ $('#editDoctorForm')?.addEventListener('submit', (e) => {
     d.shift = $('#editDoctorShift').value;
     d.status = $('#editDoctorStatus').value;
 
-    renderDoctorTable();
-    renderDoctorCards();
+    renderDoctorCards('', activeShiftFilter);
     showToast('Doctor Profile Updated', `Profile for ${d.name} updated successfully.`, 'success');
     window.AarogyaAPI?.emit('doctorUpdated', d);
   }
@@ -1689,16 +1968,7 @@ document.addEventListener('click', (e) => {
       const pName = tr.children[1].textContent.trim();
       const p = patients.find(item => item.id === pId);
 
-      if (text === 'Edit' && p) {
-        $('#editPatientId').value = p.id;
-        $('#editPatientName').value = p.name;
-        $('#editPatientDept').value = p.dept;
-        $('#editPatientDoctor').value = p.doctor;
-        $('#editPatientPriority').value = p.priority;
-        $('#editPatientRoom').value = p.room;
-        $('#editPatientStatus').value = p.status;
-        openModal('#editPatientModal');
-      } else if (text === 'View' || text === 'Edit') {
+      if (text === 'View') {
         inspectItem(`Patient Record — ${pName} (${pId})`, {
           'Patient ID': pId,
           'Full Name': pName,
@@ -1743,7 +2013,7 @@ window.AarogyaAPI = {
   },
   addDoctor: (doctorData) => {
     doctors.unshift(doctorData);
-    renderDoctorTable();
+    renderDoctorCards('', activeShiftFilter);
     showToast('Doctor Added', `${doctorData.name} added via API.`, 'success');
     window.AarogyaAPI.emit('doctorAdded', doctorData);
   },

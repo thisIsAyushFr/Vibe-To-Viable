@@ -232,6 +232,19 @@ CREATE TABLE IF NOT EXISTS hospital_occupancy (
     UNIQUE (clinic_id, occupancy_date)
 );
 
+-- Operating Theatres
+CREATE TABLE IF NOT EXISTS operating_theatres (
+    ot_id VARCHAR(20) PRIMARY KEY,
+    clinic_id VARCHAR(20) NOT NULL,
+    ot_name VARCHAR(100) NOT NULL,
+    status VARCHAR(50) NOT NULL CHECK (status IN ('Available', 'In Use', 'Under Maintenance', 'Cleaning')),
+    is_emergency_reserved BOOLEAN DEFAULT FALSE,
+    total_surgeries_today INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (clinic_id) REFERENCES clinics(clinic_id)
+);
+
 -- ============================================================================
 -- USERS & AUTHENTICATION
 -- ============================================================================
