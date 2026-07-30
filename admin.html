@@ -1549,6 +1549,13 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <!-- Main Script -->
   <script type="module" src="admin.js"></script>
+  <script>
+document.querySelector(".nav-item.logout").addEventListener("click", function (e) {
+    e.preventDefault();
+    localStorage.removeItem("aarogya_user");
+    window.location.href = "index.html";
+});
+</script>
 </body>
 
 </html>
