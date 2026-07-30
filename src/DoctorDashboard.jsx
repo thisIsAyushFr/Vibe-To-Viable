@@ -22,6 +22,7 @@ import DocumentationAssistant from './components/DocumentationAssistant';
 import WorkloadCard from './components/WorkloadCard';
 import WorkloadIndicator from './components/WorkloadIndicator';
 import DoctorSchedule from './components/DoctorSchedule';
+import AIWidget from './components/AIWidget';
 
 import OperationTheaterView from './components/OperationTheaterView';
 import AdmittedPatientsView from './components/AdmittedPatientsView';
@@ -309,6 +310,7 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
           </div>
         </main>
       </div>
+      <AIWidget />
     </div>
   );
 }
