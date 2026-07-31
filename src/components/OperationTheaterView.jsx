@@ -21,19 +21,45 @@ export default function OperationTheaterView() {
       return null;
     }
   });
-  const [showReserveModal, setShowReserveModal] = useState(false);
-  const [form, setForm] = useState({ patient: '', reason: '', doctor: '', duration: '' });
+
+  // Standard OT bookings made via the green "Reserve OT Slot" flow, keyed by OT id.
+  const [otReservations, setOtReservations] = useState({});
+  const [reserveTargetId, setReserveTargetId] = useState(null);
+  const [reserveForm, setReserveForm] = useState({ patient: '', procedure: '', surgeon: '', duration: '' });
+  const [successMessage, setSuccessMessage] = useState('');
 
   const standardTheaters = OPERATION_THEATERS.filter((ot) => ot.id !== 'ot-4');
+  const reserveTarget = standardTheaters.find((ot) => ot.id === reserveTargetId) || null;
 
-  const updateForm = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
+  const isOtAvailable = (ot) => ot.status !== 'occupied' && !otReservations[ot.id];
+
+  const flashSuccess = (message) => {
+    setSuccessMessage(message);
+    setTimeout(() => setSuccessMessage(''), 4000);
+  };
+
+  const updateReserveForm = (field) => (e) => setReserveForm((f) => ({ ...f, [field]: e.target.value }));
+
+  const handleOpenReserve = (ot) => {
+    if (!isOtAvailable(ot)) return; // already booked — no double booking
+    setReserveTargetId(ot.id);
+    setReserveForm({ patient: '', procedure: '', surgeon: '', duration: '' });
+  };
+
+  const handleCloseReserve = () => {
+    setReserveTargetId(null);
+    setReserveForm({ patient: '', procedure: '', surgeon: '', duration: '' });
+  };
 
   const handleConfirmReservation = () => {
-    const reservation = { ...form };
-    setOt4Reservation(reservation);
-    localStorage.setItem(OT4_RESERVATION_KEY, JSON.stringify(reservation));
-    setShowReserveModal(false);
-    setForm({ patient: '', reason: '', doctor: '', duration: '' });
+    if (!reserveTarget) return;
+    if (!isOtAvailable(reserveTarget)) {
+      handleCloseReserve();
+      return;
+    }
+    setOtReservations((prev) => ({ ...prev, [reserveTarget.id]: { ...reserveForm } }));
+    handleCloseReserve();
+    flashSuccess(`${reserveTarget.name} reserved successfully.`);
   };
 
   const handleReleaseReservation = () => {
@@ -41,7 +67,20 @@ export default function OperationTheaterView() {
     localStorage.removeItem(OT4_RESERVATION_KEY);
   };
 
-  const isFormValid = form.patient && form.reason && form.doctor && form.duration;
+  const handleEmergencyReserve = () => {
+    if (ot4Reservation) return; // already reserved — no double booking
+    const reservation = {
+      patient: 'Incoming Trauma Patient',
+      reason: 'Emergency Trauma Dispatch',
+      doctor: 'Dr. Priya Nair (On-Call Specialist)',
+      duration: 'Until stabilized'
+    };
+    setOt4Reservation(reservation);
+    localStorage.setItem(OT4_RESERVATION_KEY, JSON.stringify(reservation));
+    flashSuccess('Emergency OT reserved successfully. Emergency team notified.');
+  };
+
+  const isReserveFormValid = reserveForm.patient && reserveForm.procedure && reserveForm.surgeon && reserveForm.duration;
 
   return (
     <div className="space-y-6 w-full max-w-full">
@@ -91,10 +130,20 @@ export default function OperationTheaterView() {
           <span className="text-xs font-semibold text-slate-500">Real-time Suite Telemetry</span>
         </div>
 
+        {successMessage && (
+          <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs font-semibold text-emerald-700">
+            {successMessage}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {standardTheaters.map((ot) => {
-            const isOccupied = ot.status === 'occupied';
-            const isVacant = ot.status === 'vacant';
+            const reservation = otReservations[ot.id];
+            const isOccupied = ot.status === 'occupied' || Boolean(reservation);
+            const displayProcedure = reservation ? reservation.procedure : ot.procedure;
+            const displaySurgeon = reservation ? reservation.surgeon : ot.currentSurgeon;
+            const displayPatient = reservation ? reservation.patient : ot.patientName;
+            const displayTimeSlot = reservation ? reservation.duration : ot.timeSlot;
 
             return (
               <div
@@ -113,7 +162,7 @@ export default function OperationTheaterView() {
                         ? 'bg-rose-100 text-rose-800 border border-rose-200'
                         : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                     }`}>
-                      {ot.status}
+                      {isOccupied ? 'occupied' : ot.status}
                     </span>
                   </div>
 
@@ -121,19 +170,19 @@ export default function OperationTheaterView() {
                     <div className="space-y-2 text-xs">
                       <div>
                         <span className="text-[10px] font-bold text-slate-400 uppercase">Procedure</span>
-                        <p className="font-bold text-slate-800">{ot.procedure}</p>
+                        <p className="font-bold text-slate-800">{displayProcedure}</p>
                       </div>
                       <div>
                         <span className="text-[10px] font-bold text-slate-400 uppercase">Operating Surgeon</span>
-                        <p className="font-semibold text-teal-800">{ot.currentSurgeon}</p>
+                        <p className="font-semibold text-teal-800">{displaySurgeon}</p>
                       </div>
                       <div>
                         <span className="text-[10px] font-bold text-slate-400 uppercase">Patient</span>
-                        <p className="font-medium text-slate-700">{ot.patientName}</p>
+                        <p className="font-medium text-slate-700">{displayPatient}</p>
                       </div>
                       <div className="pt-2 border-t border-rose-200/60 flex items-center gap-1.5 text-rose-700 text-[11px] font-bold">
                         <Clock size={13} />
-                        <span>Slot: {ot.timeSlot}</span>
+                        <span>Slot: {displayTimeSlot}</span>
                       </div>
                     </div>
                   ) : (
@@ -145,7 +194,10 @@ export default function OperationTheaterView() {
                         <p className="text-xs font-bold text-emerald-900">OT Fully Cleaned & Vacant</p>
                         <p className="text-[11px] text-emerald-700 mt-0.5">{ot.nextAvailableSlot}</p>
                       </div>
-                      <button className="w-full py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all">
+                      <button
+                        onClick={() => handleOpenReserve(ot)}
+                        className="w-full py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all"
+                      >
                         Reserve OT Slot
                       </button>
                     </div>
@@ -209,7 +261,7 @@ export default function OperationTheaterView() {
                     </p>
                   </div>
                   <button
-                    onClick={() => setShowReserveModal(true)}
+                    onClick={handleEmergencyReserve}
                     className="w-full py-1.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-sm transition-all"
                   >
                     Reserve for Emergency
@@ -232,52 +284,52 @@ export default function OperationTheaterView() {
         </div>
       </div>
 
-      {/* Emergency Reservation Modal */}
-      {showReserveModal && (
+      {/* Standard OT Reservation Modal — triggered by the green "Reserve OT Slot" button */}
+      {reserveTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 relative">
             <button
-              onClick={() => setShowReserveModal(false)}
+              onClick={handleCloseReserve}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-700"
             >
               <X size={18} />
             </button>
-            <h3 className="text-lg font-black text-[#0F172A] mb-1">Reserve OT 4 for Emergency</h3>
-            <p className="text-xs text-slate-500 mb-4">Emergency Trauma Suite — Available 24×7</p>
+            <h3 className="text-lg font-black text-[#0F172A] mb-1">Reserve {reserveTarget.name}</h3>
+            <p className="text-xs text-slate-500 mb-4">{reserveTarget.nextAvailableSlot}</p>
 
             <div className="space-y-3">
               <div>
                 <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Patient</label>
                 <input
-                  value={form.patient}
-                  onChange={updateForm('patient')}
+                  value={reserveForm.patient}
+                  onChange={updateReserveForm('patient')}
                   placeholder="Patient name"
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:border-teal-500"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Emergency Reason</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Procedure</label>
                 <input
-                  value={form.reason}
-                  onChange={updateForm('reason')}
-                  placeholder="e.g. Trauma, cardiac arrest"
+                  value={reserveForm.procedure}
+                  onChange={updateReserveForm('procedure')}
+                  placeholder="e.g. Appendectomy"
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:border-teal-500"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Doctor</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Operating Surgeon</label>
                 <input
-                  value={form.doctor}
-                  onChange={updateForm('doctor')}
-                  placeholder="Attending doctor"
+                  value={reserveForm.surgeon}
+                  onChange={updateReserveForm('surgeon')}
+                  placeholder="Attending surgeon"
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:border-teal-500"
                 />
               </div>
               <div>
                 <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Expected Duration</label>
                 <input
-                  value={form.duration}
-                  onChange={updateForm('duration')}
+                  value={reserveForm.duration}
+                  onChange={updateReserveForm('duration')}
                   placeholder="e.g. 2 hours"
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm outline-none focus:border-teal-500"
                 />
@@ -286,8 +338,8 @@ export default function OperationTheaterView() {
 
             <button
               onClick={handleConfirmReservation}
-              disabled={!isFormValid}
-              className="w-full mt-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold shadow-md transition-all"
+              disabled={!isReserveFormValid}
+              className="w-full mt-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold shadow-md transition-all"
             >
               Confirm Reservation
             </button>
