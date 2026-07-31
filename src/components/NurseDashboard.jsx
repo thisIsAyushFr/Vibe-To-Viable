@@ -204,6 +204,8 @@ export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
   const [showWalkInModal, setShowWalkInModal] = useState(false);
   const [walkInForm, setWalkInForm] = useState(emptyWalkInForm);
   const [successMessage, setSuccessMessage] = useState('');
+  const [vitalsModalPatientId, setVitalsModalPatientId] = useState(null);
+  const [vitalsForm, setVitalsForm] = useState({ temp: '', bp: '', pulse: '', spo2: '' });
 
   const updatePatient = (id, updates) => {
     setPatients((current) => current.map((patient) => (
@@ -262,6 +264,21 @@ export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
       { id: current.length + 1, from: 'You (Anjali Sharma)', message: newMessage.trim(), time: 'Just now' }
     ]);
     setNewMessage('');
+  };
+
+  const openVitalsModal = (patient) => {
+    setVitalsModalPatientId(patient.id);
+    setVitalsForm({ ...patient.vitals });
+  };
+
+  const closeVitalsModal = () => {
+    setVitalsModalPatientId(null);
+  };
+
+  const submitVitals = (e) => {
+    e.preventDefault();
+    updatePatient(vitalsModalPatientId, { vitals: { ...vitalsForm } });
+    setVitalsModalPatientId(null);
   };
 
   const handleDepartmentChange = (department) => {
@@ -501,14 +518,7 @@ export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
                       )}
                     </div>
                     <button
-                      onClick={() => updatePatient(patient.id, {
-                        vitals: {
-                          temp: `${(97 + Math.random() * 3).toFixed(1)}°F`,
-                          bp: `${110 + Math.floor(Math.random() * 20)}/${70 + Math.floor(Math.random() * 15)}`,
-                          pulse: `${70 + Math.floor(Math.random() * 25)}`,
-                          spo2: `${95 + Math.floor(Math.random() * 5)}%`
-                        }
-                      })}
+                      onClick={() => openVitalsModal(patient)}
                       className="rounded-xl border border-[#0F766E] px-3 py-1.5 text-xs font-semibold text-[#0F766E] hover:bg-[#0F766E] hover:text-white"
                     >
                       Update Vitals
@@ -892,6 +902,70 @@ export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
                 className="sm:col-span-2 mt-1 rounded-xl bg-[#0F766E] py-2.5 text-sm font-bold text-white hover:bg-[#0d5f58]"
               >
                 Add & Check In
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {vitalsModalPatientId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
+          <div className="w-full max-w-md rounded-2xl sm:rounded-3xl bg-white p-6 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Activity className="h-5 w-5 text-[#0F766E]" />
+                <h2 className="text-lg font-bold">Record Vitals</h2>
+              </div>
+              <button onClick={closeVitalsModal} className="rounded-lg p-1 hover:bg-slate-100">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <form onSubmit={submitVitals} className="grid gap-3 sm:grid-cols-2">
+              <div className="text-xs font-semibold text-[#64748B]">
+                <label className="mb-1 block">Temperature</label>
+                <input
+                  required
+                  placeholder="e.g. 98.6°F"
+                  value={vitalsForm.temp}
+                  onChange={(e) => setVitalsForm((prev) => ({ ...prev, temp: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-normal text-[#0F172A]"
+                />
+              </div>
+              <div className="text-xs font-semibold text-[#64748B]">
+                <label className="mb-1 block">Blood Pressure</label>
+                <input
+                  required
+                  placeholder="e.g. 120/80"
+                  value={vitalsForm.bp}
+                  onChange={(e) => setVitalsForm((prev) => ({ ...prev, bp: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-normal text-[#0F172A]"
+                />
+              </div>
+              <div className="text-xs font-semibold text-[#64748B]">
+                <label className="mb-1 block">Pulse</label>
+                <input
+                  required
+                  placeholder="e.g. 78"
+                  value={vitalsForm.pulse}
+                  onChange={(e) => setVitalsForm((prev) => ({ ...prev, pulse: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-normal text-[#0F172A]"
+                />
+              </div>
+              <div className="text-xs font-semibold text-[#64748B]">
+                <label className="mb-1 block">Oxygen Saturation (SpO2)</label>
+                <input
+                  required
+                  placeholder="e.g. 98%"
+                  value={vitalsForm.spo2}
+                  onChange={(e) => setVitalsForm((prev) => ({ ...prev, spo2: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-normal text-[#0F172A]"
+                />
+              </div>
+              <button
+                type="submit"
+                className="sm:col-span-2 mt-1 rounded-xl bg-[#0F766E] py-2.5 text-sm font-bold text-white hover:bg-[#0d5f58]"
+              >
+                Save Vitals
               </button>
             </form>
           </div>
