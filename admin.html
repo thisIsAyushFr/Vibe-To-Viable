@@ -8,6 +8,8 @@
     content="Aarogya — AI Powered Hospital Intelligence Platform. Premium admin dashboard for complete hospital operational visibility." />
   <title>Aarogya — Admin Dashboard</title>
   <link rel="stylesheet" href="admin.css" />
+  <!-- CareSync AI widget - one shared component used by every page -->
+  <link rel="stylesheet" href="/shared-ai.css" />
   <link rel="icon"
     href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230F766E'/><text x='16' y='22' font-size='18' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'>A</text></svg>" />
 </head>
@@ -1628,8 +1630,12 @@
     </div>
   </div>
 
+  <!-- CareSync AI widget is injected by the shared component: /shared-ai.js -->
+
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <!-- CareSync AI widget - one shared component used by every page -->
+  <script src="/shared-ai.js"></script>
   <!-- Main Script -->
   <script type="module" src="admin.js"></script>
   <script>

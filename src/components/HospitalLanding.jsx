@@ -40,6 +40,7 @@ import {
 import AppointmentModal from './AppointmentModal';
 import LoginModal from './LoginModal';
 import DoctorProfileModal from './DoctorProfileModal';
+import AIWidget from './AIWidget';
 
 // Static Data
 const DEPARTMENTS = [
@@ -1144,13 +1145,14 @@ export default function HospitalLanding({
           onOpenNurseDashboard={onOpenNurseDashboard}
       />
 
-      <DoctorProfileModal 
-        doctor={selectedDoctorProfile} 
-        isOpen={!!selectedDoctorProfile} 
-        onClose={() => setSelectedDoctorProfile(null)} 
+      <DoctorProfileModal
+        doctor={selectedDoctorProfile}
+        isOpen={!!selectedDoctorProfile}
+        onClose={() => setSelectedDoctorProfile(null)}
         onBookAppointment={(docName, deptName) => handleOpenAppointment(docName, deptName)}
       />
 
+      <AIWidget />
     </div>
   );
 }

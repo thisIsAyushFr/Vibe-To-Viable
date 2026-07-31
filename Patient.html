@@ -489,62 +489,8 @@
   .occupancy-bar{height:10px;border-radius:20px;background:var(--border);overflow:hidden;}
   .occupancy-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--teal),var(--yellow));}
 
-  /* ---------- upgraded AI chat panel ---------- */
-  .ai-panel{width:320px;padding:0;overflow:hidden;}
-  .ai-panel-inner{padding:18px 18px 14px;}
-  .ai-chat-log{max-height:130px;overflow-y:auto;margin-bottom:12px;}
-  .ai-chat-msg{
-    background:var(--bg);border:1px solid var(--border);
-    border-radius:14px;padding:10px 13px;font-size:12px;color:var(--navy);line-height:1.5;margin-bottom:8px;
-  }
-  .ai-prompt-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
-  .ai-prompt-chip{
-    font-size:11px;font-weight:600;color:var(--teal-dark);background:var(--teal-soft);
-    padding:6px 11px;border-radius:20px;cursor:pointer;
-  }
-  .ai-chat-input-row{display:flex;align-items:center;gap:8px;padding:12px 14px;background:var(--surface);border-top:1px solid var(--border);}
-  .ai-chat-input{
-    flex:1;background:var(--bg);border:1px solid var(--border);
-    border-radius:12px;padding:10px 13px;font-size:12.5px;font-family:'Inter',sans-serif;color:var(--navy);outline:none;
-  }
-  .ai-chat-send{
-    width:36px;height:36px;border-radius:10px;border:none;flex-shrink:0;
-    background:linear-gradient(150deg,var(--teal),var(--teal-dark));
-    display:flex;align-items:center;justify-content:center;cursor:pointer;
-  }
-  .ai-chat-send svg{width:16px;height:16px;stroke:#fff;}
-
-  /* ---------- ai assistant floating ---------- */
-  .ai-fab{
-    position:fixed;bottom:28px;right:32px;
-    width:64px;height:64px;border-radius:50%;
-    background:linear-gradient(150deg,var(--teal),var(--teal-dark));
-    box-shadow:0 6px 16px rgba(0,0,0,0.15);
-    display:flex;align-items:center;justify-content:center;cursor:pointer;
-    z-index:50;border:none;
-  }
-  
-  .ai-fab svg{width:26px;height:26px;stroke:#fff;}
-  .ai-panel{
-    position:fixed;bottom:104px;right:32px;
-    z-index:50;
-    opacity:0;transform:translateY(10px) scale(.96);transform-origin:bottom right;
-    pointer-events:none;transition:opacity .22s ease, transform .22s ease;
-  }
-  .ai-panel.open{opacity:1;transform:translateY(0) scale(1);pointer-events:auto;}
-  .ai-panel-close{margin-left:auto;background:none;border:none;cursor:pointer;font-size:16px;line-height:1;color:var(--navy-soft);padding:2px;}
-  .ai-panel-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
-  .ai-panel-head .dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
-  .ai-panel-title{font-size:13.5px;font-weight:700;}
-  .ai-panel-sub{font-size:11.5px;color:var(--navy-soft);margin-bottom:14px;line-height:1.5;}
+  /* AI widget styles now live in the shared component: /shared-ai.css */
   .pay-method.active{background:var(--surface);color:var(--teal-dark);border:1px solid var(--teal-soft);}
-  .ai-option-list{display:flex;flex-direction:column;gap:8px;}
-  .ai-option-item{
-    display:flex;align-items:center;gap:10px;padding:11px 13px;
-    background:var(--bg);border:1px solid var(--border);border-radius:12px;
-    font-size:12.5px;font-weight:600;color:var(--navy);cursor:pointer;transition:background .2s ease;
-  }
-  .ai-option-item:hover{background:var(--teal-soft);color:var(--teal-dark);}
 
   /* ---------- MOBILE MEDIA QUERY ---------- */
   @media (max-width:1100px){
@@ -572,6 +518,8 @@
     }
   }
 </style>
+<!-- CareSync AI widget - one shared component used by every page -->
+<link rel="stylesheet" href="/shared-ai.css">
 </head>
 <body>
 
@@ -1617,6 +1565,7 @@
 </div>
 
 
+<<<<<<< HEAD
 <!-- SECTION 9: AI ASSISTANT -->
 
 <button class="ai-fab" id="aiFab" aria-label="Open CareSync AI Assistant">
@@ -1657,6 +1606,9 @@
 
   </div>
 </div>
+=======
+<!-- CareSync AI widget is injected by the shared component: /shared-ai.js -->
+>>>>>>> 1c623937f2025d87d680fa8c62492a5c0771cf63
 
 
 <script>
@@ -1678,35 +1630,6 @@
 
   // 2. Added DOMContentLoaded & renamed variables to avoid global naming collisions
   document.addEventListener("DOMContentLoaded", function() {
-    const aiFabEl = document.getElementById("aiFab");
-    const aiPanelEl = document.getElementById("aiPanel");
-    const aiCloseBtnEl = document.getElementById("aiPanelClose");
-
-    if (aiFabEl && aiPanelEl) {
-      // Toggle Panel
-      aiFabEl.addEventListener("click", function(e){
-          e.stopPropagation();
-          aiPanelEl.classList.toggle("open");
-      });
-
-      // Close Panel
-      if (aiCloseBtnEl) {
-        aiCloseBtnEl.addEventListener("click", function(){
-            aiPanelEl.classList.remove("open");
-        });
-      }
-
-      // Close when clicking outside
-      document.addEventListener("click", function(e){
-          if(
-            aiPanelEl.classList.contains("open") &&
-            !aiPanelEl.contains(e.target) &&
-            e.target !== aiFabEl
-          ){
-            aiPanelEl.classList.remove("open");
-          }
-      });
-    }
 
     // Sync logged-in user profile from localStorage if available
     try {
@@ -1727,102 +1650,6 @@
       console.warn("Failed to sync user profile in Patient.html", e);
     }
   });
-</script>
-<script>
-
-// Real AI calls must go through the backend (Python/FastAPI AI services layer per CLAUDE.md),
-// never directly from the browser with an embedded API key.
-const API_KEY = "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";
-
-async function sendMessageToAI(message) {
-
-    try {
-
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Authorization": `Bearer ${API_KEY}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                model: "llama-3.3-70b-versatile",
-                messages: [
-                    {
-                        role: "system",
-                        content: "You are Aarogya Hospital's helpful AI assistant. Answer patient questions politely and briefly."
-                    },
-                    {
-                        role: "user",
-                        content: message
-                    }
-                ],
-                temperature: 0.7,
-                max_tokens: 300
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        return data.choices[0].message.content;
-
-    } catch (err) {
-        console.error(err);
-        return "Sorry, I couldn't reach the AI service.";
-    }
-}
-
-const sendBtn = document.querySelector("#aiPanel .ai-chat-send");
-const input = document.querySelector("#aiPanel .ai-chat-input");
-const chatLog = document.querySelector("#aiPanel .ai-chat-log");
-
-sendBtn.addEventListener("click", async () => {
-
-    const message = input.value.trim();
-
-    if (!message) return;
-
-    chatLog.innerHTML += `
-        <div class="ai-chat-msg">
-            <strong>You:</strong> ${message}
-        </div>
-    `;
-
-    input.value = "";
-    chatLog.scrollTop = chatLog.scrollHeight;
-
-    // Optional loading message
-    chatLog.innerHTML += `
-        <div class="ai-chat-msg" id="thinking">
-            <strong>AI:</strong> Thinking...
-        </div>
-    `;
-
-    chatLog.scrollTop = chatLog.scrollHeight;
-
-    const aiReply = await sendMessageToAI(message);
-
-    document.getElementById("thinking").remove();
-
-    chatLog.innerHTML += `
-        <div class="ai-chat-msg">
-            <strong>AI:</strong> ${aiReply}
-        </div>
-    `;
-
-    chatLog.scrollTop = chatLog.scrollHeight;
-
-});
-
-input.addEventListener("keypress", async (e) => {
-    if (e.key === "Enter") {
-        sendBtn.click();
-    }
-});
-
 </script>
 <script>
 
@@ -2029,6 +1856,9 @@ document.querySelectorAll('.view-btn').forEach((btn, idx) => {
   btn.onclick = () => openReportModal(keys[idx]);
 });
 </script>
+
+<!-- CareSync AI widget - one shared component used by every page -->
+<script src="/shared-ai.js"></script>
 
 </body>
 </html>

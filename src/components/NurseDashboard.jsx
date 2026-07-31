@@ -4,6 +4,7 @@ import {
   Pill, Clock3, AlertTriangle, CheckCircle2, Plus, X, UserPlus
 } from 'lucide-react';
 import StatCard from './StatCard';
+import AIWidget from './AIWidget';
 import { DEPARTMENTS, DOCTORS_BY_DEPARTMENT, addWalkIn, updateWalkIn, useWalkIns } from '../data/hospitalStore';
 
 const initialPatients = [
@@ -626,6 +627,7 @@ export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
           </div>
         </div>
       )}
+      <AIWidget />
     </div>
   );
 }

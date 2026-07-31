@@ -2048,6 +2048,13 @@ window.AarogyaAPI = {
 };
 
 // ────────────────────────────────────────────────────────────────
+// AI FAB & CHAT PANEL
+// AI Widget functionality is provided by shared-ai.js
+// ────────────────────────────────────────────────────────────────
+// Note: AI widget interactivity is handled by the shared-ai.js script
+// which is loaded after this file
+
+// ────────────────────────────────────────────────────────────────
 // RE-OBSERVE DYNAMICALLY ADDED ELEMENTS
 // ────────────────────────────────────────────────────────────────
 setTimeout(() => {

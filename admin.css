@@ -2925,6 +2925,13 @@ body {
 .detail-value { color: var(--text-primary); font-weight: 600; }
 
 /* ================================================================
+   AI FAB & CHAT PANEL
+   Owned by the shared component: /shared-ai.css (linked in admin.html).
+   Do not add admin-specific AI styles here - they would break the
+   pixel-for-pixel match with the other dashboards.
+   ================================================================ */
+
+/* ================================================================
    PERFORMANCE: Reduced Motion
    ================================================================ */
 @media (prefers-reduced-motion: reduce) {
