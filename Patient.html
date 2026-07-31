@@ -1565,7 +1565,46 @@
 </div>
 
 
-<!-- CareSync AI widget is injected by the shared component: /shared-ai.js -->
+<!-- SECTION 9: AI ASSISTANT -->
+
+<button class="ai-fab" id="aiFab" aria-label="Open CareSync AI Assistant">
+  <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"
+  stroke-linecap="round" stroke-linejoin="round">
+    <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>
+  </svg>
+</button>
+
+<div class="raised ai-panel" id="aiPanel">
+  <div class="ai-panel-inner">
+
+    <div class="ai-panel-head">
+      <span class="dot"></span>
+      <span class="ai-panel-title">CareSync AI</span>
+      <button class="ai-panel-close" id="aiPanelClose">&times;</button>
+    </div>
+
+    <div class="ai-panel-sub">
+      How can I help today?
+    </div>
+
+    <!-- AI CHAT BOX -->
+    <div class="ai-chat-log">
+    </div>
+
+    <div class="ai-chat-input-row">
+        <input 
+            class="ai-chat-input" 
+            type="text" 
+            placeholder="Ask CareSync AI..."
+        >
+
+        <button class="ai-chat-send">
+            ➤
+        </button>
+    </div>
+
+  </div>
+</div>
 
 
 <script>
