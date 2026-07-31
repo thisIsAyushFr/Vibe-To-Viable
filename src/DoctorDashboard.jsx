@@ -44,6 +44,9 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
   const [queueStatuses, setQueueStatuses] = useState(
     Object.fromEntries(INITIAL_QUEUE.map((q) => [q.id, q.status]))
   );
+  // Bumped only when a consultation is started, so the AI Patient Brief knows
+  // when (and only when) it should generate a new random brief.
+  const [consultationBriefKey, setConsultationBriefKey] = useState(0);
 
   const WALKIN_STATUS_MAP = { Waiting: 'waiting', 'In Consultation': 'in-consultation', Completed: 'completed' };
 
@@ -124,6 +127,7 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
       if (activeQueueItem.id.startsWith('P')) {
         updateWalkIn(activeQueueItem.id, { status: 'In Consultation' });
       }
+      setConsultationBriefKey((k) => k + 1);
     }
   };
 
@@ -217,6 +221,7 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
                 handleStartConsultation={handleStartConsultation}
                 handleFinishConsultation={handleFinishConsultation}
                 selectedPatient={selectedPatient}
+                consultationBriefKey={consultationBriefKey}
               />
             ) : activeNav === 'opd-schedule' ? (
               <div className="max-w-3xl mx-auto">
@@ -510,6 +515,7 @@ function PatientsView({
   handleStartConsultation,
   handleFinishConsultation,
   selectedPatient,
+  consultationBriefKey,
 }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 w-full min-w-0">
@@ -540,7 +546,7 @@ function PatientsView({
       </div>
 
       <div className="lg:col-span-6 min-w-0">
-        <AIPatientBrief />
+        <AIPatientBrief consultationTrigger={consultationBriefKey} />
       </div>
 
       <div className="lg:col-span-6 min-w-0">

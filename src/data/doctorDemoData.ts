@@ -444,19 +444,6 @@ export const SCHEDULE: ScheduleItem[] = [
   { time: "14:30", type: "available", label: "Available" },
 ];
 
-export const AI_BRIEF = {
-  summary:
-    "45-year-old patient returning for hypertension follow-up. BP was elevated during the previous visit. Currently taking Amlodipine. Recent HbA1c was above target.",
-  keyInfo: [
-    "Hypertension — diagnosed 2019",
-    "Type 2 Diabetes — diagnosed 2021",
-    "Current medication: Amlodipine 5mg",
-    "Last BP: 148/92 mmHg",
-    "Recent HbA1c: 7.4%",
-  ],
-  attention: "Blood pressure remained elevated during the previous visit.",
-};
-
 export const DOC_OUTPUTS: Record<string, { label: string; text: string }> = {
   soap: {
     label: "SOAP Note",

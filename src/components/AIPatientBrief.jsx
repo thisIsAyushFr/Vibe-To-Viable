@@ -1,11 +1,25 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Sparkles, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, Pill, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AI_BRIEF } from '../data/doctorDemoData';
+import { getRandomAiBriefTemplate } from '../data/aiBriefTemplates';
 
-export default function AIPatientBrief() {
+export default function AIPatientBrief({ consultationTrigger }) {
   const [briefExpanded, setBriefExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState('summary'); // 'summary' | 'meds' | 'risk'
+
+  // Picked once per consultation. Re-renders, tab switches and page refreshes
+  // must never change this — only a new `consultationTrigger` value (sent by
+  // the parent when the doctor clicks "Start Consultation") picks a new one.
+  const [brief, setBrief] = useState(() => getRandomAiBriefTemplate());
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    setBrief(getRandomAiBriefTemplate());
+  }, [consultationTrigger]);
 
   return (
     <motion.div
@@ -75,7 +89,7 @@ export default function AIPatientBrief() {
               className="p-3.5 sm:p-4 rounded-2xl bg-[#F0FDFA] border border-[#14B8A6]/25 shadow-xs"
             >
               <p className="text-xs sm:text-sm font-bold leading-relaxed text-[#0F172A] italic">
-                "{AI_BRIEF.summary}"
+                "{brief.summary}"
               </p>
             </motion.div>
           )}
@@ -89,14 +103,12 @@ export default function AIPatientBrief() {
               transition={{ duration: 0.2 }}
               className="p-3 rounded-2xl bg-white border border-slate-100 flex flex-col gap-2"
             >
-              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 gap-2">
-                <span className="text-xs font-black text-[#0F172A] truncate">Amlodipine 5mg</span>
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-[#0F766E]/10 text-[#0F766E] flex-shrink-0">Once Daily</span>
-              </div>
-              <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 gap-2">
-                <span className="text-xs font-black text-[#0F172A] truncate">Metformin 500mg</span>
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-[#0F766E]/10 text-[#0F766E] flex-shrink-0">Twice Daily</span>
-              </div>
+              {brief.medications.map((med) => (
+                <div key={med.name} className="flex items-center justify-between p-2 rounded-xl bg-slate-50 gap-2">
+                  <span className="text-xs font-black text-[#0F172A] truncate">{med.name}</span>
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-[#0F766E]/10 text-[#0F766E] flex-shrink-0">{med.frequency}</span>
+                </div>
+              ))}
             </motion.div>
           )}
 
@@ -110,11 +122,11 @@ export default function AIPatientBrief() {
               className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex flex-col gap-2"
             >
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs font-black text-amber-800 truncate">Uncontrolled BP Trend</span>
-                <span className="text-[10px] font-bold text-amber-700 flex-shrink-0">148/92 mmHg</span>
+                <span className="text-xs font-black text-amber-800 truncate">{brief.risk.title}</span>
+                <span className="text-[10px] font-bold text-amber-700 flex-shrink-0">{brief.risk.value}</span>
               </div>
               <p className="text-[11px] font-semibold text-[#0F172A]">
-                HbA1c remains at 7.4% (Target &lt; 7.0%). Consider combination therapy.
+                {brief.risk.note}
               </p>
             </motion.div>
           )}
@@ -144,7 +156,7 @@ export default function AIPatientBrief() {
                   KEY CLINICAL INFORMATION
                 </p>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {AI_BRIEF.keyInfo.map((item, idx) => (
+                  {brief.keyInfo.map((item, idx) => (
                     <li key={idx} className="text-xs font-bold text-[#0F172A] flex items-start gap-2">
                       <CheckCircle2 size={14} className="text-[#0F766E] mt-0.5 flex-shrink-0" />
                       <span>{item}</span>
@@ -161,7 +173,7 @@ export default function AIPatientBrief() {
                     NEEDS CLINICAL ATTENTION
                   </p>
                   <p className="text-xs font-bold text-[#0F172A] mt-0.5">
-                    {AI_BRIEF.attention}
+                    {brief.attention}
                   </p>
                 </div>
               </div>
