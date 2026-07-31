@@ -178,6 +178,49 @@ const emptyWalkInForm = {
   department: DEPARTMENTS[0], assignedDoctor: DOCTORS_BY_DEPARTMENT[DEPARTMENTS[0]][0], priority: 'Normal'
 };
 
+const formatHour12 = (hour, minute = 0) => {
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const h = hour % 12 === 0 ? 12 : hour % 12;
+  return `${String(h).padStart(2, '0')}:${String(minute).padStart(2, '0')} ${period}`;
+};
+
+const getGreeting = (hour) => {
+  if (hour < 12) return 'Good Morning';
+  if (hour < 17) return 'Good Afternoon';
+  return 'Good Evening';
+};
+
+// Shift boundaries match the hospital-wide schedule (see admin.html shift options): 6AM-4PM, 4PM-10PM, 10PM-6AM.
+const getShiftInfo = (now) => {
+  const hour = now.getHours();
+  let shiftName;
+  let endHour;
+  if (hour >= 6 && hour < 16) {
+    shiftName = 'Morning Shift';
+    endHour = 16;
+  } else if (hour >= 16 && hour < 22) {
+    shiftName = 'Evening Shift';
+    endHour = 22;
+  } else {
+    shiftName = 'Night Shift';
+    endHour = 6;
+  }
+
+  const shiftEnd = new Date(now);
+  shiftEnd.setHours(endHour, 0, 0, 0);
+  if (shiftEnd <= now) shiftEnd.setDate(shiftEnd.getDate() + 1);
+
+  const diffMs = shiftEnd - now;
+  const hoursRemaining = Math.floor(diffMs / (1000 * 60 * 60));
+  const minutesRemaining = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+  return {
+    shiftName,
+    remainingLabel: `${hoursRemaining}h ${minutesRemaining}m`,
+    endLabel: `Ends ${formatHour12(endHour)}`
+  };
+};
+
 const sectionHeader = (Icon, title, badge) => (
   <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
     <div className="flex items-center gap-2">
@@ -206,6 +249,8 @@ export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
   const [successMessage, setSuccessMessage] = useState('');
   const [vitalsModalPatientId, setVitalsModalPatientId] = useState(null);
   const [vitalsForm, setVitalsForm] = useState({ temp: '', bp: '', pulse: '', spo2: '' });
+  const [greeting] = useState(() => getGreeting(new Date().getHours()));
+  const [shiftInfo] = useState(() => getShiftInfo(new Date()));
 
   const updatePatient = (id, updates) => {
     setPatients((current) => current.map((patient) => (
@@ -308,7 +353,7 @@ export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
     { label: 'Critical Patients', value: criticalPatientsCount, icon: ShieldAlert, color: '#EF4444', trend: 'Ward A/B' },
     { label: 'Medication Due', value: medicationsDueCount, icon: Pill, color: '#38BDF8', trend: 'Ward A' },
     { label: 'Active Call Requests', value: activeCallsCount, icon: PhoneCall, color: '#F59E0B', trend: 'Live' },
-    { label: 'Shift Time Remaining', value: '5h 18m', icon: Clock3, color: '#14B8A6', trend: 'Ends 06:30 PM' }
+    { label: 'Shift Time Remaining', value: shiftInfo.remainingLabel, icon: Clock3, color: '#14B8A6', trend: shiftInfo.endLabel }
   ];
 
   return (
@@ -317,7 +362,7 @@ export default function NurseDashboard({ user, onLogout, onBackToLanding }) {
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl sm:rounded-3xl bg-white/90 backdrop-blur-2xl border border-white/90 p-6 shadow-lg shadow-[#0F766E]/5">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#0F766E]">Nurse Portal</p>
-            <h1 className="text-3xl font-bold text-[#0F172A]">Good Morning, Anjali</h1>
+            <h1 className="text-3xl font-bold text-[#0F172A]">{greeting}, Anjali</h1>
             <p className="mt-2 text-sm text-[#64748B]">Here's your ward activity and patient care tasks for today.</p>
             <p className="mt-1 text-xs font-semibold text-[#64748B]">Anjali Sharma • Staff Nurse • General Medicine • Ward A</p>
           </div>
