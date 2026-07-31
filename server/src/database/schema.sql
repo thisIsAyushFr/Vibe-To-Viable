@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS clinics (
 CREATE TABLE IF NOT EXISTS patients (
     patient_id VARCHAR(20) PRIMARY KEY,
     full_name VARCHAR(255) NOT NULL,
-    gender CHAR(1) NOT NULL CHECK (gender IN ('M', 'F', 'O')),
+    gender VARCHAR(10) NOT NULL CHECK (gender IN ('Male', 'Female', 'Other')),
     date_of_birth DATE NOT NULL,
     phone VARCHAR(20) NOT NULL,
     email VARCHAR(255),
@@ -230,6 +230,19 @@ CREATE TABLE IF NOT EXISTS hospital_occupancy (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (clinic_id) REFERENCES clinics(clinic_id),
     UNIQUE (clinic_id, occupancy_date)
+);
+
+-- Operating Theatres
+CREATE TABLE IF NOT EXISTS operating_theatres (
+    ot_id VARCHAR(20) PRIMARY KEY,
+    clinic_id VARCHAR(20) NOT NULL,
+    ot_name VARCHAR(100) NOT NULL,
+    status VARCHAR(50) NOT NULL CHECK (status IN ('Available', 'In Use', 'Under Maintenance', 'Cleaning')),
+    is_emergency_reserved BOOLEAN DEFAULT FALSE,
+    total_surgeries_today INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (clinic_id) REFERENCES clinics(clinic_id)
 );
 
 -- ============================================================================

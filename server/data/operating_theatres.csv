@@ -1,0 +1,152 @@
+ot_id,clinic_id,ot_name,status,is_emergency_reserved,total_surgeries_today
+OT1,C1,Operation Theatre 1,Available,FALSE,0
+OT2,C1,Operation Theatre 2,In Use,TRUE,2
+OT3,C1,Operation Theatre 3,Cleaning,FALSE,1
+OT4,C1,Operation Theatre 4,Available,FALSE,0
+OT5,C2,Operation Theatre 1,Available,FALSE,0
+OT6,C2,Operation Theatre 2,Available,TRUE,1
+OT7,C2,Operation Theatre 3,In Use,FALSE,2
+OT8,C3,Operation Theatre 1,In Use,FALSE,1
+OT9,C3,Operation Theatre 2,Available,TRUE,0
+OT10,C3,Operation Theatre 3,Under Maintenance,FALSE,0
+OT11,C4,Operation Theatre 1,Available,FALSE,0
+OT12,C4,Operation Theatre 2,In Use,FALSE,2
+OT13,C4,Operation Theatre 3,Cleaning,TRUE,1
+OT14,C5,Operation Theatre 1,Available,FALSE,0
+OT15,C5,Operation Theatre 2,Available,FALSE,1
+OT16,C5,Operation Theatre 3,In Use,TRUE,2
+OT17,C6,Operation Theatre 1,In Use,FALSE,1
+OT18,C6,Operation Theatre 2,Cleaning,FALSE,0
+OT19,C6,Operation Theatre 3,Available,TRUE,0
+OT20,C7,Operation Theatre 1,Available,FALSE,0
+OT21,C7,Operation Theatre 2,In Use,FALSE,2
+OT22,C7,Operation Theatre 3,Available,FALSE,1
+OT23,C8,Operation Theatre 1,Cleaning,FALSE,0
+OT24,C8,Operation Theatre 2,Available,TRUE,0
+OT25,C8,Operation Theatre 3,In Use,FALSE,2
+OT26,C9,Operation Theatre 1,Available,FALSE,1
+OT27,C9,Operation Theatre 2,Available,FALSE,0
+OT28,C9,Operation Theatre 3,In Use,TRUE,2
+OT29,C10,Operation Theatre 1,In Use,FALSE,1
+OT30,C10,Operation Theatre 2,Under Maintenance,FALSE,0
+OT31,C10,Operation Theatre 3,Available,TRUE,0
+OT32,C11,Operation Theatre 1,Available,FALSE,0
+OT33,C11,Operation Theatre 2,In Use,FALSE,2
+OT34,C11,Operation Theatre 3,Cleaning,FALSE,1
+OT35,C12,Operation Theatre 1,Available,FALSE,0
+OT36,C12,Operation Theatre 2,Available,TRUE,1
+OT37,C12,Operation Theatre 3,In Use,FALSE,2
+OT38,C13,Operation Theatre 1,In Use,FALSE,1
+OT39,C13,Operation Theatre 2,Cleaning,FALSE,0
+OT40,C13,Operation Theatre 3,Available,TRUE,0
+OT41,C14,Operation Theatre 1,Available,FALSE,0
+OT42,C14,Operation Theatre 2,In Use,FALSE,2
+OT43,C14,Operation Theatre 3,Available,FALSE,1
+OT44,C15,Operation Theatre 1,Available,FALSE,0
+OT45,C15,Operation Theatre 2,Available,FALSE,1
+OT46,C15,Operation Theatre 3,In Use,TRUE,2
+OT47,C16,Operation Theatre 1,In Use,FALSE,1
+OT48,C16,Operation Theatre 2,Cleaning,FALSE,0
+OT49,C16,Operation Theatre 3,Available,TRUE,0
+OT50,C17,Operation Theatre 1,Available,FALSE,0
+OT51,C17,Operation Theatre 2,In Use,FALSE,2
+OT52,C17,Operation Theatre 3,Available,FALSE,1
+OT53,C18,Operation Theatre 1,Cleaning,FALSE,0
+OT54,C18,Operation Theatre 2,Available,TRUE,0
+OT55,C18,Operation Theatre 3,In Use,FALSE,2
+OT56,C19,Operation Theatre 1,Available,FALSE,1
+OT57,C19,Operation Theatre 2,Available,FALSE,0
+OT58,C19,Operation Theatre 3,In Use,TRUE,2
+OT59,C20,Operation Theatre 1,In Use,FALSE,1
+OT60,C20,Operation Theatre 2,Under Maintenance,FALSE,0
+OT61,C20,Operation Theatre 3,Available,TRUE,0
+OT62,C21,Operation Theatre 1,Available,FALSE,0
+OT63,C21,Operation Theatre 2,In Use,FALSE,2
+OT64,C21,Operation Theatre 3,Cleaning,FALSE,1
+OT65,C22,Operation Theatre 1,Available,FALSE,0
+OT66,C22,Operation Theatre 2,Available,TRUE,1
+OT67,C22,Operation Theatre 3,In Use,FALSE,2
+OT68,C23,Operation Theatre 1,In Use,FALSE,1
+OT69,C23,Operation Theatre 2,Cleaning,FALSE,0
+OT70,C23,Operation Theatre 3,Available,TRUE,0
+OT71,C24,Operation Theatre 1,Available,FALSE,0
+OT72,C24,Operation Theatre 2,In Use,FALSE,2
+OT73,C24,Operation Theatre 3,Available,FALSE,1
+OT74,C25,Operation Theatre 1,Available,FALSE,0
+OT75,C25,Operation Theatre 2,Available,FALSE,1
+OT76,C25,Operation Theatre 3,In Use,TRUE,2
+OT77,C26,Operation Theatre 1,In Use,FALSE,1
+OT78,C26,Operation Theatre 2,Cleaning,FALSE,0
+OT79,C26,Operation Theatre 3,Available,TRUE,0
+OT80,C27,Operation Theatre 1,Available,FALSE,0
+OT81,C27,Operation Theatre 2,In Use,FALSE,2
+OT82,C27,Operation Theatre 3,Available,FALSE,1
+OT83,C28,Operation Theatre 1,Cleaning,FALSE,0
+OT84,C28,Operation Theatre 2,Available,TRUE,0
+OT85,C28,Operation Theatre 3,In Use,FALSE,2
+OT86,C29,Operation Theatre 1,Available,FALSE,1
+OT87,C29,Operation Theatre 2,Available,FALSE,0
+OT88,C29,Operation Theatre 3,In Use,TRUE,2
+OT89,C30,Operation Theatre 1,In Use,FALSE,1
+OT90,C30,Operation Theatre 2,Under Maintenance,FALSE,0
+OT91,C30,Operation Theatre 3,Available,TRUE,0
+OT92,C31,Operation Theatre 1,Available,FALSE,0
+OT93,C31,Operation Theatre 2,In Use,FALSE,2
+OT94,C31,Operation Theatre 3,Cleaning,FALSE,1
+OT95,C32,Operation Theatre 1,Available,FALSE,0
+OT96,C32,Operation Theatre 2,Available,TRUE,1
+OT97,C32,Operation Theatre 3,In Use,FALSE,2
+OT98,C33,Operation Theatre 1,In Use,FALSE,1
+OT99,C33,Operation Theatre 2,Cleaning,FALSE,0
+OT100,C33,Operation Theatre 3,Available,TRUE,0
+OT101,C34,Operation Theatre 1,Available,FALSE,0
+OT102,C34,Operation Theatre 2,In Use,FALSE,2
+OT103,C34,Operation Theatre 3,Available,FALSE,1
+OT104,C35,Operation Theatre 1,Available,FALSE,0
+OT105,C35,Operation Theatre 2,Available,FALSE,1
+OT106,C35,Operation Theatre 3,In Use,TRUE,2
+OT107,C36,Operation Theatre 1,In Use,FALSE,1
+OT108,C36,Operation Theatre 2,Cleaning,FALSE,0
+OT109,C36,Operation Theatre 3,Available,TRUE,0
+OT110,C37,Operation Theatre 1,Available,FALSE,0
+OT111,C37,Operation Theatre 2,In Use,FALSE,2
+OT112,C37,Operation Theatre 3,Available,FALSE,1
+OT113,C38,Operation Theatre 1,Cleaning,FALSE,0
+OT114,C38,Operation Theatre 2,Available,TRUE,0
+OT115,C38,Operation Theatre 3,In Use,FALSE,2
+OT116,C39,Operation Theatre 1,Available,FALSE,1
+OT117,C39,Operation Theatre 2,Available,FALSE,0
+OT118,C39,Operation Theatre 3,In Use,TRUE,2
+OT119,C40,Operation Theatre 1,In Use,FALSE,1
+OT120,C40,Operation Theatre 2,Under Maintenance,FALSE,0
+OT121,C40,Operation Theatre 3,Available,TRUE,0
+OT122,C41,Operation Theatre 1,Available,FALSE,0
+OT123,C41,Operation Theatre 2,In Use,FALSE,2
+OT124,C41,Operation Theatre 3,Cleaning,FALSE,1
+OT125,C42,Operation Theatre 1,Available,FALSE,0
+OT126,C42,Operation Theatre 2,Available,TRUE,1
+OT127,C42,Operation Theatre 3,In Use,FALSE,2
+OT128,C43,Operation Theatre 1,In Use,FALSE,1
+OT129,C43,Operation Theatre 2,Cleaning,FALSE,0
+OT130,C43,Operation Theatre 3,Available,TRUE,0
+OT131,C44,Operation Theatre 1,Available,FALSE,0
+OT132,C44,Operation Theatre 2,In Use,FALSE,2
+OT133,C44,Operation Theatre 3,Available,FALSE,1
+OT134,C45,Operation Theatre 1,Available,FALSE,0
+OT135,C45,Operation Theatre 2,Available,FALSE,1
+OT136,C45,Operation Theatre 3,In Use,TRUE,2
+OT137,C46,Operation Theatre 1,In Use,FALSE,1
+OT138,C46,Operation Theatre 2,Cleaning,FALSE,0
+OT139,C46,Operation Theatre 3,Available,TRUE,0
+OT140,C47,Operation Theatre 1,Available,FALSE,0
+OT141,C47,Operation Theatre 2,In Use,FALSE,2
+OT142,C47,Operation Theatre 3,Available,FALSE,1
+OT143,C48,Operation Theatre 1,Cleaning,FALSE,0
+OT144,C48,Operation Theatre 2,Available,TRUE,0
+OT145,C48,Operation Theatre 3,In Use,FALSE,2
+OT146,C49,Operation Theatre 1,Available,FALSE,1
+OT147,C49,Operation Theatre 2,Available,FALSE,0
+OT148,C49,Operation Theatre 3,In Use,TRUE,2
+OT149,C50,Operation Theatre 1,In Use,FALSE,1
+OT150,C50,Operation Theatre 2,Under Maintenance,FALSE,0
+OT151,C50,Operation Theatre 3,Available,TRUE,0

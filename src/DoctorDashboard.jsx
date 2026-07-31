@@ -1,27 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Users, CheckSquare, Clock3, ClipboardList, LayoutGrid, ArrowLeft, Send,
-  Activity, Bed, Calendar, Bot, BrainCircuit, Clock, Settings, MessageSquare, LogOut, X
+  Users, CheckSquare, Clock3, ClipboardList, LayoutGrid, ArrowLeft, ArrowRight,
+  Activity, Bed, Calendar, Settings, LogOut, X, Stethoscope
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Imports from modular data & components
 import { DOCTOR, PATIENTS, INITIAL_QUEUE, INITIAL_TASKS } from './data/doctorDemoData';
-import { useWalkIns, updateWalkIn } from './data/hospitalDemoStore';
+import { useWalkIns, updateWalkIn } from './data/hospitalStore';
+import { useMessages, sendMessage, markAsRead } from './data/messageStore';
 import DoctorTopbar from './components/DoctorTopbar';
 import StatCard from './components/StatCard';
 import NextPatientCard from './components/NextPatientCard';
 import AIPatientBrief from './components/AIPatientBrief';
 import PatientQueue from './components/PatientQueue';
+import StatusBadge from './components/StatusBadge';
 import PendingTasks from './components/PendingTasks';
 import PatientSnapshot from './components/PatientSnapshot';
 import MedicalTimeline from './components/MedicalTimeline';
 import DocumentationAssistant from './components/DocumentationAssistant';
-import PatientChat from './components/PatientChat';
 import WorkloadCard from './components/WorkloadCard';
 import WorkloadIndicator from './components/WorkloadIndicator';
 import DoctorSchedule from './components/DoctorSchedule';
-import QuickActions from './components/QuickActions';
+import AIWidget from './components/AIWidget';
 
 import OperationTheaterView from './components/OperationTheaterView';
 import AdmittedPatientsView from './components/AdmittedPatientsView';
@@ -29,22 +30,14 @@ import DoctorSettings from './components/DoctorSettings';
 
 export const NAV_ITEMS = [
   { id: 'overview', label: 'Overview', icon: LayoutGrid },
+  { id: 'patients', label: 'Patients', icon: Stethoscope },
   { id: 'ot-schedules', label: 'Operation Theater', icon: Activity },
   { id: 'admitted-patients', label: 'Admitted Patients & Beds', icon: Bed },
-  { id: 'appointments', label: 'Appointments', icon: Calendar },
-  { id: 'outpatient-queue', label: 'Outpatient Queue', icon: Users },
-  { id: 'ai-assistant', label: 'AI Clinical Assistant', icon: Bot, badge: 'AI' },
-  { id: 'tasks', label: 'Tasks', icon: CheckSquare },
-  { id: 'workload', label: 'Workload Intelligence', icon: BrainCircuit },
-  { id: 'opd-schedule', label: 'OPD Schedule', icon: Clock },
-  { id: 'chat', label: 'Messages', icon: MessageSquare }, // <-- Included here natively!
-  { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
 export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
   const [activeNav, setActiveNav] = useState('overview');
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [searchFilter, setSearchFilter] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState('rahul');
   const [tasks, setTasks] = useState(INITIAL_TASKS);
   const [queueFilter, setQueueFilter] = useState('all');
@@ -146,16 +139,6 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
     }
   };
 
-  const scrollToId = (id) => {
-    setActiveNav('overview');
-    setTimeout(() => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 50);
-  };
-
   const stats = [
     { label: "TODAY'S PATIENTS", value: 14, icon: Users, color: '#0F766E', trend: 'On schedule' },
     { label: "COMPLETED", value: 6 + completedQueueCount, icon: CheckSquare, color: '#22C55E', trend: `${6 + completedQueueCount} / 14` },
@@ -184,10 +167,7 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
         <main className="flex-1 lg:ml-64 min-h-screen pb-12 w-full max-w-full min-w-0 overflow-x-hidden">
           <DoctorTopbar
             setDrawerOpen={setDrawerOpen}
-            searchFilter={searchFilter}
-            setSearchFilter={setSearchFilter}
             onBackToLanding={onBackToLanding}
-            setActiveNav={setActiveNav}
           />
 
           <div className="px-3 sm:px-8 py-4 sm:py-6 w-full max-w-full min-w-0 overflow-x-hidden">
@@ -199,6 +179,49 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
               <DoctorSettings onLogout={onLogout} />
             ) : activeNav === 'chat' ? (
               <DedicatedChatView selectedPatient={selectedPatient} />
+            ) : activeNav === 'appointments' ? (
+              <AppointmentsView
+                queue={INITIAL_QUEUE}
+                patients={PATIENTS}
+                onViewPatient={(id) => {
+                  setSelectedPatientId(id);
+                  setActiveNav('patients');
+                }}
+              />
+            ) : activeNav === 'outpatient-queue' ? (
+              <div className="max-w-4xl mx-auto">
+                <PatientQueue
+                  queue={combinedQueue}
+                  patients={allPatients}
+                  queueStatuses={queueStatuses}
+                  selectedPatientId={selectedPatientId}
+                  onSelectPatient={setSelectedPatientId}
+                  queueFilter={queueFilter}
+                  setQueueFilter={setQueueFilter}
+                  onMarkDone={markQueueDone}
+                />
+              </div>
+            ) : activeNav === 'patients' ? (
+              <PatientsView
+                combinedQueue={combinedQueue}
+                allPatients={allPatients}
+                queueStatuses={queueStatuses}
+                selectedPatientId={selectedPatientId}
+                setSelectedPatientId={setSelectedPatientId}
+                queueFilter={queueFilter}
+                setQueueFilter={setQueueFilter}
+                markQueueDone={markQueueDone}
+                nextPatient={nextPatient}
+                activeQueueItem={activeQueueItem}
+                isConsultationActive={isConsultationActive}
+                handleStartConsultation={handleStartConsultation}
+                handleFinishConsultation={handleFinishConsultation}
+                selectedPatient={selectedPatient}
+              />
+            ) : activeNav === 'opd-schedule' ? (
+              <div className="max-w-3xl mx-auto">
+                <DoctorSchedule walkIns={walkIns} />
+              </div>
             ) : activeNav !== 'overview' ? (
               <PlaceholderView
                 navId={activeNav}
@@ -206,37 +229,19 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
               />
             ) : (
               <div className="flex flex-col gap-5 sm:gap-6 w-full max-w-full min-w-0">
+                {/* 1. Summary cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 w-full">
                   {stats.map((s, idx) => (
                     <StatCard key={s.label} {...s} delay={idx * 0.05} />
                   ))}
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 w-full min-w-0">
-                  <div id="next-patient" className="lg:col-span-6 scroll-mt-24 min-w-0">
-                    <NextPatientCard
-                      nextPatient={nextPatient}
-                      queueItem={activeQueueItem}
-                      onViewPatient={() => {
-                        if (nextPatient) {
-                          setSelectedPatientId(nextPatient.id);
-                          scrollToId('snapshot');
-                        }
-                      }}
-                      consultationStarted={isConsultationActive}
-                      onStartConsultation={handleStartConsultation}
-                      onFinishConsultation={handleFinishConsultation}
-                    />
-                  </div>
-
-                  <div id="ai-brief" className="lg:col-span-6 scroll-mt-24 min-w-0">
-                    <AIPatientBrief />
-                  </div>
-
-                  <div className="lg:col-span-6 min-w-0">
-                    <div 
+                {/* 2. Operation Theatre | Admitted Patients & Beds */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 w-full min-w-0">
+                  <div className="min-w-0">
+                    <div
                       onClick={() => setActiveNav('ot-schedules')}
-                      className="p-5 rounded-3xl bg-gradient-to-r from-teal-900 via-slate-900 to-teal-950 text-white shadow-lg cursor-pointer hover:shadow-xl transition-all border border-teal-800/80 group"
+                      className="p-5 rounded-3xl bg-gradient-to-r from-teal-900 via-slate-900 to-teal-950 text-white shadow-lg cursor-pointer hover:shadow-xl transition-all border border-teal-800/80 group h-full"
                     >
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-xs font-bold text-cyan-300 uppercase tracking-widest">Surgical Suite Telemetry</span>
@@ -253,10 +258,10 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
                     </div>
                   </div>
 
-                  <div className="lg:col-span-6 min-w-0">
-                    <div 
+                  <div className="min-w-0">
+                    <div
                       onClick={() => setActiveNav('admitted-patients')}
-                      className="p-5 rounded-3xl bg-white border border-teal-200/80 shadow-md cursor-pointer hover:shadow-xl transition-all group"
+                      className="p-5 rounded-3xl bg-white border border-teal-200/80 shadow-md cursor-pointer hover:shadow-xl transition-all group h-full"
                     >
                       <div className="flex items-center justify-between mb-3">
                         <span className="text-xs font-bold text-teal-700 uppercase tracking-widest">Inpatient Beds</span>
@@ -272,64 +277,40 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
                       </p>
                     </div>
                   </div>
+                </div>
 
-                  <div id="queue" className="lg:col-span-7 scroll-mt-24 min-w-0">
-                    <PatientQueue
-                      queue={combinedQueue}
-                      patients={allPatients}
-                      queueStatuses={queueStatuses}
-                      selectedPatientId={selectedPatientId}
-                      onSelectPatient={setSelectedPatientId}
-                      queueFilter={queueFilter}
-                      setQueueFilter={setQueueFilter}
-                      onMarkDone={markQueueDone}
-                    />
-                  </div>
-
-                  <div id="tasks" className="lg:col-span-5 scroll-mt-24 min-w-0">
-                    <PendingTasks tasks={tasks} onToggleTask={toggleTask} />
-                  </div>
-
-                  <div id="snapshot" className="lg:col-span-6 scroll-mt-24 min-w-0">
-                    <PatientSnapshot patient={selectedPatient} />
-                  </div>
-
-                  <div id="timeline" className="lg:col-span-6 scroll-mt-24 min-w-0">
-                    <MedicalTimeline
-                      timeline={selectedPatient.timeline}
-                      patientName={selectedPatient.name}
-                    />
-                  </div>
-
-                  <div id="doc-assistant" className="lg:col-span-6 scroll-mt-24 min-w-0">
-                    <DocumentationAssistant />
-                  </div>
-
-                  <div id="patient-chat" className="lg:col-span-6 scroll-mt-24 min-w-0">
-                    <PatientChat selectedPatient={selectedPatient} />
-                  </div>
-
-                  <div id="workload" className="lg:col-span-6 scroll-mt-24 min-w-0">
-                    <WorkloadCard pendingCount={pendingCount} />
-                  </div>
-
-                  <div id="burnout" className="lg:col-span-6 scroll-mt-24 min-w-0">
-                    <WorkloadIndicator />
-                  </div>
-
-                  <div id="schedule" className="lg:col-span-6 scroll-mt-24 min-w-0">
+                {/* 3. Today's Schedule | Pending Tasks */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 w-full min-w-0">
+                  <div id="schedule" className="scroll-mt-24 min-w-0">
                     <DoctorSchedule />
                   </div>
 
-                  <div id="quick-actions" className="lg:col-span-12 scroll-mt-24 min-w-0">
-                    <QuickActions onActionClick={scrollToId} />
+                  <div id="tasks" className="scroll-mt-24 min-w-0">
+                    <PendingTasks tasks={tasks} onToggleTask={toggleTask} />
                   </div>
+                </div>
+
+                {/* 4. Workload Intelligence | Burnout / Operational Workload Indicator */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 w-full min-w-0">
+                  <div id="workload" className="scroll-mt-24 min-w-0">
+                    <WorkloadCard pendingCount={pendingCount} />
+                  </div>
+
+                  <div id="burnout" className="scroll-mt-24 min-w-0">
+                    <WorkloadIndicator />
+                  </div>
+                </div>
+
+                {/* 5. Documentation Assistant */}
+                <div id="doc-assistant" className="scroll-mt-24 min-w-0 w-full">
+                  <DocumentationAssistant />
                 </div>
               </div>
             )}
           </div>
         </main>
       </div>
+      <AIWidget />
     </div>
   );
 }
@@ -358,11 +339,14 @@ function InlineDoctorSidebar({ activeNav, setActiveNav, drawerOpen, setDrawerOpe
         }`}
       >
         <div className="p-5 flex items-center justify-between border-b border-slate-100">
-          <div className="flex items-center gap-3 text-teal-900 font-black text-xl tracking-tight">
-            <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center shadow-md">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center shadow-md flex-shrink-0">
               <Activity size={18} strokeWidth={3} />
             </div>
-            CareSync
+            <div className="min-w-0">
+              <p className="text-teal-900 font-black text-sm leading-tight tracking-tight truncate">Aarogya Multispeciality Hospital</p>
+              <p className="text-[10px] font-semibold text-slate-400 leading-tight">Powered by CareSync</p>
+            </div>
           </div>
           <button 
             onClick={() => setDrawerOpen(false)} 
@@ -409,8 +393,19 @@ function InlineDoctorSidebar({ activeNav, setActiveNav, drawerOpen, setDrawerOpe
           })}
         </nav>
 
-        <div className="p-4 border-t border-slate-100 bg-slate-50">
-          <button 
+        <div className="p-4 border-t border-slate-100 bg-slate-50 space-y-2">
+          <button
+            onClick={() => { setActiveNav('settings'); setDrawerOpen(false); }}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-bold transition-all duration-200 group ${
+              activeNav === 'settings'
+                ? 'bg-teal-600 text-white shadow-lg shadow-teal-600/25'
+                : 'text-slate-500 hover:bg-teal-50 hover:text-teal-800'
+            }`}
+          >
+            <Settings size={20} className={`${activeNav === 'settings' ? 'text-white' : 'text-slate-400 group-hover:text-teal-600'} transition-colors`} />
+            Settings
+          </button>
+          <button
             onClick={onBackToLanding}
             className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 shadow-sm hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all active:scale-95"
           >
@@ -427,41 +422,26 @@ function InlineDoctorSidebar({ activeNav, setActiveNav, drawerOpen, setDrawerOpe
    DEDICATED CHAT VIEW WITH LOCALSTORAGE SYNC
    ========================================================================= */
 function DedicatedChatView({ selectedPatient }) {
-  const CHAT_KEY = 'caresync_shared_chat';
-  
-  const [messages, setMessages] = useState(() => {
-    const saved = localStorage.getItem(CHAT_KEY);
-    return saved ? JSON.parse(saved) : [
-      { id: 1, sender: 'patient', text: 'Hello Doctor, I wanted to ask about my prescription.', time: '10:05 AM' },
-      { id: 2, sender: 'doctor', text: 'Hi Ravi, sure. What seems to be the issue?', time: '10:12 AM' }
-    ];
-  });
-  
+  const CONVERSATION_ID = 'P001-D001';
+  const DOCTOR_ID = 'D001';
+  const PATIENT_ID = 'P001';
+
+  const messages = useMessages(CONVERSATION_ID);
   const [input, setInput] = useState('');
 
   useEffect(() => {
-    const handleStorageChange = (e) => {
-      if (e.key === CHAT_KEY && e.newValue) {
-        setMessages(JSON.parse(e.newValue));
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+    markAsRead(CONVERSATION_ID, DOCTOR_ID);
+  }, [messages.length]);
 
   const handleSend = () => {
     if (!input.trim()) return;
-    
-    const newMsg = {
-      id: Date.now(),
-      sender: 'doctor',
-      text: input,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    
-    const updated = [...messages, newMsg];
-    setMessages(updated);
-    localStorage.setItem(CHAT_KEY, JSON.stringify(updated));
+    sendMessage({
+      conversationId: CONVERSATION_ID,
+      senderId: DOCTOR_ID,
+      senderRole: 'doctor',
+      receiverId: PATIENT_ID,
+      text: input.trim()
+    });
     setInput('');
   };
 
@@ -480,36 +460,151 @@ function DedicatedChatView({ selectedPatient }) {
 
       <div className="flex-1 p-6 overflow-y-auto bg-slate-50 flex flex-col gap-4">
         {messages.map((msg) => (
-          <div key={msg.id} className={`flex flex-col max-w-[70%] ${msg.sender === 'doctor' ? 'self-end' : 'self-start'}`}>
-            <div className={`p-3 rounded-2xl text-sm shadow-sm ${
-              msg.sender === 'doctor' 
-                ? 'bg-teal-600 text-white rounded-br-none' 
+          <div key={msg.id} className={`flex flex-col max-w-[70%] ${msg.senderRole === 'doctor' ? 'self-end' : 'self-start'}`}>
+            <div className={`p-3 rounded-2xl text-sm shadow-sm break-words ${
+              msg.senderRole === 'doctor'
+                ? 'bg-teal-600 text-white rounded-br-none'
                 : 'bg-white text-slate-800 border border-slate-200 rounded-bl-none'
             }`}>
               {msg.text}
             </div>
-            <span className={`text-[10px] text-slate-400 mt-1 font-semibold ${msg.sender === 'doctor' ? 'text-right' : 'text-left'}`}>
-              {msg.time}
+            <span className={`text-[10px] text-slate-400 mt-1 font-semibold ${msg.senderRole === 'doctor' ? 'text-right' : 'text-left'}`}>
+              {msg.timestamp}
             </span>
           </div>
         ))}
       </div>
 
       <div className="p-4 bg-white border-t border-slate-100 flex items-center gap-3">
-        <input 
-          type="text" 
+        <input
+          type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSend()}
           placeholder="Type a message to the patient..."
           className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
         />
-        <button 
+        <button
           onClick={handleSend}
           className="w-12 h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-xl flex items-center justify-center transition-colors shadow-md"
         >
-          <Send size={18} />
+          <ArrowRight size={18} />
         </button>
+      </div>
+    </motion.div>
+  );
+}
+
+function PatientsView({
+  combinedQueue,
+  allPatients,
+  queueStatuses,
+  selectedPatientId,
+  setSelectedPatientId,
+  queueFilter,
+  setQueueFilter,
+  markQueueDone,
+  nextPatient,
+  activeQueueItem,
+  isConsultationActive,
+  handleStartConsultation,
+  handleFinishConsultation,
+  selectedPatient,
+}) {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 w-full min-w-0">
+      <div className="lg:col-span-12 min-w-0">
+        <PatientQueue
+          queue={combinedQueue}
+          patients={allPatients}
+          queueStatuses={queueStatuses}
+          selectedPatientId={selectedPatientId}
+          onSelectPatient={setSelectedPatientId}
+          queueFilter={queueFilter}
+          setQueueFilter={setQueueFilter}
+          onMarkDone={markQueueDone}
+        />
+      </div>
+
+      <div className="lg:col-span-6 min-w-0">
+        <NextPatientCard
+          nextPatient={nextPatient}
+          queueItem={activeQueueItem}
+          onViewPatient={() => {
+            if (nextPatient) setSelectedPatientId(nextPatient.id);
+          }}
+          consultationStarted={isConsultationActive}
+          onStartConsultation={handleStartConsultation}
+          onFinishConsultation={handleFinishConsultation}
+        />
+      </div>
+
+      <div className="lg:col-span-6 min-w-0">
+        <AIPatientBrief />
+      </div>
+
+      <div className="lg:col-span-6 min-w-0">
+        <PatientSnapshot patient={selectedPatient} />
+      </div>
+
+      <div className="lg:col-span-6 min-w-0">
+        <MedicalTimeline
+          timeline={selectedPatient.timeline}
+          patientName={selectedPatient.name}
+        />
+      </div>
+    </div>
+  );
+}
+
+function AppointmentsView({ queue, patients, onViewPatient }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="rounded-3xl p-5 sm:p-7 max-w-4xl mx-auto bg-white/90 backdrop-blur-2xl border border-white shadow-xl"
+    >
+      <div className="flex items-center gap-2.5 mb-5">
+        <div className="p-2 rounded-xl bg-[#0F766E]/10 text-[#0F766E] shadow-inner">
+          <Calendar size={18} />
+        </div>
+        <div>
+          <h2 className="text-xs font-black tracking-widest text-[#0F172A] uppercase">TODAY'S APPOINTMENTS</h2>
+          <p className="text-[10px] font-bold text-[#64748B]">Scheduled online consultations</p>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        {queue.map((q) => {
+          const p = patients[q.patientId];
+          if (!p) return null;
+          return (
+            <div
+              key={q.id}
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-slate-100 bg-white hover:border-[#0F766E]/30 hover:bg-[#F0FDFA] transition-all"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="text-xs font-black text-[#0F172A] w-16 flex-shrink-0">{q.time}</span>
+                <div className="min-w-0">
+                  <p className="text-sm font-black text-[#0F172A] truncate">{p.name}</p>
+                  <p className="text-[11px] font-semibold text-[#64748B] truncate">
+                    {q.visitType} • {p.age}y {p.gender} • Online Appointment
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <StatusBadge status={q.status} />
+                <button
+                  onClick={() => onViewPatient(q.patientId)}
+                  className="text-[10px] font-black px-3 py-1.5 rounded-xl bg-[#0F766E] text-white hover:bg-[#0d5f58] transition-all active:scale-95"
+                >
+                  View Patient
+                </button>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </motion.div>
   );

@@ -114,6 +114,7 @@ export interface AdmittedPatient {
   condition: 'Critical' | 'Post-Op Recovery' | 'Under Observation' | 'Stable & Improving';
   conditionDetails: string;
   attendingDoctor: string;
+  assignedNurse: string;
   admissionDate: string;
   vitals: {
     bp: string;
@@ -242,6 +243,7 @@ export const ADMITTED_PATIENTS: AdmittedPatient[] = [
     condition: 'Critical',
     conditionDetails: 'Post-Myocardial Infarction. Inotropic & continuous SpO2/BP monitoring.',
     attendingDoctor: 'Dr. Arjun Sharma (Cardiologist)',
+    assignedNurse: 'Anjali Sharma',
     admissionDate: '27 Jul 2026',
     vitals: { bp: '142/90', hr: '94 bpm', spo2: '94%', temp: '98.8°F' }
   },
@@ -256,6 +258,7 @@ export const ADMITTED_PATIENTS: AdmittedPatient[] = [
     condition: 'Post-Op Recovery',
     conditionDetails: 'Day 1 Post-Op Knee Arthroplasty. Pain managed via IV protocol.',
     attendingDoctor: 'Dr. Vikram Patel (Orthopedic Surgeon)',
+    assignedNurse: 'Kavita Reddy',
     admissionDate: '28 Jul 2026',
     vitals: { bp: '124/80', hr: '76 bpm', spo2: '98%', temp: '98.4°F' }
   },
@@ -270,6 +273,7 @@ export const ADMITTED_PATIENTS: AdmittedPatient[] = [
     condition: 'Under Observation',
     conditionDetails: 'Acute Unstable Angina. Continuous ECG Telemetry active.',
     attendingDoctor: 'Dr. Arjun Sharma (Cardiologist)',
+    assignedNurse: 'Anjali Sharma',
     admissionDate: '28 Jul 2026',
     vitals: { bp: '136/86', hr: '82 bpm', spo2: '97%', temp: '98.6°F' }
   },
@@ -284,6 +288,7 @@ export const ADMITTED_PATIENTS: AdmittedPatient[] = [
     condition: 'Stable & Improving',
     conditionDetails: 'Ischemic stroke recovery. Physical rehabilitation ongoing.',
     attendingDoctor: 'Dr. Ananya Rao (Senior Neurologist)',
+    assignedNurse: 'Meera Iyer',
     admissionDate: '25 Jul 2026',
     vitals: { bp: '120/78', hr: '70 bpm', spo2: '99%', temp: '98.2°F' }
   },
@@ -298,6 +303,7 @@ export const ADMITTED_PATIENTS: AdmittedPatient[] = [
     condition: 'Critical',
     conditionDetails: 'Polytrauma post Road Accident. Abdominal observation in progress.',
     attendingDoctor: 'Dr. Priya Nair (Emergency Specialist)',
+    assignedNurse: 'Fatima Khan',
     admissionDate: '29 Jul 2026',
     vitals: { bp: '108/68', hr: '110 bpm', spo2: '95%', temp: '99.1°F' }
   }

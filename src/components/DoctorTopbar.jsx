@@ -1,12 +1,23 @@
-import React, { useState } from 'react';
-import { Menu, Search, Bell, Calendar, Sparkles, X, CheckCircle2, HeartPulse, ArrowLeft, MessageSquare } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Menu, Bell, Calendar, CheckCircle2, HeartPulse, ArrowLeft } from 'lucide-react';
 import { DOCTOR, NOTIFICATIONS } from '../data/doctorDemoData';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFilter, onBackToLanding, setActiveNav }) {
+export default function DoctorTopbar({ setDrawerOpen, onBackToLanding }) {
   const [notifOpen, setNotifOpen] = useState(false);
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [unreadList, setUnreadList] = useState(NOTIFICATIONS);
+  const notifRef = useRef(null);
+
+  useEffect(() => {
+    if (!notifOpen) return;
+    const handleClickOutside = (e) => {
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [notifOpen]);
 
   const todayStr = new Date().toLocaleDateString('en-US', {
     weekday: 'short',
@@ -14,8 +25,23 @@ export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFil
     day: 'numeric'
   });
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'Good Morning';
+    if (hour >= 12 && hour < 17) return 'Good Afternoon';
+    if (hour >= 17 && hour < 22) return 'Good Evening';
+    return 'Good Night';
+  };
+
+  const [greeting, setGreeting] = useState(getGreeting());
+
+  useEffect(() => {
+    const interval = setInterval(() => setGreeting(getGreeting()), 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <header className="sticky top-0 z-20 px-3 sm:px-8 py-3 backdrop-blur-xl bg-[#F0FDFA]/90 border-b border-white/80 shadow-sm w-full max-w-full overflow-hidden">
+    <header className="sticky top-0 z-30 px-3 sm:px-8 py-3 backdrop-blur-xl bg-[#F0FDFA]/90 border-b border-white/80 shadow-sm w-full max-w-full">
       <div className="flex items-center justify-between gap-2">
         {/* Left Greeting & Mobile Hamburger */}
         <div className="flex items-center gap-2 min-w-0">
@@ -35,7 +61,7 @@ export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFil
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 flex-wrap">
               <h1 className="text-sm sm:text-xl font-black text-[#0F172A] tracking-tight truncate">
-                Good Morning, {DOCTOR.name}
+                {greeting}, {DOCTOR.name}
               </h1>
               <span className="hidden sm:inline-flex text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#0F766E]/10 text-[#0F766E] border border-[#0F766E]/20">
                 {DOCTOR.department}
@@ -63,44 +89,8 @@ export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFil
               <span className="hidden sm:inline">Hospital Website</span>
             </button>
           )}
-          {/* Mobile Search Toggle Icon */}
-          <button
-            onClick={() => setMobileSearchOpen((v) => !v)}
-            className="md:hidden w-8 h-8 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center text-[#0F172A] hover:bg-slate-50 active:scale-95 shadow-xs"
-          >
-            <Search size={15} />
-          </button>
-
-          {/* Desktop Search bar */}
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200/80 shadow-inner w-48 lg:w-60 focus-within:border-[#0F766E] focus-within:ring-2 focus-within:ring-[#0F766E]/15 transition-all">
-            <Search size={14} className="text-[#64748B]" />
-            <input
-              value={searchFilter}
-              onChange={(e) => setSearchFilter(e.target.value)}
-              placeholder="Search patient, task..."
-              className="bg-transparent outline-none text-xs w-full text-[#0F172A] placeholder:text-slate-400 font-medium"
-            />
-            {searchFilter && (
-              <button onClick={() => setSearchFilter('')} className="text-slate-400 hover:text-slate-600">
-                <X size={12} />
-              </button>
-            )}
-          </div>
-
-          {/* Chat Button */}
-          {setActiveNav && (
-            <button
-              onClick={() => setActiveNav('chat')}
-              className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center hover:bg-slate-50 shadow-xs transition-all active:scale-95"
-              title="Messages"
-              aria-label="Open Messages"
-            >
-              <MessageSquare size={16} className="text-[#0F172A]" />
-            </button>
-          )}
-
           {/* Notification Button & Popup */}
-          <div className="relative">
+          <div className="relative" ref={notifRef}>
             <button
               onClick={() => setNotifOpen((v) => !v)}
               className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-white border border-slate-200/80 flex items-center justify-center relative hover:bg-slate-50 shadow-xs transition-all active:scale-95"
@@ -120,7 +110,7 @@ export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFil
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="fixed sm:absolute left-3 right-3 sm:left-auto sm:right-0 mt-2 sm:w-80 rounded-2xl p-4 bg-white/95 backdrop-blur-2xl border border-white shadow-2xl z-50"
+                  className="absolute top-full right-0 mt-2 w-[calc(100vw-1.5rem)] max-w-[20rem] sm:w-80 rounded-2xl p-4 bg-white/95 backdrop-blur-2xl border border-white shadow-2xl z-[60]"
                 >
                   <div className="flex items-center justify-between mb-3 border-b pb-2">
                     <div className="flex items-center gap-1.5">
@@ -145,7 +135,7 @@ export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFil
                         key={n.id}
                         className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 hover:bg-[#F0FDFA] transition-colors relative group"
                       >
-                        <p className="text-xs font-medium text-[#0F172A] pr-4">{n.text}</p>
+                        <p className="text-xs font-medium text-[#0F172A] pr-4 break-words">{n.text}</p>
                         <p className="text-[10px] font-semibold text-[#64748B] mt-1">{n.time}</p>
                       </div>
                     ))}
@@ -169,31 +159,6 @@ export default function DoctorTopbar({ setDrawerOpen, searchFilter, setSearchFil
           </div>
         </div>
       </div>
-
-      {/* Expandable Mobile Search Input Bar */}
-      <AnimatePresence>
-        {mobileSearchOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden mt-2 pt-2 border-t border-slate-200/60"
-          >
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 shadow-inner">
-              <Search size={14} className="text-[#64748B]" />
-              <input
-                value={searchFilter}
-                onChange={(e) => setSearchFilter(e.target.value)}
-                placeholder="Search patient, task..."
-                className="bg-transparent outline-none text-xs w-full text-[#0F172A] placeholder:text-slate-400 font-medium"
-              />
-              <button onClick={() => setMobileSearchOpen(false)} className="text-slate-400">
-                <X size={14} />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </header>
   );
 }
