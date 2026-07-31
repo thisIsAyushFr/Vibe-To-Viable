@@ -6,11 +6,28 @@ import {
   Info,
   Building2,
   Siren,
-  X
+  X,
+  ChevronDown,
+  ChevronUp,
+  Users,
+  ListOrdered
 } from 'lucide-react';
-import { OPERATION_THEATERS } from '../data/doctorDemoData';
+import { motion, AnimatePresence } from 'framer-motion';
+import { OPERATION_THEATERS, OT_QUEUE_STATUS } from '../data/doctorDemoData';
 
 const OT4_RESERVATION_KEY = 'caresync_ot4_emergency_reservation';
+
+const PRIORITY_STYLES = {
+  Emergency: 'bg-rose-100 text-rose-800 border border-rose-200',
+  Urgent: 'bg-amber-100 text-amber-800 border border-amber-200',
+  Elective: 'bg-teal-100 text-teal-800 border border-teal-200',
+};
+
+const POSITION_STYLES = {
+  Next: 'bg-emerald-600 text-white',
+  Preparing: 'bg-[#38BDF8] text-white',
+  Waiting: 'bg-slate-500 text-white',
+};
 
 export default function OperationTheaterView() {
   const [ot4Reservation, setOt4Reservation] = useState(() => {
@@ -27,6 +44,11 @@ export default function OperationTheaterView() {
   const [reserveTargetId, setReserveTargetId] = useState(null);
   const [reserveForm, setReserveForm] = useState({ patient: '', procedure: '', surgeon: '', duration: '' });
   const [successMessage, setSuccessMessage] = useState('');
+
+  // Each OT card tracks its own expanded/collapsed state independently, keyed
+  // by OT id — expanding one card never touches any other card's state.
+  const [expandedOtIds, setExpandedOtIds] = useState({});
+  const toggleOtExpanded = (id) => setExpandedOtIds((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const standardTheaters = OPERATION_THEATERS.filter((ot) => ot.id !== 'ot-4');
   const reserveTarget = standardTheaters.find((ot) => ot.id === reserveTargetId) || null;
@@ -144,6 +166,8 @@ export default function OperationTheaterView() {
             const displaySurgeon = reservation ? reservation.surgeon : ot.currentSurgeon;
             const displayPatient = reservation ? reservation.patient : ot.patientName;
             const displayTimeSlot = reservation ? reservation.duration : ot.timeSlot;
+            const queue = OT_QUEUE_STATUS[ot.id] || [];
+            const isExpanded = Boolean(expandedOtIds[ot.id]);
 
             return (
               <div
@@ -202,6 +226,81 @@ export default function OperationTheaterView() {
                       </button>
                     </div>
                   )}
+
+                  <button
+                    onClick={() => toggleOtExpanded(ot.id)}
+                    className="flex items-center gap-1.5 text-xs font-extrabold text-[#0F766E] hover:text-[#0B5C56] mt-3 transition-colors"
+                  >
+                    <span>{isExpanded ? 'Hide Queue Status' : 'View More — Queue Status'}</span>
+                    {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+                  </button>
+
+                  <AnimatePresence>
+                    {isExpanded && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.25 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="mt-3 rounded-2xl p-3.5 bg-white border border-slate-100 shadow-xs">
+                          <div className="flex items-center justify-between gap-2 mb-3">
+                            <p className="text-[10px] font-black text-[#64748B] uppercase tracking-widest flex items-center gap-1.5">
+                              <ListOrdered size={13} className="text-[#0F766E]" />
+                              Queue Status
+                            </p>
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 flex-shrink-0 ${
+                              queue.length ? 'bg-[#0F766E]/10 text-[#0F766E]' : 'bg-slate-100 text-slate-500'
+                            }`}>
+                              <Users size={11} />
+                              {queue.length === 0
+                                ? 'Queue Empty'
+                                : `${queue.length} Patient${queue.length > 1 ? 's' : ''} Waiting`}
+                            </span>
+                          </div>
+
+                          {queue.length === 0 ? (
+                            <p className="text-[11px] font-semibold text-slate-500 text-center py-3">
+                              No patients currently waiting for this OT.
+                            </p>
+                          ) : (
+                            <>
+                              <p className="text-[11px] font-bold text-teal-700 mb-2.5 flex items-center gap-1.5">
+                                <Clock size={12} /> Next Surgery in {queue[0].waitTime}
+                              </p>
+                              <ul className="flex flex-col gap-2">
+                                {queue.map((entry) => (
+                                  <li
+                                    key={entry.id}
+                                    className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col gap-1.5"
+                                  >
+                                    <div className="flex items-center justify-between gap-2">
+                                      <span className="text-xs font-black text-[#0F172A] truncate">
+                                        {entry.patientName} ({entry.patientAge})
+                                      </span>
+                                      <span className={`text-[9px] font-black px-2 py-0.5 rounded-full flex-shrink-0 ${POSITION_STYLES[entry.status]}`}>
+                                        #{entry.position} {entry.status}
+                                      </span>
+                                    </div>
+                                    <p className="text-[11px] font-semibold text-slate-600 truncate">{entry.procedure}</p>
+                                    <div className="flex items-center justify-between gap-2">
+                                      <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${PRIORITY_STYLES[entry.priority]}`}>
+                                        {entry.priority}
+                                      </span>
+                                      <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1 flex-shrink-0">
+                                        <Clock size={11} /> Est. wait: {entry.waitTime}
+                                      </span>
+                                    </div>
+                                  </li>
+                                ))}
+                              </ul>
+                            </>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-500 font-medium">
