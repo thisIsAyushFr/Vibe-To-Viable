@@ -41,7 +41,6 @@ export default function OperationTheaterView() {
   const [reserveTargetId, setReserveTargetId] = useState(null);
   const [reserveForm, setReserveForm] = useState({ patient: '', procedure: '', surgeon: '', duration: '' });
   const [successMessage, setSuccessMessage] = useState('');
-  const [expandedOT, setExpandedOT] = useState(null);
 
   // Each OT card tracks its own expanded/collapsed state independently, keyed
   // by OT id — expanding one card never touches any other card's state.
@@ -102,10 +101,6 @@ export default function OperationTheaterView() {
 
   const isReserveFormValid = reserveForm.patient && reserveForm.procedure && reserveForm.surgeon && reserveForm.duration;
 
-  const toggleExpanded = (otId) => {
-    setExpandedOT((prev) => (prev === otId ? null : otId));
-  };
-
   return (
     <div className="space-y-6 w-full max-w-full">
       {successMessage && (
@@ -114,7 +109,7 @@ export default function OperationTheaterView() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
         {standardTheaters.map((ot) => {
           const reservation = otReservations[ot.id];
           const isOccupied = ot.status === 'occupied' || Boolean(reservation);
@@ -122,20 +117,17 @@ export default function OperationTheaterView() {
           const displaySurgeon = reservation ? reservation.surgeon : ot.currentSurgeon;
           const displayPatient = reservation ? reservation.patient : ot.patientName;
           const displayTimeSlot = reservation ? reservation.duration : ot.timeSlot;
-          const detailInfo = SURGERY_DETAILS[ot.id];
-          const hasDetail = Boolean(detailInfo);
-          const isExpanded = expandedOT === ot.id;
-          const currentStageIdx = detailInfo ? SURGERY_STAGES.indexOf(detailInfo.currentStage) : -1;
+          const queue = OT_QUEUE_STATUS[ot.id] || [];
+          const isExpanded = Boolean(expandedOtIds[ot.id]);
 
           return (
             <div
               key={ot.id}
-              onClick={() => hasDetail && toggleExpanded(ot.id)}
               className={`p-5 rounded-2xl border transition-all shadow-sm flex flex-col justify-between ${
                 isOccupied
                   ? 'bg-rose-50/60 border-rose-200'
                   : 'bg-emerald-50/60 border-emerald-200'
-              } ${hasDetail ? 'cursor-pointer hover:shadow-md' : ''}`}
+              }`}
             >
               <div>
                 <div className="flex items-center justify-between mb-3">
@@ -189,89 +181,84 @@ export default function OperationTheaterView() {
 
               <div className="mt-4 pt-3 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-500 font-medium">
                 <span>Dept: {ot.department}</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-teal-700">{ot.nextAvailableSlot}</span>
-                  {hasDetail && (isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />)}
-                </div>
+                <span className="font-bold text-teal-700">{ot.nextAvailableSlot}</span>
               </div>
 
-              {hasDetail && (
-                <div
-                  className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    isExpanded ? 'max-h-[1200px] opacity-100 mt-4 pt-4 border-t border-slate-200/60' : 'max-h-0 opacity-0'
-                  }`}
-                >
-                  <div className="rounded-2xl bg-teal-50/60 border border-teal-100 p-4 mb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <p className="text-xs font-bold text-teal-900">Current Surgical Stage</p>
-                      <span className="text-[10px] font-bold text-teal-700">{detailInfo.remainingTime}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      {SURGERY_STAGES.map((stage, idx) => {
-                        const reached = idx <= currentStageIdx;
-                        return (
-                          <div key={stage} className="flex-1 flex flex-col items-center gap-1">
-                            <div className={`h-1.5 w-full rounded-full ${reached ? 'bg-teal-500' : 'bg-slate-200'}`} />
-                            <span className={`text-[9px] font-semibold text-center ${reached ? 'text-teal-700' : 'text-slate-400'}`}>{stage}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <div className="mt-3 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
-                      <div className="h-full bg-teal-500 rounded-full" style={{ width: `${detailInfo.stageProgress}%` }} />
-                    </div>
-                  </div>
+              <button
+                onClick={() => toggleOtExpanded(ot.id)}
+                className="flex items-center gap-1.5 text-xs font-extrabold text-[#0F766E] hover:text-[#0B5C56] mt-3 transition-colors"
+              >
+                <span>{isExpanded ? 'View Less' : 'View More'}</span>
+                {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+              </button>
 
-                  <div className="space-y-3 text-xs">
-                    <div>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">Diagnosis</span>
-                      <p className="font-semibold text-slate-800">{detailInfo.diagnosis}</p>
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">Procedure</span>
-                      <p className="font-semibold text-slate-800">{ot.procedure}</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">Estimated Duration</span>
-                        <p className="font-semibold text-slate-800">{detailInfo.estimatedDuration}</p>
-                      </div>
-                      <div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">Time Slot</span>
-                        <p className="font-semibold text-slate-800">{ot.timeSlot}</p>
-                      </div>
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">Operating Surgeon</span>
-                      <p className="font-semibold text-teal-800">{ot.currentSurgeon}</p>
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">Anesthetist</span>
-                      <p className="font-semibold text-slate-800">{detailInfo.anesthetist}</p>
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">Nursing Staff</span>
-                      <p className="font-semibold text-slate-800">{detailInfo.nurses}</p>
-                    </div>
-                    <div>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase">Required Equipment</span>
-                      <p className="font-semibold text-slate-800">{detailInfo.equipment}</p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">Blood Requirement</span>
-                        <p className="font-semibold text-slate-800">{detailInfo.bloodRequirement}</p>
-                      </div>
-                      <div>
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">Consent Status</span>
-                        <p className={`font-semibold ${detailInfo.consentStatus.includes('Pending') ? 'text-amber-700' : 'text-emerald-700'}`}>
-                          {detailInfo.consentStatus}
+              <AnimatePresence initial={false}>
+                {isExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.25 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mt-3 rounded-2xl p-3.5 bg-white border border-slate-100 shadow-xs">
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <p className="text-[10px] font-black text-[#64748B] uppercase tracking-widest flex items-center gap-1.5">
+                          <ListOrdered size={13} className="text-[#0F766E]" />
+                          Queue Status
                         </p>
+                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full flex items-center gap-1 flex-shrink-0 ${
+                          queue.length ? 'bg-[#0F766E]/10 text-[#0F766E]' : 'bg-slate-100 text-slate-500'
+                        }`}>
+                          <Users size={11} />
+                          {queue.length === 0
+                            ? 'Queue Empty'
+                            : `${queue.length} Patient${queue.length > 1 ? 's' : ''} Waiting`}
+                        </span>
                       </div>
+
+                      {queue.length === 0 ? (
+                        <p className="text-[11px] font-semibold text-slate-500 text-center py-3">
+                          No patients currently waiting for this OT.
+                        </p>
+                      ) : (
+                        <>
+                          <p className="text-[11px] font-bold text-teal-700 mb-2.5 flex items-center gap-1.5">
+                            <Clock size={12} /> Next Surgery in {queue[0].waitTime}
+                          </p>
+                          <ul className="flex flex-col gap-2">
+                            {queue.map((entry) => (
+                              <li
+                                key={entry.id}
+                                className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex flex-col gap-1.5"
+                              >
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-xs font-black text-[#0F172A] truncate">
+                                    #{entry.position} {entry.status === 'Next' ? 'NEXT' : entry.status.toUpperCase()}
+                                  </span>
+                                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-full flex-shrink-0 ${POSITION_STYLES[entry.status]}`}>
+                                    {entry.status}
+                                  </span>
+                                </div>
+                                <p className="text-xs font-bold text-slate-800">{entry.patientName}</p>
+                                <p className="text-[11px] font-semibold text-slate-600 truncate">{entry.procedure}</p>
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${PRIORITY_STYLES[entry.priority]}`}>
+                                    {entry.priority}
+                                  </span>
+                                  <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1 flex-shrink-0">
+                                    <Clock size={11} /> Est. wait: {entry.waitTime}
+                                  </span>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
                     </div>
-                  </div>
-                </div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           );
         })}
