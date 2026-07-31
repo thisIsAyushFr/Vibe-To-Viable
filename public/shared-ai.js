@@ -51,8 +51,7 @@
   var MARKUP = [
     '<button class="ai-fab" id="' + FAB_ID + '" type="button" aria-label="Open CareSync AI Assistant">',
     '  <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
-    '    <path d="M12 2a3 3 0 0 1 3 3v3a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/>',
-    '    <path d="M19 11a7 7 0 0 1-14 0M12 18v4M8 22h8"/>',
+    '    <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
     '  </svg>',
     '</button>',
     '<div class="ai-panel" id="' + PANEL_ID + '" role="dialog" aria-label="CareSync AI Assistant">',
@@ -66,7 +65,12 @@
     '    <div class="ai-chat-log"></div>',
     '    <div class="ai-chat-input-row">',
     '      <input class="ai-chat-input" type="text" placeholder="Ask CareSync AI..." aria-label="Ask CareSync AI">',
-    '      <button class="ai-chat-send" type="button" aria-label="Send message">➤</button>',
+    '      <button class="ai-chat-send" type="button" aria-label="Send message">',
+    '        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">',
+    '          <path d="m22 2-7 20-4-9-9-4Z"/>',
+    '          <path d="M22 2 11 13"/>',
+    '        </svg>',
+    '      </button>',
     '    </div>',
     '  </div>',
     '</div>'

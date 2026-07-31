@@ -10,27 +10,6 @@
 <body>
   <div id="root"></div>
 
-  <button class="ai-fab" id="aiFab" aria-label="Open CareSync AI Assistant">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
-  </button>
-
-  <div class="ai-panel" id="aiPanel">
-    <div class="ai-panel-inner">
-      <div class="ai-panel-head">
-        <div class="dot"></div>
-        <div class="ai-panel-title">CareSync AI</div>
-        <button class="ai-panel-close" id="aiPanelClose">×</button>
-      </div>
-      <div class="ai-chat-log" id="aiChatLog"></div>
-      <div class="ai-chat-input-row">
-        <input type="text" class="ai-chat-input" id="aiChatInput" placeholder="Ask anything..." />
-        <button class="ai-chat-send" id="aiChatSend">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/><path d="M21 8a3 3 0 0 1 0 6" stroke-width="2"/></svg>
-        </button>
-      </div>
-    </div>
-  </div>
-
   <script type="module" src="/src/main.jsx"></script>
   <!-- CareSync AI widget - one shared component used by every page -->
   <script src="/shared-ai.js"></script>

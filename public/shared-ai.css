@@ -208,10 +208,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  /* The reference button contains the text glyph U+27A4 and inherits its
-     colour/size from the host page, which differs per page. Pinned here so
-     the arrow is identical everywhere. See AI-WIDGET.md for the one
-     deliberate deviation from the reference (white instead of inherited). */
+  /* Icon is an inline SVG paper-plane, centered by the flex rules above. */
   color: #fff;
   font-size: 15px;
   line-height: 1;
