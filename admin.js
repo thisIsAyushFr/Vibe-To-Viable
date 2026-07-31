@@ -1260,8 +1260,24 @@ $('#msgBtn')?.addEventListener('click', () => {
 
 // Page Header actions
 $('#pageHeaderExportBtn')?.addEventListener('click', () => {
-  openModal('#reportsModal');
-  showToast('Export Center', 'Select a report to download or export full executive package.', 'info');
+  const rows = [
+    ['Patient ID', 'Patient Name', 'Doctor', 'Department', 'Appointment Date', 'Status'],
+    ['P-1001', 'Rahul Verma', 'Dr. Arjun Sharma', 'General Medicine', '2026-07-28', 'Completed'],
+    ['P-1002', 'Nisha Rao', 'Dr. Ananya Rao', 'Cardiology', '2026-07-29', 'Checked In'],
+    ['P-1003', 'Karan Mehta', 'Dr. Priya Nair', 'Orthopedics', '2026-07-30', 'Scheduled'],
+    ['P-1004', 'Sanya Gupta', 'Dr. Arjun Sharma', 'General Medicine', '2026-07-31', 'Cancelled']
+  ];
+  const csvContent = rows.map((row) => row.join(',')).join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'export.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  showToast('Export Complete', 'export.csv has been downloaded.', 'success');
 });
 
 $('#pageHeaderQuickActionBtn')?.addEventListener('click', () => {
