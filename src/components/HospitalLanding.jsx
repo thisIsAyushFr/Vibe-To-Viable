@@ -34,7 +34,8 @@ import {
   User,
   LogOut,
   Send,
-  Bot
+  Bot,
+  Ambulance
 } from 'lucide-react';
 
 import AppointmentModal from './AppointmentModal';
@@ -287,6 +288,16 @@ const TESTIMONIALS = [
   }
 ];
 
+const AVAILABLE_AMBULANCES = [
+  { id: 1, label: 'Ambulance 1', phone: '+91 98765 43210' },
+  { id: 2, label: 'Ambulance 2', phone: '+91 91234 56780' },
+  { id: 3, label: 'Ambulance 3', phone: '+91 99887 66554' },
+  { id: 4, label: 'Ambulance 4', phone: '+91 90045 12233' },
+  { id: 5, label: 'Ambulance 5', phone: '+91 93456 78901' }
+];
+
+const RECEPTION_PHONE = '+91 99999 00000';
+
 export default function HospitalLanding({
   user,
   onLoginSuccess,
@@ -297,6 +308,7 @@ export default function HospitalLanding({
 }) {
   const [isAppointmentOpen, setIsAppointmentOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isAmbulanceOpen, setIsAmbulanceOpen] = useState(false);
   const [selectedDoctorProfile, setSelectedDoctorProfile] = useState(null);
   const [preselectedDept, setPreselectedDept] = useState(null);
   const [preselectedDoctor, setPreselectedDoctor] = useState(null);
@@ -396,11 +408,21 @@ export default function HospitalLanding({
               )}
 
               <button
-                onClick={() => handleOpenAppointment()}
-                className="px-5 py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-teal-500/10 to-cyan-500/10 hover:from-teal-500/20 hover:to-cyan-500/20 text-teal-900 border border-teal-300/80 transition-all transform hover:-translate-y-0.5"
+                onClick={() => setIsAmbulanceOpen(true)}
+                className="px-5 py-2.5 rounded-xl text-sm font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-md shadow-rose-600/20 transition-all transform hover:-translate-y-0.5 flex items-center gap-2"
               >
-                Book Appointment
+                <Ambulance className="w-4 h-4" />
+                <span>Ambulance</span>
               </button>
+
+              <a
+                href={`tel:${RECEPTION_PHONE.replace(/\s/g, '')}`}
+                className="p-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white shadow-md shadow-teal-900/20 transition-all transform hover:-translate-y-0.5 flex items-center justify-center"
+                title="Call Reception"
+                aria-label="Call Reception"
+              >
+                <PhoneCall className="w-4 h-4" />
+              </a>
             </div>
 
             {/* Mobile Menu Toggle Button */}
@@ -518,23 +540,6 @@ export default function HospitalLanding({
                 >
                   <Calendar className="w-5 h-5" />
                   <span>Book Appointment</span>
-                </button>
-
-                <button
-                  onClick={user ? handleOpenDashboard : () => setIsLoginOpen(true)}
-                  className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white/80 hover:bg-white text-slate-800 font-bold text-base border border-slate-200/80 shadow-lg shadow-teal-900/5 flex items-center justify-center space-x-2 transition-all transform hover:-translate-y-1 active:translate-y-0"
-                >
-                  {user ? (
-                    <>
-                      <User className="w-5 h-5 text-teal-600" />
-                      <span>Continue as {user.role}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Lock className="w-5 h-5 text-teal-600" />
-                      <span>Login</span>
-                    </>
-                  )}
                 </button>
               </div>
 
@@ -1165,6 +1170,59 @@ export default function HospitalLanding({
         onClose={() => setSelectedDoctorProfile(null)}
         onBookAppointment={(docName, deptName) => handleOpenAppointment(docName, deptName)}
       />
+
+      {isAmbulanceOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fadeIn"
+          onClick={() => setIsAmbulanceOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-md bg-white/95 backdrop-blur-2xl rounded-3xl border border-rose-100 shadow-2xl overflow-hidden text-slate-800"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-6 border-b border-rose-100/60 bg-gradient-to-r from-rose-600/10 via-rose-500/10 to-transparent">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-2xl bg-rose-600 flex items-center justify-center text-white shadow-md shadow-rose-600/20">
+                  <Ambulance className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Available Ambulances</h3>
+                  <p className="text-xs text-rose-700 font-medium">Tap an ambulance to call it directly</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsAmbulanceOpen(false)}
+                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-2">
+              {AVAILABLE_AMBULANCES.map((amb) => (
+                <a
+                  key={amb.id}
+                  href={`tel:${amb.phone.replace(/\s/g, '')}`}
+                  className="flex items-center justify-between p-4 rounded-2xl bg-rose-50 hover:bg-rose-100 border border-rose-200/80 transition-all active:scale-[0.98]"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center shadow-sm">
+                      <Ambulance className="w-4.5 h-4.5" />
+                    </div>
+                    <span className="text-sm font-bold text-slate-900">{amb.label}</span>
+                  </div>
+                  <span className="text-sm font-mono font-semibold text-rose-700">{amb.phone}</span>
+                </a>
+              ))}
+            </div>
+
+            <p className="text-center text-[11px] text-slate-500 border-t border-slate-100 p-4">
+              For life-threatening emergencies, always dial 108 (national ambulance helpline).
+            </p>
+          </div>
+        </div>
+      )}
 
       <AIWidget />
     </div>
