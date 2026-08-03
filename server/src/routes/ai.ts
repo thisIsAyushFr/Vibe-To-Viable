@@ -1,6 +1,5 @@
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
-import { ErrorTypes } from '../middleware/errorHandler.js';
 
 const router = Router();
 
@@ -17,38 +16,42 @@ function maskedKey(key: string | undefined) {
 // to the browser. Accepts either { message } (used by the shared-ai.js widget)
 // or { systemPrompt, userMessage, jsonMode } (used by callGroqAPI on the React side).
 router.post('/chat', async (req: Request, res: Response) => {
-  const { message, systemPrompt, userMessage, jsonMode } = req.body || {};
-
-  const finalUserMessage = userMessage || message;
-  if (!finalUserMessage) {
-    throw ErrorTypes.VALIDATION_ERROR('userMessage (or message) is required');
-  }
-
-  const apiKey = process.env.GROQ_API_KEY;
-  console.log('[ai/chat] incoming request — jsonMode:', !!jsonMode, 'GROQ_API_KEY:', maskedKey(apiKey));
-
-  if (!apiKey) {
-    console.error('[ai/chat] GROQ_API_KEY missing from server env — check server/.env');
-    throw ErrorTypes.INTERNAL_ERROR('GROQ_API_KEY is not configured on the server');
-  }
-
-  const messages = [
-    ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
-    { role: 'user', content: finalUserMessage },
-  ];
-
-  const requestBody = {
-    model: GROQ_MODEL,
-    temperature: 0.9,
-    messages,
-    ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
-  };
-  console.log('[ai/chat] → POST', GROQ_API_URL, 'model:', GROQ_MODEL, 'headers:', {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${maskedKey(apiKey)}`,
-  });
-
   try {
+    const { message, systemPrompt, userMessage, jsonMode } = req.body || {};
+
+    const finalUserMessage = userMessage || message;
+    if (!finalUserMessage) {
+      console.log('[ai/chat] missing userMessage or message in request body');
+      return res.status(400).json({ error: 'userMessage (or message) is required' });
+    }
+
+    const apiKey = process.env.GROQ_API_KEY;
+    console.log('[ai/chat] incoming request — jsonMode:', !!jsonMode, 'GROQ_API_KEY:', maskedKey(apiKey));
+
+    if (!apiKey) {
+      console.error('[ai/chat] GROQ_API_KEY missing from server env — check server/.env');
+      return res.status(500).json({ error: 'GROQ_API_KEY is not configured on the server' });
+    }
+
+    const messages = [
+      ...(systemPrompt ? [{ role: 'system', content: systemPrompt }] : []),
+      { role: 'user', content: finalUserMessage },
+    ];
+
+    const requestBody = {
+      model: GROQ_MODEL,
+      temperature: 0.9,
+      messages,
+      ...(jsonMode ? { response_format: { type: 'json_object' } } : {}),
+    };
+
+    console.log('[ai/chat] → POST', GROQ_API_URL, 'model:', GROQ_MODEL);
+    console.log('[ai/chat] request headers:', {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${maskedKey(apiKey)}`,
+    });
+    console.log('[ai/chat] request body messages:', messages.length, 'messages');
+
     const groqResponse = await axios.post(GROQ_API_URL, requestBody, {
       headers: {
         'Content-Type': 'application/json',
@@ -56,31 +59,66 @@ router.post('/chat', async (req: Request, res: Response) => {
       },
     });
 
-    console.log('[ai/chat] ← Groq responded', groqResponse.status);
+    console.log('[ai/chat] ← Groq responded with status:', groqResponse.status);
+    console.log('[ai/chat] response data:', JSON.stringify(groqResponse.data).slice(0, 200) + '...');
 
     const reply = groqResponse.data?.choices?.[0]?.message?.content;
     if (!reply) {
       console.error('[ai/chat] Groq returned no content:', JSON.stringify(groqResponse.data));
-      throw ErrorTypes.INTERNAL_ERROR('Empty response from Groq API');
+      return res.status(502).json({ error: 'Empty response from Groq API' });
     }
 
     res.json({ reply });
-  } catch (error: any) {
-    if (error.isAxiosError) {
-      const status = error.response?.status || 502;
-      const detail = error.response?.data?.error?.message || error.message;
-      console.error(`[ai/chat] Groq API error (${status}):`, detail, '— full response body:', JSON.stringify(error.response?.data));
+  } catch (error: unknown) {
+    const err = error as any;
+
+    // Handle Axios errors (API errors)
+    if (err?.isAxiosError) {
+      const status = err.response?.status || 502;
+      const detail = err.response?.data?.error?.message || err.message;
+      const fullBody = JSON.stringify(err.response?.data);
+
+      console.error(`[ai/chat] Axios error (${status}):`, detail);
+      console.error('[ai/chat] full response body:', fullBody);
+
       if (status === 401 || status === 403) {
-        throw ErrorTypes.INTERNAL_ERROR(`Groq auth failed (${status}) — GROQ_API_KEY is invalid or revoked. ${detail}`);
+        return res.status(401).json({
+          error: `Groq auth failed (${status}) — GROQ_API_KEY is invalid or revoked. ${detail}`,
+        });
       }
+
       if (status === 429) {
-        throw ErrorTypes.INTERNAL_ERROR(`Groq rate limit hit (429). ${detail}`);
+        return res.status(429).json({
+          error: `Groq rate limit hit (429). ${detail}`,
+        });
       }
-      throw ErrorTypes.INTERNAL_ERROR(`Groq API error (${status}): ${detail}`);
+
+      return res.status(status).json({
+        error: `Groq API error (${status}): ${detail}`,
+      });
     }
-    console.error('[ai/chat] non-Axios error:', error);
-    throw error;
+
+    // Handle network errors
+    if (err?.code === 'ECONNREFUSED') {
+      console.error('[ai/chat] connection refused — Groq API unreachable');
+      return res.status(503).json({ error: 'Groq API unreachable' });
+    }
+
+    // Handle unknown errors
+    console.error('[ai/chat] unexpected error:', err);
+    return res.status(500).json({ error: err?.message || 'Internal server error' });
   }
+});
+
+// Health check endpoint
+router.get('/health', (req: Request, res: Response) => {
+  const apiKey = process.env.GROQ_API_KEY;
+  res.json({
+    status: 'ok',
+    groq_configured: !!apiKey,
+    groq_key_masked: maskedKey(apiKey),
+    model: GROQ_MODEL,
+  });
 });
 
 export default router;
