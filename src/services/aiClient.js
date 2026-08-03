@@ -2,7 +2,8 @@
 // (server/src/routes/ai.ts), which holds the Groq API key server-side — the key
 // must never live in frontend code, since anything shipped to the browser is
 // visible to anyone who opens dev tools.
-const AI_CHAT_ENDPOINT = '/api/ai/chat';
+const AI_CHAT_ENDPOINT =
+  'https://caresync-vtv.up.railway.app/api/ai/chat';
 
 async function requestGroq(systemPrompt, userMessage, { jsonMode = false } = {}) {
   const headers = { 'Content-Type': 'application/json' };
