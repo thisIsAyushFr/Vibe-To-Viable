@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Sparkles, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, Pill, ShieldAlert, RefreshCw } from 'lucide-react';
+import { Sparkles, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, Pill, ShieldAlert, RefreshCw, Send, Bug } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { callGroqAPIForJSON } from '../services/aiClient';
+import { callGroqAPI, callGroqAPIForJSON, testAIConnection } from '../services/aiClient';
 
 async function fetchAIBrief(patient) {
   const patientContext = {
@@ -49,6 +49,35 @@ export default function AIPatientBrief({ patient }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const requestIdRef = useRef(0);
+
+  const [question, setQuestion] = useState('');
+  const [asking, setAsking] = useState(false);
+  const [answer, setAnswer] = useState(null);
+  const [debugResult, setDebugResult] = useState(null);
+
+  const handleAsk = async () => {
+    if (!question.trim() || !patient) return;
+    setAsking(true);
+    setAnswer(null);
+    console.log('[AIPatientBrief] asking:', question, 'for patient:', patient?.name);
+    try {
+      const reply = await callGroqAPI(
+        `You are a clinical assistant. Answer briefly (1-3 sentences) about this patient: ${JSON.stringify(patient)}`,
+        question
+      );
+      setAnswer(reply);
+    } catch (err) {
+      setAnswer(`⚠️ ${err.message}`);
+    } finally {
+      setAsking(false);
+    }
+  };
+
+  const handleDebugTest = async () => {
+    setDebugResult('Testing…');
+    const result = await testAIConnection();
+    setDebugResult(result);
+  };
 
   const loadBrief = useCallback(async () => {
     if (!patient) return;
@@ -277,7 +306,47 @@ export default function AIPatientBrief({ patient }) {
         </AnimatePresence>
       </div>
 
-      <p className="text-[10px] text-[#64748B] font-semibold italic mt-4 pt-3 border-t border-slate-200/60">
+      {/* Ask-a-question input — send button only appears once text is entered */}
+      <div className="mt-4 pt-3 border-t border-slate-200/60">
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleAsk()}
+            placeholder="Ask AI about this patient…"
+            className="flex-1 text-xs font-medium px-3 py-2 rounded-xl border border-slate-200 outline-none focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/15"
+          />
+          {question.trim() && (
+            <button
+              onClick={handleAsk}
+              disabled={asking}
+              className="p-2 rounded-xl bg-[#0F766E] text-white disabled:opacity-50"
+              title="Send"
+            >
+              {asking ? <RefreshCw size={14} className="animate-spin" /> : <Send size={14} />}
+            </button>
+          )}
+        </div>
+        {answer && (
+          <p className="text-xs font-semibold text-[#0F172A] mt-2 bg-[#F0FDFA] p-2.5 rounded-xl border border-[#14B8A6]/20">
+            {answer}
+          </p>
+        )}
+      </div>
+
+      {/* Debug helper — logs full request/response detail to the console */}
+      <div className="mt-2 flex items-center gap-2">
+        <button
+          onClick={handleDebugTest}
+          className="text-[10px] font-bold text-[#64748B] hover:text-[#0F766E] flex items-center gap-1"
+        >
+          <Bug size={11} /> Test AI connection
+        </button>
+        {debugResult && <span className="text-[10px] font-semibold text-[#0F172A]">{debugResult}</span>}
+      </div>
+
+      <p className="text-[10px] text-[#64748B] font-semibold italic mt-3 pt-2">
         Clinical AI Assistant summarizes patient records in seconds to reduce chart review time.
       </p>
     </motion.div>
