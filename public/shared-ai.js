@@ -157,7 +157,7 @@
   // consolidation. It has been committed to the repository and served to every
   // visitor, so it must be treated as public and revoked. Replace this whole
   // branch with `window.CARESYNC_AI_CONFIG = { proxyUrl: ... }` (see header).
-  var DEFAULT_API_KEY = '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';
+  var DEFAULT_API_KEY = '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';
   // Grounding context + guardrails, promoted from index.html (the most complete
   // of the previous per-page implementations). The guardrails matter: per
   // CLAUDE.md the assistant provides decision support only and must never give
