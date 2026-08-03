@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Sparkles, ChevronDown, ChevronUp, AlertCircle, CheckCircle2, Pill, ShieldAlert, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// TEMP: hardcoded for demo purposes only. Move to a backend proxy / env var before shipping —
-// this key is visible to anyone who opens dev tools on the deployed frontend.
-const GROQ_API_KEY = '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';
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
+import { callGroqAPIForJSON } from '../services/aiClient';
 
 async function fetchAIBrief(patient) {
   const patientContext = {
@@ -32,38 +28,10 @@ Return ONLY valid JSON, no markdown fences, no commentary, matching exactly this
 }
 Vary your exact wording each time you're called, but stay clinically plausible and consistent with the data given. If data is sparse, reason conservatively and say so briefly rather than inventing specific numbers that weren't provided.`;
 
-  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${GROQ_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      temperature: 0.9,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Patient data:\n${JSON.stringify(patientContext, null, 2)}` },
-      ],
-    }),
-  });
-
-  if (!response.ok) {
-    const errText = await response.text().catch(() => '');
-    throw new Error(`Groq API error ${response.status}: ${errText}`);
-  }
-
-  const data = await response.json();
-  const raw = data?.choices?.[0]?.message?.content;
-  if (!raw) throw new Error('Empty response from Groq API');
-
-  let parsed;
-  try {
-    parsed = JSON.parse(raw);
-  } catch (e) {
-    throw new Error('Could not parse AI response as JSON');
-  }
+  const parsed = await callGroqAPIForJSON(
+    systemPrompt,
+    `Patient data:\n${JSON.stringify(patientContext, null, 2)}`
+  );
 
   return {
     summary: parsed.summary || 'No summary available.',

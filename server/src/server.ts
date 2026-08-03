@@ -12,6 +12,7 @@ import appointmentRoutes from './routes/appointments.js';
 import patientRoutes from './routes/patients.js';
 import doctorRoutes from './routes/doctors.js';
 import analyticsRoutes from './routes/analytics.js';
+import aiRoutes from './routes/ai.js';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler.js';
@@ -68,6 +69,9 @@ app.use(`${apiPrefix}/doctors`, doctorRoutes);
 
 // Analytics routes
 app.use(`${apiPrefix}/analytics`, analyticsRoutes);
+
+// AI routes (proxies Groq calls so the API key never reaches the browser)
+app.use(`${apiPrefix}/ai`, aiRoutes);
 
 // ============================================================================
 // 404 HANDLER

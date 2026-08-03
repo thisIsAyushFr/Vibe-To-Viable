@@ -1,29 +1,69 @@
 import React, { useState } from 'react';
-import { FileText, Sparkles, Copy, Check } from 'lucide-react';
+import { FileText, Sparkles, Copy, Check, AlertCircle, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { DOC_OUTPUTS } from '../data/doctorDemoData';
+import { callGroqAPI } from '../services/aiClient';
 
-export default function DocumentationAssistant() {
+const CHIP_LABELS = {
+  soap: "Generate SOAP Note",
+  summary: "Summarize Consultation",
+  followup: "Create Follow-up Note",
+};
+
+const CHIP_INSTRUCTIONS = {
+  soap: "Generate a structured SOAP note (Subjective, Objective, Assessment, Plan) from the consultation notes below.",
+  summary: "Write a concise clinical summary of this consultation for the patient's chart.",
+  followup: "Draft a short follow-up note covering what was discussed, changes to care, and next steps.",
+};
+
+function buildContext(patient, queueItem) {
+  if (!patient) return '';
+  const lines = [
+    `Patient: ${patient.name}, ${patient.age}${patient.gender ? ` ${patient.gender}` : ''}`,
+    patient.conditions?.length ? `Conditions: ${patient.conditions.join(', ')}` : null,
+    patient.medications?.length ? `Medications: ${patient.medications.join(', ')}` : null,
+    patient.allergies ? `Allergies: ${patient.allergies}` : null,
+    patient.vitals?.length ? `Vitals: ${patient.vitals.map((v) => `${v.label} ${v.value}${v.unit}`).join(', ')}` : null,
+    queueItem?.visitType ? `Visit type: ${queueItem.visitType}` : null,
+  ].filter(Boolean);
+  return lines.join('\n');
+}
+
+export default function DocumentationAssistant({ patient, queueItem }) {
   const [notesText, setNotesText] = useState("");
   const [activeOutputKey, setActiveOutputKey] = useState(null);
+  const [generatedText, setGeneratedText] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  const chips = [
-    { key: "soap", label: "Generate SOAP Note" },
-    { key: "summary", label: "Summarize Consultation" },
-    { key: "followup", label: "Create Follow-up Note" },
-  ];
+  const chips = Object.entries(CHIP_LABELS).map(([key, label]) => ({ key, label }));
 
-  const handleChipClick = (key) => {
+  const handleChipClick = async (key) => {
     setActiveOutputKey(key);
-    if (!notesText) {
-      setNotesText(`Consultation notes for ${key.toUpperCase()}:\nPatient BP 148/92 mmHg, HR 78 bpm. Advised low sodium diet and continued Amlodipine 5mg.`);
+    setError(null);
+    setGeneratedText('');
+    setLoading(true);
+
+    const systemPrompt = `You are a clinical documentation assistant helping a doctor write chart notes. ${CHIP_INSTRUCTIONS[key]} Be clinically plausible, concise, and use plain text (no markdown headers).`;
+    const patientContext = buildContext(patient, queueItem);
+    const userMessage = [
+      patientContext ? `Patient context:\n${patientContext}` : null,
+      notesText ? `Consultation notes:\n${notesText}` : 'No dictated notes were provided — write a brief plausible note from the patient context alone.',
+    ].filter(Boolean).join('\n\n');
+
+    try {
+      const reply = await callGroqAPI(systemPrompt, userMessage);
+      setGeneratedText(reply);
+    } catch (err) {
+      setError(err.message || 'Failed to generate documentation');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleCopy = () => {
-    if (activeOutputKey && DOC_OUTPUTS[activeOutputKey]) {
-      navigator.clipboard.writeText(DOC_OUTPUTS[activeOutputKey].text);
+    if (generatedText) {
+      navigator.clipboard.writeText(generatedText);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -49,7 +89,7 @@ export default function DocumentationAssistant() {
           </div>
 
           <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-[#38BDF8]/15 text-[#0369A1] border border-[#38BDF8]/30 flex items-center gap-1">
-            <Sparkles size={11} className="text-[#38BDF8]" /> Demo AI Assistance
+            <Sparkles size={11} className="text-[#38BDF8]" /> Live AI
           </span>
         </div>
 
@@ -95,20 +135,38 @@ export default function DocumentationAssistant() {
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] font-extrabold text-[#0F766E] uppercase tracking-wider">
-                  GENERATED {DOC_OUTPUTS[activeOutputKey].label.toUpperCase()} (DEMO OUTPUT)
+                  GENERATED {CHIP_LABELS[activeOutputKey].toUpperCase()}
                 </span>
-                <button
-                  onClick={handleCopy}
-                  className="text-[10px] font-bold text-[#64748B] hover:text-[#0F766E] flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100"
-                >
-                  {copied ? <Check size={11} className="text-[#22C55E]" /> : <Copy size={11} />}
-                  <span>{copied ? "Copied" : "Copy"}</span>
-                </button>
+                {generatedText && !loading && (
+                  <button
+                    onClick={handleCopy}
+                    className="text-[10px] font-bold text-[#64748B] hover:text-[#0F766E] flex items-center gap-1 px-2 py-0.5 rounded bg-slate-100"
+                  >
+                    {copied ? <Check size={11} className="text-[#22C55E]" /> : <Copy size={11} />}
+                    <span>{copied ? "Copied" : "Copy"}</span>
+                  </button>
+                )}
               </div>
 
-              <pre className="text-xs font-medium text-[#0F172A] whitespace-pre-wrap font-sans leading-relaxed bg-[#F0FDFA] p-3 rounded-xl border border-[#14B8A6]/15 max-h-48 overflow-y-auto">
-                {DOC_OUTPUTS[activeOutputKey].text}
-              </pre>
+              {loading && (
+                <div className="flex items-center gap-2 p-3 text-xs font-bold text-[#0F766E]">
+                  <RefreshCw size={13} className="animate-spin" />
+                  Generating…
+                </div>
+              )}
+
+              {!loading && error && (
+                <div className="flex items-start gap-2 p-3 rounded-xl bg-red-50 border border-red-200">
+                  <AlertCircle size={13} className="text-red-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-[11px] font-semibold text-red-600">{error}</p>
+                </div>
+              )}
+
+              {!loading && !error && generatedText && (
+                <pre className="text-xs font-medium text-[#0F172A] whitespace-pre-wrap font-sans leading-relaxed bg-[#F0FDFA] p-3 rounded-xl border border-[#14B8A6]/15 max-h-48 overflow-y-auto">
+                  {generatedText}
+                </pre>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

@@ -322,7 +322,7 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
 
                 {/* 5. Documentation Assistant */}
                 <div id="doc-assistant" className="scroll-mt-24 min-w-0 w-full">
-                  <DocumentationAssistant />
+                  <DocumentationAssistant patient={selectedPatient} queueItem={activeQueueItem} />
                 </div>
               </div>
             )}

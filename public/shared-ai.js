@@ -21,15 +21,12 @@
      onSend                    - assign a (message) => string | Promise<string>
                                  handler to replace the transport entirely
 
-   SECURITY / TODO: the reply transport below calls the Groq API directly from
-   the browser using a key that is visible to anyone who loads the page. That
-   key is already public (it was committed in Patient.html) and must be rotated.
-   Per CLAUDE.md this call belongs behind the FastAPI AI services layer. To move
-   it there, set before this script loads:
+   The reply transport posts to our own backend (server/src/routes/ai.ts, see
+   DEFAULT_PROXY_URL below), which holds the Groq API key server-side — the key
+   never reaches the browser. Override the endpoint by setting, before this
+   script loads:
 
-     window.CARESYNC_AI_CONFIG = { proxyUrl: '/api/ai/chat' };
-
-   ...which posts { message } to your backend and reads back { reply }.
+     window.CARESYNC_AI_CONFIG = { proxyUrl: '/some/other/endpoint' };
    ================================================================ */
 
 (function () {
@@ -150,14 +147,11 @@
     return window.CARESYNC_AI_CONFIG || {};
   }
 
-  var GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+  // Default proxy: our own backend (server/src/routes/ai.ts) holds the Groq key
+  // server-side. Override by setting window.CARESYNC_AI_CONFIG = { proxyUrl }
+  // before this script loads.
+  var DEFAULT_PROXY_URL = '/api/ai/chat';
 
-  // !! COMPROMISED CREDENTIAL — ROTATE THIS !!
-  // Carried over from Patient.html so the existing chatbot keeps working after
-  // consolidation. It has been committed to the repository and served to every
-  // visitor, so it must be treated as public and revoked. Replace this whole
-  // branch with `window.CARESYNC_AI_CONFIG = { proxyUrl: ... }` (see header).
-  var DEFAULT_API_KEY = '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';
   // Grounding context + guardrails, promoted from index.html (the most complete
   // of the previous per-page implementations). The guardrails matter: per
   // CLAUDE.md the assistant provides decision support only and must never give
@@ -255,49 +249,23 @@
     '5. If uncertain, suggest contacting the hospital directly at +91 1800 123 4567'
   ].join('\n');
 
-  // Preferred path: post to your own backend, which holds the key server-side.
+  // Posts to our backend, which holds the Groq key server-side — the key is
+  // never sent to the browser.
   async function askViaProxy(proxyUrl, message) {
     var response = await fetch(proxyUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: message })
+      body: JSON.stringify({ systemPrompt: SYSTEM_PROMPT, userMessage: message })
     });
     if (!response.ok) throw new Error('HTTP ' + response.status);
     var data = await response.json();
     return data.reply || data.message || '';
   }
 
-  // Legacy path, preserved verbatim from Patient.html so today's chatbot keeps
-  // working. Exposes the key to the browser — see the TODO in the file header.
-  async function askGroqDirect(apiKey, message) {
-    var response = await fetch(GROQ_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + apiKey,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: message }
-        ],
-        temperature: 0.7,
-        max_tokens: 300
-      })
-    });
-    if (!response.ok) throw new Error('HTTP ' + response.status);
-    var data = await response.json();
-    return data.choices[0].message.content;
-  }
-
   async function sendMessageToAI(message) {
     var cfg = config();
     try {
-      if (cfg.proxyUrl) return await askViaProxy(cfg.proxyUrl, message);
-      var apiKey = cfg.apiKey || window.CARESYNC_AI_KEY || DEFAULT_API_KEY;
-      if (!apiKey) return 'AI service is not configured yet.';
-      return await askGroqDirect(apiKey, message);
+      return await askViaProxy(cfg.proxyUrl || DEFAULT_PROXY_URL, message);
     } catch (err) {
       console.error(err);
       return "Sorry, I couldn't reach the AI service.";
