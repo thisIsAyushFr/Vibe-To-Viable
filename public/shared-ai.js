@@ -150,7 +150,7 @@
   // Default proxy: our own backend (server/src/routes/ai.ts) holds the Groq key
   // server-side. Override by setting window.CARESYNC_AI_CONFIG = { proxyUrl }
   // before this script loads.
-  var DEFAULT_PROXY_URL = 'http://localhost:5000/api/ai/chat';
+  var DEFAULT_PROXY_URL = 'https://caresync-vtv.up.railway.app/api/ai/chat';
 
   // Grounding context + guardrails, promoted from index.html (the most complete
   // of the previous per-page implementations). The guardrails matter: per
