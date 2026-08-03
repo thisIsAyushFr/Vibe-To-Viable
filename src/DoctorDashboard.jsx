@@ -540,7 +540,7 @@ function PatientsView({
       </div>
 
       <div className="lg:col-span-6 min-w-0">
-        <AIPatientBrief />
+        <AIPatientBrief patient={selectedPatient} />
       </div>
 
       <div className="lg:col-span-6 min-w-0">
