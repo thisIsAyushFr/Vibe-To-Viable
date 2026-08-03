@@ -555,10 +555,6 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-6h6v6"/></svg>
       Room
     </div>
-    <div class="nav-item" onclick="switchTab(event, 'panel-doctor')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
-      Doctor
-    </div>
   </div>
 
 
@@ -1437,7 +1433,7 @@
           <div class="bed-num">214-2</div>
           <div class="bed-lbl">Room extension</div>
         </div>
-        <button class="note-btn" style="width:100%;margin-top:14px;">Call nurse station</button>
+        <button id="callNurseStationBtn" class="note-btn" style="width:100%;margin-top:14px;">Call nurse station</button>
         <div class="emergency-tag inset" style="margin-top:14px;"><span class="dot"></span>Nurse on duty: Priya Nair</div>
       </div>
     </div>
@@ -1472,6 +1468,7 @@
     <div class="bento row-gap">
       <div class="raised card span-7">
         <div class="card-head"><div class="card-title">Room service &amp; requests</div></div>
+        <div id="roomServiceList">
         <div class="inset med-item">
           <div class="med-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#20756A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19h16M4 15h16v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4z"/></svg></div>
           <div><div class="med-name">Extra pillow</div><div class="med-sub">Requested Jul 27</div></div>
@@ -1487,10 +1484,11 @@
           <div><div class="med-name">Extra blanket</div><div class="med-sub">Requested Jul 26</div></div>
           <span class="med-status taken" style="margin-left:auto;">Completed</span>
         </div>
+        </div>
         <div style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap;">
-          <button class="view-btn">Request housekeeping</button>
-          <button class="view-btn">Request extra bedding</button>
-          <button class="view-btn">Report an issue</button>
+          <button id="requestHousekeepingBtn" class="view-btn">Request housekeeping</button>
+          <button id="requestBeddingBtn" class="view-btn">Request extra bedding</button>
+          <button id="reportIssueBtn" class="view-btn">Report an issue</button>
         </div>
       </div>
 
@@ -1523,44 +1521,6 @@
   </div>
 
 
-  <!-- ==================== DOCTOR PANEL ==================== -->
-  <div id="panel-doctor" class="tab-panel">
-    <div class="dash-heading">
-      <h1>Book appointment / Chat with doctor</h1>
-      <p>Request a new appointment or message your care team directly.</p>
-    </div>
-
-    <div class="bento row-gap">
-      <div class="raised card span-6">
-        <div class="card-head"><div class="card-title">Book appointment</div></div>
-        <div class="inset" style="padding:18px;display:flex;flex-direction:column;gap:14px;">
-          <select class="ai-chat-input" style="width:100%;">
-            <option>Dr. Sarah Williams — Primary doctor</option>
-            <option>Nurse Priya Nair — Assigned nurse</option>
-            <option>Dr. Amit Rao — Dietitian</option>
-            <option>Meera Iyer — Physiotherapist</option>
-            <option>Karan Shah — Pharmacist</option>
-          </select>
-          <input class="ai-chat-input" style="width:100%;" type="date">
-          <input class="ai-chat-input" style="width:100%;" type="time">
-          <input class="ai-chat-input" style="width:100%;" type="text" placeholder="Reason for visit">
-          <button style="padding:13px;border:none;border-radius:12px;background:linear-gradient(150deg,var(--teal),var(--teal-dark));color:#fff;font-size:13.5px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;">Request appointment</button>
-        </div>
-      </div>
-
-      <div class="raised card span-6" style="padding:0;overflow:hidden;">
-        <div style="padding:22px 22px 0;">
-          <div class="card-head"><div class="card-title">Chat with doctor — Dr. Sarah Williams</div></div>
-        </div>
-        <div class="ai-chat-log" id="doctorChatLog" style="max-height:220px;padding:0 22px;">
-        </div>
-        <div class="ai-chat-input-row">
-          <input class="ai-chat-input" id="doctorChatInput" type="text" placeholder="Message Dr. Williams...">
-          <button class="ai-chat-send" id="doctorChatSend">➤</button>
-        </div>
-      </div>
-    </div>
-  </div>
 
 </div>
 
@@ -1609,43 +1569,78 @@
   });
 </script>
 <script>
+document.addEventListener("DOMContentLoaded", function() {
 
-// Local-only placeholder — linking this to the doctor's real inbox requires the
-// Node/Express + PostgreSQL + Redis backend specified in CLAUDE.md.
-function sendMessageToDoctor(message) {
-    return "Message sent — Dr. Williams will respond soon.";
-}
+  // Call nurse station — opens the dialer with the number ready; the patient
+  // still has to tap "call" themselves (standard tel: link behavior).
+  const callNurseBtn = document.getElementById("callNurseStationBtn");
+  if (callNurseBtn) {
+    callNurseBtn.addEventListener("click", () => {
+      window.location.href = "tel:+919877788198";
+    });
+  }
 
-const doctorChatSend = document.getElementById("doctorChatSend");
-const doctorChatInput = document.getElementById("doctorChatInput");
-const doctorChatLog = document.getElementById("doctorChatLog");
+  // Room service & requests — logged to the same "caresync_messages" localStorage
+  // store used by the patient/staff messaging feature (see src/data/messageStore.js),
+  // and reflected in the list.
+  const MESSAGES_STORAGE_KEY = "caresync_messages";
+  const MESSAGES_EVENT_NAME = "caresync-messages-updated";
+  const PATIENT_ID = "P001";
+  const STAFF_ID = "STAFF001";
+  const ROOM_SERVICE_CONVERSATION_ID = "P001-STAFF001";
 
-doctorChatSend.addEventListener("click", () => {
+  const roomServiceList = document.getElementById("roomServiceList");
 
-    const message = doctorChatInput.value.trim();
+  const addRoomServiceRequest = (label, iconSvg) => {
+    let state;
+    try {
+      state = JSON.parse(localStorage.getItem(MESSAGES_STORAGE_KEY)) || { conversations: {}, messages: [] };
+    } catch (e) {
+      state = { conversations: {}, messages: [] };
+    }
+    state.messages = [...(state.messages || []), {
+      id: `MSG${Date.now()}`,
+      conversationId: ROOM_SERVICE_CONVERSATION_ID,
+      senderId: PATIENT_ID,
+      senderRole: "patient",
+      receiverId: STAFF_ID,
+      text: label,
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      read: false
+    }];
+    localStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(state));
+    window.dispatchEvent(new Event(MESSAGES_EVENT_NAME));
 
-    if (!message) return;
+    if (roomServiceList) {
+      const today = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      const item = document.createElement("div");
+      item.className = "inset med-item";
+      item.innerHTML = `
+        <div class="med-pill-icon">${iconSvg}</div>
+        <div><div class="med-name">${label}</div><div class="med-sub">Requested ${today}</div></div>
+        <span class="med-status pending" style="margin-left:auto;">Pending</span>
+      `;
+      roomServiceList.prepend(item);
+    }
+  };
 
-    doctorChatLog.innerHTML += `
-        <div class="ai-chat-msg">
-            You: ${message}
-        </div>
-    `;
+  const HOUSEKEEPING_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="#20756A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M9 9a3 3 0 0 0 4.24 4.24"/></svg>';
+  const BEDDING_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="#20756A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/></svg>';
+  const ISSUE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="#20756A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>';
 
-    doctorChatInput.value = "";
-
-    const reply = sendMessageToDoctor(message);
-
-    doctorChatLog.innerHTML += `
-        <div class="ai-chat-msg">
-            Dr. Williams: ${reply}
-        </div>
-    `;
+  [
+    { id: "requestHousekeepingBtn", label: "Housekeeping", icon: HOUSEKEEPING_ICON },
+    { id: "requestBeddingBtn", label: "Extra bedding", icon: BEDDING_ICON },
+    { id: "reportIssueBtn", label: "Reported issue", icon: ISSUE_ICON }
+  ].forEach(({ id, label, icon }) => {
+    const btn = document.getElementById(id);
+    if (btn) {
+      btn.addEventListener("click", () => addRoomServiceRequest(label, icon));
+    }
+  });
 
 });
-
 </script>
-
 <div id="reportModal" class="modal-overlay">
   <div class="modal-content">
     <div class="modal-header">

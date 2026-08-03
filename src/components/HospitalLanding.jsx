@@ -289,14 +289,13 @@ const TESTIMONIALS = [
 ];
 
 const AVAILABLE_AMBULANCES = [
-  { id: 1, label: 'Ambulance 1', phone: '+91 98765 43210' },
-  { id: 2, label: 'Ambulance 2', phone: '+91 91234 56780' },
-  { id: 3, label: 'Ambulance 3', phone: '+91 99887 66554' },
-  { id: 4, label: 'Ambulance 4', phone: '+91 90045 12233' },
-  { id: 5, label: 'Ambulance 5', phone: '+91 93456 78901' }
+  { id: 1, label: 'Ambulance 1', phone: '+91 98777 88198' },
+  { id: 2, label: 'Ambulance 2', phone: '+91 90566 00517' },
+  { id: 3, label: 'Ambulance 3', phone: '+91 83077 90551' },
+  { id: 4, label: 'Ambulance 4', phone: '+91 79781 69635' }
 ];
 
-const RECEPTION_PHONE = '+91 99999 00000';
+const RECEPTION_PHONE = '+91 98777 88198';
 
 export default function HospitalLanding({
   user,
@@ -505,6 +504,21 @@ export default function HospitalLanding({
               >
                 Book Appointment
               </button>
+              <button
+                onClick={() => { setMobileMenuOpen(false); setIsAmbulanceOpen(true); }}
+                className="w-full py-2.5 rounded-xl text-sm font-bold bg-rose-600 text-white shadow-md flex items-center justify-center gap-2"
+              >
+                <Ambulance className="w-4 h-4" />
+                <span>Ambulance</span>
+              </button>
+              <a
+                href={`tel:${RECEPTION_PHONE.replace(/\s/g, '')}`}
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full py-2.5 rounded-xl text-sm font-bold bg-teal-800 text-white shadow-md flex items-center justify-center gap-2"
+              >
+                <PhoneCall className="w-4 h-4" />
+                <span>Call Reception</span>
+              </a>
             </div>
           </div>
         )}
@@ -1180,19 +1194,19 @@ export default function HospitalLanding({
             className="relative w-full max-w-md bg-white/95 backdrop-blur-2xl rounded-3xl border border-rose-100 shadow-2xl overflow-hidden text-slate-800"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-6 border-b border-rose-100/60 bg-gradient-to-r from-rose-600/10 via-rose-500/10 to-transparent">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-2xl bg-rose-600 flex items-center justify-center text-white shadow-md shadow-rose-600/20">
+            <div className="flex items-center justify-between gap-3 p-4 sm:p-6 border-b border-rose-100/60 bg-gradient-to-r from-rose-600/10 via-rose-500/10 to-transparent">
+              <div className="flex items-center space-x-3 min-w-0">
+                <div className="w-10 h-10 rounded-2xl bg-rose-600 flex items-center justify-center text-white shadow-md shadow-rose-600/20 flex-shrink-0">
                   <Ambulance className="w-5 h-5" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900">Available Ambulances</h3>
+                <div className="min-w-0">
+                  <h3 className="text-base sm:text-lg font-bold text-slate-900">Available Ambulances</h3>
                   <p className="text-xs text-rose-700 font-medium">Tap an ambulance to call it directly</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsAmbulanceOpen(false)}
-                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors"
+                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors flex-shrink-0"
                 aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
@@ -1204,10 +1218,10 @@ export default function HospitalLanding({
                 <a
                   key={amb.id}
                   href={`tel:${amb.phone.replace(/\s/g, '')}`}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-rose-50 hover:bg-rose-100 border border-rose-200/80 transition-all active:scale-[0.98]"
+                  className="flex items-center justify-between gap-3 p-4 rounded-2xl bg-rose-50 hover:bg-rose-100 border border-rose-200/80 transition-all active:scale-[0.98]"
                 >
-                  <div className="flex items-center space-x-3">
-                    <div className="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center shadow-sm">
+                  <div className="flex items-center space-x-3 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-rose-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                       <Ambulance className="w-4.5 h-4.5" />
                     </div>
                     <span className="text-sm font-bold text-slate-900">{amb.label}</span>
