@@ -314,6 +314,8 @@ export default function HospitalLanding({
   const handleOpenDashboard = () => {
     if (user?.role === 'doctor' && onOpenDoctorDashboard) {
       onOpenDoctorDashboard();
+    } else if (user?.role === 'nurse' && onOpenNurseDashboard) {
+      onOpenNurseDashboard();
     } else if (user?.role === 'patient' && onOpenPatientDashboard) {
       onOpenPatientDashboard();
     }
@@ -366,11 +368,7 @@ export default function HospitalLanding({
               {user ? (
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => {
-                      if (user.role === 'doctor' && onOpenDoctorDashboard) {
-                        onOpenDoctorDashboard();
-                      }
-                    }}
+                    onClick={handleOpenDashboard}
                     className="px-4 py-2 rounded-xl text-xs font-black bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-600/20 transition-all flex items-center gap-2"
                   >
                     <User className="w-3.5 h-3.5" />
@@ -457,9 +455,7 @@ export default function HospitalLanding({
                     onClick={(e) => {
                       e.preventDefault();
                       setMobileMenuOpen(false);
-                      if (user.role === 'doctor' && onOpenDoctorDashboard) {
-                        onOpenDoctorDashboard();
-                      }
+                      handleOpenDashboard();
                     }}
                     className="w-full py-2.5 rounded-xl text-xs font-bold bg-teal-600 text-white shadow-md flex items-center justify-center gap-2"
                   >
@@ -525,11 +521,20 @@ export default function HospitalLanding({
                 </button>
 
                 <button
-                  onClick={() => setIsLoginOpen(true)}
+                  onClick={user ? handleOpenDashboard : () => setIsLoginOpen(true)}
                   className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white/80 hover:bg-white text-slate-800 font-bold text-base border border-slate-200/80 shadow-lg shadow-teal-900/5 flex items-center justify-center space-x-2 transition-all transform hover:-translate-y-1 active:translate-y-0"
                 >
-                  <Lock className="w-5 h-5 text-teal-600" />
-                  <span>Login</span>
+                  {user ? (
+                    <>
+                      <User className="w-5 h-5 text-teal-600" />
+                      <span>Continue as {user.role}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-5 h-5 text-teal-600" />
+                      <span>Login</span>
+                    </>
+                  )}
                 </button>
               </div>
 
@@ -1032,11 +1037,20 @@ export default function HospitalLanding({
                 </button>
 
                 <button
-                  onClick={() => setIsLoginOpen(true)}
+                  onClick={user ? handleOpenDashboard : () => setIsLoginOpen(true)}
                   className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-teal-800/60 hover:bg-teal-800 text-white font-bold text-sm border border-white/30 flex items-center justify-center space-x-2 transition-all"
                 >
-                  <Lock className="w-4 h-4" />
-                  <span>Login</span>
+                  {user ? (
+                    <>
+                      <User className="w-4 h-4" />
+                      <span>Continue as {user.role}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-4 h-4" />
+                      <span>Login</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>

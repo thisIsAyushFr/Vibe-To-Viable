@@ -20,12 +20,16 @@ function App() {
     setPage("landing");
   };
 
+  const handleBackToLanding = () => {
+    setPage("landing");
+  };
+
   if (page === "doctor") {
     return (
       <DoctorDashboard
         user={user}
         onLogout={handleLogout}
-        onBackToLanding={handleLogout}
+        onBackToLanding={handleBackToLanding}
       />
     );
   }
@@ -35,7 +39,7 @@ function App() {
       <NurseDashboard
         user={user}
         onLogout={handleLogout}
-        onBackToLanding={handleLogout}
+        onBackToLanding={handleBackToLanding}
       />
     );
   }
