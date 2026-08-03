@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Users, CheckSquare, Clock3, ClipboardList, LayoutGrid, ArrowLeft, ArrowRight,
   Activity, Bed, Calendar, Settings, LogOut, X, Stethoscope
@@ -39,6 +39,7 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
   const [activeNav, setActiveNav] = useState('overview');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedPatientId, setSelectedPatientId] = useState('rahul');
+  const manualOverrideRef = useRef(false);
   const [tasks, setTasks] = useState(INITIAL_TASKS);
   const [queueFilter, setQueueFilter] = useState('all');
   const [queueStatuses, setQueueStatuses] = useState(
@@ -90,6 +91,22 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
     ? (queueStatuses[activeQueueItem.id] || activeQueueItem.status) === 'in-consultation'
     : false;
 
+  // Keep the AI brief locked to whichever patient is "next" unless the doctor
+  // has manually picked someone else (that manual pick wins until it's cleared
+  // or the current consultation finishes).
+  useEffect(() => {
+    if (manualOverrideRef.current) return;
+    if (!activeQueueItem) return;
+    setSelectedPatientId((prev) =>
+      prev === activeQueueItem.patientId ? prev : activeQueueItem.patientId
+    );
+  }, [activeQueueItem?.patientId]);
+
+  const selectPatientManually = (id) => {
+    manualOverrideRef.current = true;
+    setSelectedPatientId(id);
+  };
+
   const selectedPatient = allPatients[selectedPatientId] || PATIENTS.rahul;
 
   const completedQueueCount = Object.values(queueStatuses).filter((s) => s === 'completed').length
@@ -120,6 +137,7 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
         ...prev,
         [activeQueueItem.id]: 'in-consultation',
       }));
+      manualOverrideRef.current = false;
       setSelectedPatientId(activeQueueItem.patientId);
       if (activeQueueItem.id.startsWith('P')) {
         updateWalkIn(activeQueueItem.id, { status: 'In Consultation' });
@@ -133,6 +151,7 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
         ...prev,
         [activeQueueItem.id]: 'completed',
       }));
+      manualOverrideRef.current = false;
       if (activeQueueItem.id.startsWith('P')) {
         updateWalkIn(activeQueueItem.id, { status: 'Completed' });
       }
@@ -184,7 +203,7 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
                 queue={INITIAL_QUEUE}
                 patients={PATIENTS}
                 onViewPatient={(id) => {
-                  setSelectedPatientId(id);
+                  selectPatientManually(id);
                   setActiveNav('patients');
                 }}
               />
@@ -195,7 +214,7 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
                   patients={allPatients}
                   queueStatuses={queueStatuses}
                   selectedPatientId={selectedPatientId}
-                  onSelectPatient={setSelectedPatientId}
+                  onSelectPatient={selectPatientManually}
                   queueFilter={queueFilter}
                   setQueueFilter={setQueueFilter}
                   onMarkDone={markQueueDone}
@@ -207,7 +226,7 @@ export default function DoctorDashboard({ user, onLogout, onBackToLanding }) {
                 allPatients={allPatients}
                 queueStatuses={queueStatuses}
                 selectedPatientId={selectedPatientId}
-                setSelectedPatientId={setSelectedPatientId}
+                setSelectedPatientId={selectPatientManually}
                 queueFilter={queueFilter}
                 setQueueFilter={setQueueFilter}
                 markQueueDone={markQueueDone}
