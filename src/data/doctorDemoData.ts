@@ -87,6 +87,68 @@ export interface OperationTheater {
   isOtRequiredDept: boolean;
 }
 
+export interface OtQueueEntry {
+  id: string;
+  patientName: string;
+  patientAge: number;
+  procedure: string;
+  priority: 'Emergency' | 'Urgent' | 'Elective';
+  waitTime: string;
+  position: number;
+  status: 'Next' | 'Preparing' | 'Waiting';
+}
+
+// Upcoming surgical queue per OT — used to power the "Queue Status" panel in
+// the OT card's expanded "View More" section. An empty array renders the
+// "Queue Empty" state.
+export const OT_QUEUE_STATUS: Record<string, OtQueueEntry[]> = {
+  'ot-1': [
+    {
+      id: 'q-ot1-1',
+      patientName: 'Rajendra Prasad',
+      patientAge: 64,
+      procedure: 'Dual Chamber Pacemaker Implantation',
+      priority: 'Urgent',
+      waitTime: '20 min',
+      position: 1,
+      status: 'Next',
+    },
+    {
+      id: 'q-ot1-2',
+      patientName: 'Meena Kumari',
+      patientAge: 57,
+      procedure: 'Diagnostic Coronary Angiography',
+      priority: 'Elective',
+      waitTime: '55 min',
+      position: 2,
+      status: 'Preparing',
+    },
+  ],
+  'ot-2': [
+    {
+      id: 'q-ot2-1',
+      patientName: 'Farhan Sheikh',
+      patientAge: 45,
+      procedure: 'Arthroscopic ACL Reconstruction',
+      priority: 'Urgent',
+      waitTime: '30 min',
+      position: 1,
+      status: 'Next',
+    },
+    {
+      id: 'q-ot2-2',
+      patientName: 'Geeta Iyer',
+      patientAge: 68,
+      procedure: 'Total Hip Replacement',
+      priority: 'Elective',
+      waitTime: '1 hr 15 min',
+      position: 2,
+      status: 'Waiting',
+    },
+  ],
+  'ot-3': [],
+};
+
 export interface ScheduledSurgery {
   id: string;
   otId: string;
@@ -443,19 +505,6 @@ export const SCHEDULE: ScheduleItem[] = [
   { time: "13:30", type: "consultation", label: "Consultations" },
   { time: "14:30", type: "available", label: "Available" },
 ];
-
-export const AI_BRIEF = {
-  summary:
-    "45-year-old patient returning for hypertension follow-up. BP was elevated during the previous visit. Currently taking Amlodipine. Recent HbA1c was above target.",
-  keyInfo: [
-    "Hypertension — diagnosed 2019",
-    "Type 2 Diabetes — diagnosed 2021",
-    "Current medication: Amlodipine 5mg",
-    "Last BP: 148/92 mmHg",
-    "Recent HbA1c: 7.4%",
-  ],
-  attention: "Blood pressure remained elevated during the previous visit.",
-};
 
 export const DOC_OUTPUTS: Record<string, { label: string; text: string }> = {
   soap: {
